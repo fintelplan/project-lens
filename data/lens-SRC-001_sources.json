@@ -1,0 +1,294 @@
+{
+  "meta": {
+    "file": "lens-SRC-001_sources.json",
+    "project": "Project Lens",
+    "version": "1.0",
+    "created": "LENS-003",
+    "total_sources": 20,
+    "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each."
+  },
+
+  "sources": [
+
+    {
+      "id": "SRC-001",
+      "name": "US State Department",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "https://feeds.feedburner.com/state-dept-news",
+      "web_url": "https://www.state.gov",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official US foreign policy statements"
+    },
+
+    {
+      "id": "SRC-002",
+      "name": "White House News",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "https://www.whitehouse.gov/feed/",
+      "web_url": "https://www.whitehouse.gov",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official White House releases and statements"
+    },
+
+    {
+      "id": "SRC-003",
+      "name": "China MFA",
+      "domain": "POWER",
+      "actor": "China",
+      "rss_url": "https://www.fmprc.gov.cn/rss.xml",
+      "web_url": "https://www.fmprc.gov.cn/eng",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official Chinese foreign ministry briefings"
+    },
+
+    {
+      "id": "SRC-004",
+      "name": "Kremlin News",
+      "domain": "POWER",
+      "actor": "Russia",
+      "rss_url": "http://kremlin.ru/events/president/news/feed",
+      "web_url": "https://kremlin.ru/eng",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official Kremlin presidential statements"
+    },
+
+    {
+      "id": "SRC-005",
+      "name": "NATO News",
+      "domain": "POWER",
+      "actor": "NATO",
+      "rss_url": "https://www.nato.int/cps/en/natolive/news.rss",
+      "web_url": "https://www.nato.int",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official NATO alliance statements and news"
+    },
+
+    {
+      "id": "SRC-006",
+      "name": "Reuters World News",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://rsshub.app/reuters/world",
+      "web_url": "https://www.reuters.com",
+      "frequency": "daily",
+      "tier_coverage": [1, 2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Global news wire — broad coverage across all domains"
+    },
+
+    {
+      "id": "SRC-007",
+      "name": "AP News Top Stories",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://rsshub.app/apnews/topics/apf-topnews",
+      "web_url": "https://apnews.com",
+      "frequency": "daily",
+      "tier_coverage": [1, 2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Associated Press — reliable global news wire"
+    },
+
+    {
+      "id": "SRC-008",
+      "name": "US Department of Defense",
+      "domain": "MILITARY",
+      "actor": "US",
+      "rss_url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?max=10&ContentType=1&Site=945",
+      "web_url": "https://www.defense.gov",
+      "frequency": "daily",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official US military news and policy"
+    },
+
+    {
+      "id": "SRC-009",
+      "name": "RAND Corporation",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://www.rand.org/pubs/rss/rss-recent.xml",
+      "web_url": "https://www.rand.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Leading US think tank — shapes policy 6-18 months ahead"
+    },
+
+    {
+      "id": "SRC-010",
+      "name": "CSIS — Center for Strategic Studies",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://www.csis.org/rss.xml",
+      "web_url": "https://www.csis.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Top US foreign policy think tank"
+    },
+
+    {
+      "id": "SRC-011",
+      "name": "OFAC Sanctions Updates",
+      "domain": "FINANCE",
+      "actor": "US",
+      "rss_url": "https://home.treasury.gov/system/files/126/ofac.xml",
+      "web_url": "https://ofac.treas.gov",
+      "frequency": "daily",
+      "tier_coverage": [1],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official US sanctions designations — tier 1 only"
+    },
+
+    {
+      "id": "SRC-012",
+      "name": "IMF News",
+      "domain": "FINANCE",
+      "actor": "IMF",
+      "rss_url": "https://www.imf.org/en/News/rss?language=eng",
+      "web_url": "https://www.imf.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "International Monetary Fund global economic signals"
+    },
+
+    {
+      "id": "SRC-013",
+      "name": "BIS — Bank for International Settlements",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "rss_url": "https://www.bis.org/rss.htm",
+      "web_url": "https://www.bis.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Central bank of central banks — financial stability signals"
+    },
+
+    {
+      "id": "SRC-014",
+      "name": "arXiv AI Papers",
+      "domain": "TECH",
+      "actor": "Global",
+      "rss_url": "https://rss.arxiv.org/rss/cs.AI",
+      "web_url": "https://arxiv.org",
+      "frequency": "daily",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Preprint server — AI capability breakthroughs appear here first"
+    },
+
+    {
+      "id": "SRC-015",
+      "name": "MIT Technology Review",
+      "domain": "TECH",
+      "actor": "Global",
+      "rss_url": "https://www.technologyreview.com/feed/",
+      "web_url": "https://www.technologyreview.com",
+      "frequency": "daily",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Leading tech journalism — AI, quantum, semiconductor coverage"
+    },
+
+    {
+      "id": "SRC-016",
+      "name": "Bellingcat",
+      "domain": "NARRATIVE",
+      "actor": "OSINT",
+      "rss_url": "https://www.bellingcat.com/feed/",
+      "web_url": "https://www.bellingcat.com",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Open source investigation — conflict verification and network analysis"
+    },
+
+    {
+      "id": "SRC-017",
+      "name": "DFRLab — Digital Forensic Research Lab",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://medium.com/feed/dfrlab",
+      "web_url": "https://www.dfrlab.org",
+      "frequency": "weekly",
+      "tier_coverage": [1, 2],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Influence operations and disinformation detection"
+    },
+
+    {
+      "id": "SRC-018",
+      "name": "SIPRI — Stockholm Peace Research Institute",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "rss_url": "https://www.sipri.org/rss.xml",
+      "web_url": "https://www.sipri.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Arms trade, military spending, conflict data"
+    },
+
+    {
+      "id": "SRC-019",
+      "name": "IEA — International Energy Agency",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "rss_url": "https://www.iea.org/rssfeed.xml",
+      "web_url": "https://www.iea.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Energy supply, oil market, resource security data"
+    },
+
+    {
+      "id": "SRC-020",
+      "name": "ICIJ — International Consortium of Investigative Journalists",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "rss_url": "https://www.icij.org/feed/",
+      "web_url": "https://www.icij.org",
+      "frequency": "weekly",
+      "tier_coverage": [2, 3],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Hidden financial networks and non-state actor investigations"
+    }
+
+  ]
+}
