@@ -1,0 +1,587 @@
+{
+  "meta": {
+    "file": "lens-IND-001_master.json",
+    "project": "Project Lens",
+    "version": "1.0",
+    "created": "LENS-002",
+    "total_indicators": 77,
+    "domains": 7,
+    "tier_system": {
+      "tier_1": "Critical — instant alert",
+      "tier_2": "Important — daily summary",
+      "tier_3": "Background — weekly review"
+    }
+  },
+
+  "domains": {
+
+    "POWER": {
+      "id": "POWER",
+      "name": "Power & Geopolitics",
+      "actors": [
+        "US", "China", "Russia",
+        "NATO", "EU", "UK",
+        "India", "Japan", "South Korea", "Australia",
+        "ASEAN", "Middle East",
+        "Taiwan Strait", "Korean Peninsula",
+        "South China Sea", "Eastern Europe", "Arctic"
+      ],
+      "indicators": [
+        {
+          "id": "POWER-001",
+          "name": "China Official Statement Tone Shift",
+          "tier": 1,
+          "actor": "China",
+          "what_to_watch": "MFA daily briefings and Xi Jinping speeches — tone toward US, Taiwan, and neighbors",
+          "why_matters": "Tone hardening signals policy change 2-4 weeks ahead",
+          "sources": ["mfa.gov.cn", "xinhuanet.com"],
+          "frequency": "daily",
+          "signal_type": "language_shift"
+        },
+        {
+          "id": "POWER-002",
+          "name": "US National Security Statement",
+          "tier": 1,
+          "actor": "US",
+          "what_to_watch": "White House, State Department, Pentagon official releases on China and Russia",
+          "why_matters": "Policy signals before action — often 1-3 weeks ahead",
+          "sources": ["whitehouse.gov", "state.gov", "defense.gov"],
+          "frequency": "daily",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "POWER-003",
+          "name": "Russia Strategic Statement",
+          "tier": 1,
+          "actor": "Russia",
+          "what_to_watch": "Kremlin and MFA Russia statements on NATO, Ukraine, and nuclear posture",
+          "why_matters": "Escalation language precedes military moves",
+          "sources": ["kremlin.ru", "mid.ru"],
+          "frequency": "daily",
+          "signal_type": "escalation_signal"
+        },
+        {
+          "id": "POWER-004",
+          "name": "NATO Unity Signal",
+          "tier": 2,
+          "actor": "NATO",
+          "what_to_watch": "Joint statements, summit outcomes, member disagreements",
+          "why_matters": "Cracks in NATO unity = opportunity signal for adversaries",
+          "sources": ["nato.int"],
+          "frequency": "weekly",
+          "signal_type": "alliance_health"
+        },
+        {
+          "id": "POWER-005",
+          "name": "EU Foreign Policy Move",
+          "tier": 2,
+          "actor": "EU",
+          "what_to_watch": "EU Council decisions on sanctions, trade, and geopolitical positioning",
+          "why_matters": "EU economic weight makes its moves market-moving",
+          "sources": ["consilium.europa.eu", "ec.europa.eu"],
+          "frequency": "weekly",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "POWER-006",
+          "name": "India Strategic Positioning",
+          "tier": 2,
+          "actor": "India",
+          "what_to_watch": "India-China, India-US, India-Russia relations — hedging behavior",
+          "why_matters": "India as swing power — which side it leans matters globally",
+          "sources": ["mea.gov.in", "thehindu.com"],
+          "frequency": "weekly",
+          "signal_type": "alignment_shift"
+        },
+        {
+          "id": "POWER-007",
+          "name": "Taiwan Strait Tension Level",
+          "tier": 1,
+          "actor": "China-Taiwan-US",
+          "what_to_watch": "PLA military activity near Taiwan, US arms sales, diplomatic statements",
+          "why_matters": "Taiwan is the highest-risk flashpoint globally",
+          "sources": ["defense.gov", "mnd.gov.tw", "reuters.com"],
+          "frequency": "daily",
+          "signal_type": "conflict_risk"
+        },
+        {
+          "id": "POWER-008",
+          "name": "South China Sea Activity",
+          "tier": 2,
+          "actor": "China-ASEAN-US",
+          "what_to_watch": "Naval incidents, island construction, ASEAN protests, US FON operations",
+          "why_matters": "Escalation here affects global shipping and ASEAN stability",
+          "sources": ["csis.org", "reuters.com", "ap.org"],
+          "frequency": "weekly",
+          "signal_type": "conflict_risk"
+        },
+        {
+          "id": "POWER-009",
+          "name": "Middle East Power Shift",
+          "tier": 2,
+          "actor": "Middle East",
+          "what_to_watch": "Iran nuclear talks, Saudi-Israel normalization, proxy conflict levels",
+          "why_matters": "Middle East instability directly affects oil and global inflation",
+          "sources": ["reuters.com", "al-monitor.com", "state.gov"],
+          "frequency": "weekly",
+          "signal_type": "regional_stability"
+        },
+        {
+          "id": "POWER-010",
+          "name": "ASEAN Alignment Signal",
+          "tier": 3,
+          "actor": "ASEAN",
+          "what_to_watch": "ASEAN summit outcomes, member hedging between US and China",
+          "why_matters": "ASEAN alignment shows which power is winning in Southeast Asia",
+          "sources": ["asean.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "alignment_shift"
+        },
+        {
+          "id": "POWER-011",
+          "name": "Japan-South Korea Security Move",
+          "tier": 2,
+          "actor": "Japan-South Korea",
+          "what_to_watch": "Trilateral US-Japan-South Korea cooperation, North Korea response",
+          "why_matters": "Northeast Asia security directly tied to US-China competition",
+          "sources": ["mofa.go.jp", "mofa.go.kr"],
+          "frequency": "weekly",
+          "signal_type": "alliance_health"
+        },
+        {
+          "id": "POWER-012",
+          "name": "Australia Strategic Posture",
+          "tier": 3,
+          "actor": "Australia",
+          "what_to_watch": "AUKUS developments, Australia-China trade, Five Eyes signals",
+          "why_matters": "Australia is key US ally in Indo-Pacific balance",
+          "sources": ["dfat.gov.au", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "alliance_health"
+        }
+      ]
+    },
+
+    "TECH": {
+      "id": "TECH",
+      "name": "Technology & Innovation",
+      "actors": ["US", "China", "EU", "Big Tech", "Research institutions"],
+      "indicators": [
+        {
+          "id": "TECH-001",
+          "name": "AI Capability Breakthrough",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "New AI model releases, benchmark scores, capability jumps from OpenAI, Google, Anthropic, Chinese labs",
+          "why_matters": "AI capability shifts change military, economic, and intelligence balance",
+          "sources": ["arxiv.org", "openai.com", "deepmind.com"],
+          "frequency": "weekly",
+          "signal_type": "capability_shift"
+        },
+        {
+          "id": "TECH-002",
+          "name": "Semiconductor Export Control",
+          "tier": 1,
+          "actor": "US-China",
+          "what_to_watch": "US BIS export control updates, chip restrictions on China, Dutch ASML decisions",
+          "why_matters": "Chip restrictions are the frontline of US-China tech war",
+          "sources": ["bis.doc.gov", "reuters.com", "ft.com"],
+          "frequency": "weekly",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "TECH-003",
+          "name": "Quantum Computing Milestone",
+          "tier": 2,
+          "actor": "US-China",
+          "what_to_watch": "Government quantum funding, breakthrough papers, qubit count records",
+          "why_matters": "Quantum breakthrough breaks current encryption — civilization-level event",
+          "sources": ["arxiv.org", "nature.com", "quantamagazine.org"],
+          "frequency": "weekly",
+          "signal_type": "capability_shift"
+        },
+        {
+          "id": "TECH-004",
+          "name": "Cyber Attack Attribution",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "State-attributed cyber attacks on infrastructure, government, finance",
+          "why_matters": "Cyber attacks are precursor to or substitute for kinetic conflict",
+          "sources": ["cisa.gov", "ncsc.gov.uk", "reuters.com"],
+          "frequency": "daily",
+          "signal_type": "conflict_risk"
+        },
+        {
+          "id": "TECH-005",
+          "name": "Space Technology Move",
+          "tier": 2,
+          "actor": "US-China-Russia",
+          "what_to_watch": "Satellite launches, anti-satellite tests, space militarization signals",
+          "why_matters": "Space dominance = intelligence, GPS, and military communication dominance",
+          "sources": ["nasa.gov", "spaceforce.mil", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "capability_shift"
+        },
+        {
+          "id": "TECH-006",
+          "name": "AI Military Integration",
+          "tier": 1,
+          "actor": "US-China",
+          "what_to_watch": "Pentagon AI programs, Chinese PLA AI announcements, autonomous weapons",
+          "why_matters": "AI in military changes speed and nature of conflict",
+          "sources": ["defense.gov", "cnas.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "capability_shift"
+        },
+        {
+          "id": "TECH-007",
+          "name": "Tech Decoupling Signal",
+          "tier": 2,
+          "actor": "US-China",
+          "what_to_watch": "Supply chain bifurcation, friend-shoring announcements, tech standard battles",
+          "why_matters": "Decoupling reshapes global economy into two tech blocs",
+          "sources": ["reuters.com", "ft.com", "wsj.com"],
+          "frequency": "weekly",
+          "signal_type": "structural_shift"
+        }
+      ]
+    },
+
+    "FINANCE": {
+      "id": "FINANCE",
+      "name": "Finance & Economic Warfare",
+      "actors": ["US Fed", "China PBOC", "IMF", "World Bank", "Crypto markets"],
+      "indicators": [
+        {
+          "id": "FINANCE-001",
+          "name": "US Federal Reserve Signal",
+          "tier": 1,
+          "actor": "US Fed",
+          "what_to_watch": "Fed rate decisions, chair speeches, FOMC minutes",
+          "why_matters": "Fed moves ripple through every global market within hours",
+          "sources": ["federalreserve.gov", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "market_signal"
+        },
+        {
+          "id": "FINANCE-002",
+          "name": "New Sanctions Package",
+          "tier": 1,
+          "actor": "US-EU",
+          "what_to_watch": "OFAC designations, EU sanctions lists, secondary sanctions threats",
+          "why_matters": "Sanctions are financial warfare — direct economic impact",
+          "sources": ["ofac.treas.gov", "eur-lex.europa.eu"],
+          "frequency": "daily",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "FINANCE-003",
+          "name": "Sanctions Evasion Detection",
+          "tier": 1,
+          "actor": "Russia-China-Iran",
+          "what_to_watch": "Shell company formations, alternative payment systems, crypto flows",
+          "why_matters": "Evasion routes show how targets adapt and survive sanctions",
+          "sources": ["reuters.com", "occrp.org", "bis.doc.gov"],
+          "frequency": "weekly",
+          "signal_type": "network_signal"
+        },
+        {
+          "id": "FINANCE-004",
+          "name": "De-dollarization Move",
+          "tier": 2,
+          "actor": "China-Russia-BRICS",
+          "what_to_watch": "Yuan internationalization, BRICS currency talks, SWIFT alternatives",
+          "why_matters": "Dollar dominance = US financial power — any erosion matters",
+          "sources": ["reuters.com", "ft.com", "imf.org"],
+          "frequency": "weekly",
+          "signal_type": "structural_shift"
+        },
+        {
+          "id": "FINANCE-005",
+          "name": "Crypto Regulatory Move",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "SEC crypto actions, PBOC digital yuan, EU MiCA implementation",
+          "why_matters": "Crypto regulation shapes how sanctions can be evaded or enforced",
+          "sources": ["sec.gov", "bis.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "FINANCE-006",
+          "name": "Oil Price Spike or Drop",
+          "tier": 1,
+          "actor": "OPEC-US-Russia",
+          "what_to_watch": "OPEC production decisions, US strategic reserve moves, Russia oil revenue",
+          "why_matters": "Oil price = inflation = political stability worldwide",
+          "sources": ["opec.org", "eia.gov", "reuters.com"],
+          "frequency": "daily",
+          "signal_type": "market_signal"
+        },
+        {
+          "id": "FINANCE-007",
+          "name": "Trade War Escalation",
+          "tier": 2,
+          "actor": "US-China-EU",
+          "what_to_watch": "New tariffs, trade restrictions, WTO disputes",
+          "why_matters": "Trade war = economic decoupling signal + inflation pressure",
+          "sources": ["ustr.gov", "wto.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "policy_signal"
+        }
+      ]
+    },
+
+    "MILITARY": {
+      "id": "MILITARY",
+      "name": "Military & Hard Power",
+      "actors": ["US", "China", "Russia", "NATO", "Regional powers"],
+      "indicators": [
+        {
+          "id": "MILITARY-001",
+          "name": "Large Scale Military Exercise",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "PLA exercises near Taiwan, NATO exercises near Russia, US Indo-Pacific drills",
+          "why_matters": "Exercises signal intent and test readiness — often precede escalation",
+          "sources": ["defense.gov", "nato.int", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "escalation_signal"
+        },
+        {
+          "id": "MILITARY-002",
+          "name": "Arms Sale Announcement",
+          "tier": 2,
+          "actor": "US-Russia-China",
+          "what_to_watch": "US arms sales to Taiwan, Japan, Ukraine — Russian and Chinese arms deals",
+          "why_matters": "Arms sales show alliance commitments and shift military balance",
+          "sources": ["dsca.mil", "sipri.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "alliance_health"
+        },
+        {
+          "id": "MILITARY-003",
+          "name": "Nuclear Posture Change",
+          "tier": 1,
+          "actor": "US-Russia-China",
+          "what_to_watch": "Nuclear doctrine updates, warhead count changes, delivery system tests",
+          "why_matters": "Nuclear posture shifts are the highest-stakes signals",
+          "sources": ["state.gov", "armscontrol.org", "reuters.com"],
+          "frequency": "monthly",
+          "signal_type": "escalation_signal"
+        },
+        {
+          "id": "MILITARY-004",
+          "name": "Active Conflict Intensity",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "Ukraine frontline changes, Middle East conflict levels, Asia flashpoints",
+          "why_matters": "Active conflicts draw in great powers and reshape alliances",
+          "sources": ["reuters.com", "bbc.com", "acleddata.com"],
+          "frequency": "daily",
+          "signal_type": "conflict_risk"
+        },
+        {
+          "id": "MILITARY-005",
+          "name": "Military Budget Announcement",
+          "tier": 3,
+          "actor": "Global",
+          "what_to_watch": "Defense budget increases — especially China, US, NATO members",
+          "why_matters": "Budget reveals long-term military intent",
+          "sources": ["sipri.org", "defense.gov", "reuters.com"],
+          "frequency": "monthly",
+          "signal_type": "capability_shift"
+        }
+      ]
+    },
+
+    "NARRATIVE": {
+      "id": "NARRATIVE",
+      "name": "Narrative & Information",
+      "actors": ["State media", "Social platforms", "Think tanks", "Intelligence services"],
+      "indicators": [
+        {
+          "id": "NARRATIVE-001",
+          "name": "State Media Tone Shift",
+          "tier": 1,
+          "actor": "China-Russia-US",
+          "what_to_watch": "Global Times, People's Daily, RT, VOA — sudden tone or framing changes",
+          "why_matters": "State media shifts signal policy changes before official announcements",
+          "sources": ["globaltimes.cn", "rt.com", "voanews.com"],
+          "frequency": "daily",
+          "signal_type": "language_shift"
+        },
+        {
+          "id": "NARRATIVE-002",
+          "name": "Coordinated Influence Operation",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "Detected bot networks, coordinated inauthentic behavior, platform takedowns",
+          "why_matters": "Influence ops precede or accompany physical operations",
+          "sources": ["dfrlab.org", "stanford.edu/internet-observatory", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "information_warfare"
+        },
+        {
+          "id": "NARRATIVE-003",
+          "name": "Disinformation Campaign Detection",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "Fact-checker findings, platform removals, false narrative spread patterns",
+          "why_matters": "Disinformation shapes public opinion before policy can respond",
+          "sources": ["bellingcat.com", "euvsdisinfo.eu", "poynter.org"],
+          "frequency": "weekly",
+          "signal_type": "information_warfare"
+        },
+        {
+          "id": "NARRATIVE-004",
+          "name": "Think Tank Consensus Shift",
+          "tier": 2,
+          "actor": "US-UK-China",
+          "what_to_watch": "RAND, CSIS, Brookings, IISS major papers — new framing of great power competition",
+          "why_matters": "Think tanks shape policy 6-18 months ahead",
+          "sources": ["rand.org", "csis.org", "brookings.edu", "iiss.org"],
+          "frequency": "weekly",
+          "signal_type": "policy_signal"
+        },
+        {
+          "id": "NARRATIVE-005",
+          "name": "Global Media Coverage Spike",
+          "tier": 3,
+          "actor": "Global",
+          "what_to_watch": "Sudden surge in coverage of specific topic across multiple outlets",
+          "why_matters": "Media spike = attention shift = political pressure building",
+          "sources": ["gdelt.org", "reuters.com", "ap.org"],
+          "frequency": "daily",
+          "signal_type": "attention_signal"
+        }
+      ]
+    },
+
+    "NETWORK": {
+      "id": "NETWORK",
+      "name": "Networks & Hidden Connections",
+      "actors": ["Alliances", "Proxies", "Think tanks", "Non-state actors"],
+      "indicators": [
+        {
+          "id": "NETWORK-001",
+          "name": "New Alliance Formation",
+          "tier": 1,
+          "actor": "Global",
+          "what_to_watch": "New security pacts, minilaterals (AUKUS, QUAD expansion), partnership upgrades",
+          "why_matters": "New alliances reshape balance of power",
+          "sources": ["reuters.com", "state.gov", "nato.int"],
+          "frequency": "weekly",
+          "signal_type": "structural_shift"
+        },
+        {
+          "id": "NETWORK-002",
+          "name": "Proxy Actor Activation",
+          "tier": 1,
+          "actor": "Iran-Russia-China proxies",
+          "what_to_watch": "Hezbollah, Houthis, Wagner-type groups — sudden activation or new funding",
+          "why_matters": "Proxy activation = state actor testing limits without direct involvement",
+          "sources": ["reuters.com", "longwarjournal.org", "acleddata.com"],
+          "frequency": "weekly",
+          "signal_type": "conflict_risk"
+        },
+        {
+          "id": "NETWORK-003",
+          "name": "Non-State Actor Movement",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "Major NGO position shifts, international court filings, civil society mobilization",
+          "why_matters": "Non-state actors shape norms and create political pressure",
+          "sources": ["icj-cij.org", "hrw.org", "amnesty.org"],
+          "frequency": "weekly",
+          "signal_type": "network_signal"
+        },
+        {
+          "id": "NETWORK-004",
+          "name": "Elite Personal Network Signal",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "Davos, Bilderberg, G7/G20 side meetings — who meets whom privately",
+          "why_matters": "Elite meetings precede policy announcements by weeks",
+          "sources": ["reuters.com", "ft.com", "bloomberg.com"],
+          "frequency": "monthly",
+          "signal_type": "network_signal"
+        },
+        {
+          "id": "NETWORK-005",
+          "name": "Hidden Financial Network Detection",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "Leaked documents, ICIJ investigations, shell company registrations",
+          "why_matters": "Hidden money flows reveal real alliances and intentions",
+          "sources": ["icij.org", "occrp.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "network_signal"
+        }
+      ]
+    },
+
+    "RESOURCE": {
+      "id": "RESOURCE",
+      "name": "Resources & Supply Chains",
+      "actors": ["OPEC", "China", "US", "Commodity markets"],
+      "indicators": [
+        {
+          "id": "RESOURCE-001",
+          "name": "Rare Earth Export Restriction",
+          "tier": 1,
+          "actor": "China",
+          "what_to_watch": "China rare earth export quotas, new restrictions on gallium, germanium, lithium",
+          "why_matters": "China controls 60-80% of rare earth processing — restrictions hit tech globally",
+          "sources": ["reuters.com", "mofcom.gov.cn", "ft.com"],
+          "frequency": "weekly",
+          "signal_type": "supply_chain_risk"
+        },
+        {
+          "id": "RESOURCE-002",
+          "name": "Energy Supply Disruption",
+          "tier": 1,
+          "actor": "Russia-OPEC-US",
+          "what_to_watch": "Pipeline disruptions, LNG supply changes, energy weaponization signals",
+          "why_matters": "Energy is the most direct lever of geopolitical pressure",
+          "sources": ["iea.org", "eia.gov", "reuters.com"],
+          "frequency": "daily",
+          "signal_type": "supply_chain_risk"
+        },
+        {
+          "id": "RESOURCE-003",
+          "name": "Food Security Signal",
+          "tier": 2,
+          "actor": "Global",
+          "what_to_watch": "Grain export restrictions, wheat and rice price spikes, drought reports",
+          "why_matters": "Food insecurity causes political instability within 6-12 months",
+          "sources": ["fao.org", "wfp.org", "reuters.com"],
+          "frequency": "weekly",
+          "signal_type": "stability_risk"
+        },
+        {
+          "id": "RESOURCE-004",
+          "name": "Supply Chain Rerouting",
+          "tier": 2,
+          "actor": "US-China-EU",
+          "what_to_watch": "Friend-shoring announcements, new manufacturing hub formations, port activity shifts",
+          "why_matters": "Supply chain rerouting = long-term economic realignment",
+          "sources": ["reuters.com", "ft.com", "worldbank.org"],
+          "frequency": "weekly",
+          "signal_type": "structural_shift"
+        },
+        {
+          "id": "RESOURCE-005",
+          "name": "Critical Mineral Competition",
+          "tier": 2,
+          "actor": "US-China-EU",
+          "what_to_watch": "Lithium, cobalt, nickel deals — who secures what mining rights where",
+          "why_matters": "Critical minerals = battery tech = EV and military supply chain control",
+          "sources": ["reuters.com", "mining.com", "iea.org"],
+          "frequency": "weekly",
+          "signal_type": "supply_chain_risk"
+        }
+      ]
+    }
+  }
+}
