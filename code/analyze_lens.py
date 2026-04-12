@@ -214,7 +214,6 @@ def fetch_recent_articles(supabase):
         .select("id, title, content, domain, source_id, collected_at, url") \
         .gte("collected_at", cutoff) \
         .order("collected_at", desc=True) \
-        .limit(MAX_ARTICLES) \
         .execute()
     all_articles = response.data or []
 
