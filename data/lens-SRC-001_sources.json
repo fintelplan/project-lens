@@ -440,6 +440,36 @@
       "tier": "TIER2",
       "layer": 1,
       "notes": "IEEE Spectrum — semiconductor engineering, AI hardware, critical infrastructure tech. TIER2: engineering specialist. Only source for semiconductor/chip-level intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-030",
+      "name": "Google News: IMF World Bank Economy",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22World+Bank%22+OR+%22debt+restructuring%22+OR+%22sovereign+debt%22",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — IMF, World Bank, debt restructuring, sovereign debt. Debt Trap intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-031",
+      "name": "Google News: Critical Minerals",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22critical+minerals%22+OR+%22rare+earth%22+OR+%22food+security%22+OR+%22water+scarcity%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — critical minerals, rare earth, food security, water scarcity. Physical reality intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-032",
+      "name": "Google News: IEA Energy Transition",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IEA%22+OR+%22energy+transition%22+OR+%22renewable+energy%22+OR+%22energy+poverty%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — IEA, energy transition, renewable energy, energy poverty. GCSP physical foundation intelligence. LR-014(E) compliant."
     }
   ]
 }
