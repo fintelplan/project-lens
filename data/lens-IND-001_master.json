@@ -12,19 +12,28 @@
       "tier_3": "Background — weekly review"
     }
   },
-
   "domains": {
-
     "POWER": {
       "id": "POWER",
       "name": "Power & Geopolitics",
       "actors": [
-        "US", "China", "Russia",
-        "NATO", "EU", "UK",
-        "India", "Japan", "South Korea", "Australia",
-        "ASEAN", "Middle East",
-        "Taiwan Strait", "Korean Peninsula",
-        "South China Sea", "Eastern Europe", "Arctic"
+        "US",
+        "China",
+        "Russia",
+        "NATO",
+        "EU",
+        "UK",
+        "India",
+        "Japan",
+        "South Korea",
+        "Australia",
+        "ASEAN",
+        "Middle East",
+        "Taiwan Strait",
+        "Korean Peninsula",
+        "South China Sea",
+        "Eastern Europe",
+        "Arctic"
       ],
       "indicators": [
         {
@@ -34,7 +43,10 @@
           "actor": "China",
           "what_to_watch": "MFA daily briefings and Xi Jinping speeches — tone toward US, Taiwan, and neighbors",
           "why_matters": "Tone hardening signals policy change 2-4 weeks ahead",
-          "sources": ["mfa.gov.cn", "xinhuanet.com"],
+          "sources": [
+            "mfa.gov.cn",
+            "xinhuanet.com"
+          ],
           "frequency": "daily",
           "signal_type": "language_shift"
         },
@@ -45,7 +57,11 @@
           "actor": "US",
           "what_to_watch": "White House, State Department, Pentagon official releases on China and Russia",
           "why_matters": "Policy signals before action — often 1-3 weeks ahead",
-          "sources": ["whitehouse.gov", "state.gov", "defense.gov"],
+          "sources": [
+            "whitehouse.gov",
+            "state.gov",
+            "defense.gov"
+          ],
           "frequency": "daily",
           "signal_type": "policy_signal"
         },
@@ -56,7 +72,10 @@
           "actor": "Russia",
           "what_to_watch": "Kremlin and MFA Russia statements on NATO, Ukraine, and nuclear posture",
           "why_matters": "Escalation language precedes military moves",
-          "sources": ["kremlin.ru", "mid.ru"],
+          "sources": [
+            "kremlin.ru",
+            "mid.ru"
+          ],
           "frequency": "daily",
           "signal_type": "escalation_signal"
         },
@@ -67,7 +86,9 @@
           "actor": "NATO",
           "what_to_watch": "Joint statements, summit outcomes, member disagreements",
           "why_matters": "Cracks in NATO unity = opportunity signal for adversaries",
-          "sources": ["nato.int"],
+          "sources": [
+            "nato.int"
+          ],
           "frequency": "weekly",
           "signal_type": "alliance_health"
         },
@@ -78,7 +99,10 @@
           "actor": "EU",
           "what_to_watch": "EU Council decisions on sanctions, trade, and geopolitical positioning",
           "why_matters": "EU economic weight makes its moves market-moving",
-          "sources": ["consilium.europa.eu", "ec.europa.eu"],
+          "sources": [
+            "consilium.europa.eu",
+            "ec.europa.eu"
+          ],
           "frequency": "weekly",
           "signal_type": "policy_signal"
         },
@@ -89,7 +113,10 @@
           "actor": "India",
           "what_to_watch": "India-China, India-US, India-Russia relations — hedging behavior",
           "why_matters": "India as swing power — which side it leans matters globally",
-          "sources": ["mea.gov.in", "thehindu.com"],
+          "sources": [
+            "mea.gov.in",
+            "thehindu.com"
+          ],
           "frequency": "weekly",
           "signal_type": "alignment_shift"
         },
@@ -100,7 +127,11 @@
           "actor": "China-Taiwan-US",
           "what_to_watch": "PLA military activity near Taiwan, US arms sales, diplomatic statements",
           "why_matters": "Taiwan is the highest-risk flashpoint globally",
-          "sources": ["defense.gov", "mnd.gov.tw", "reuters.com"],
+          "sources": [
+            "defense.gov",
+            "mnd.gov.tw",
+            "reuters.com"
+          ],
           "frequency": "daily",
           "signal_type": "conflict_risk"
         },
@@ -111,7 +142,11 @@
           "actor": "China-ASEAN-US",
           "what_to_watch": "Naval incidents, island construction, ASEAN protests, US FON operations",
           "why_matters": "Escalation here affects global shipping and ASEAN stability",
-          "sources": ["csis.org", "reuters.com", "ap.org"],
+          "sources": [
+            "csis.org",
+            "reuters.com",
+            "ap.org"
+          ],
           "frequency": "weekly",
           "signal_type": "conflict_risk"
         },
@@ -122,7 +157,11 @@
           "actor": "Middle East",
           "what_to_watch": "Iran nuclear talks, Saudi-Israel normalization, proxy conflict levels",
           "why_matters": "Middle East instability directly affects oil and global inflation",
-          "sources": ["reuters.com", "al-monitor.com", "state.gov"],
+          "sources": [
+            "reuters.com",
+            "al-monitor.com",
+            "state.gov"
+          ],
           "frequency": "weekly",
           "signal_type": "regional_stability"
         },
@@ -133,7 +172,10 @@
           "actor": "ASEAN",
           "what_to_watch": "ASEAN summit outcomes, member hedging between US and China",
           "why_matters": "ASEAN alignment shows which power is winning in Southeast Asia",
-          "sources": ["asean.org", "reuters.com"],
+          "sources": [
+            "asean.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "alignment_shift"
         },
@@ -144,7 +186,10 @@
           "actor": "Japan-South Korea",
           "what_to_watch": "Trilateral US-Japan-South Korea cooperation, North Korea response",
           "why_matters": "Northeast Asia security directly tied to US-China competition",
-          "sources": ["mofa.go.jp", "mofa.go.kr"],
+          "sources": [
+            "mofa.go.jp",
+            "mofa.go.kr"
+          ],
           "frequency": "weekly",
           "signal_type": "alliance_health"
         },
@@ -155,17 +200,137 @@
           "actor": "Australia",
           "what_to_watch": "AUKUS developments, Australia-China trade, Five Eyes signals",
           "why_matters": "Australia is key US ally in Indo-Pacific balance",
-          "sources": ["dfat.gov.au", "reuters.com"],
+          "sources": [
+            "dfat.gov.au",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "alliance_health"
+        },
+        {
+          "id": "POWER-013",
+          "name": "Coup or Attempted Coup",
+          "what_to_watch": [
+            "coup",
+            "military takeover",
+            "junta",
+            "seized power",
+            "overthrow government",
+            "unconstitutional transfer"
+          ],
+          "phi002_significance": "Sovereignty theft from the people — elected government replaced by force",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-014",
+          "name": "Emergency Powers Declaration",
+          "what_to_watch": [
+            "state of emergency",
+            "emergency powers",
+            "martial law",
+            "emergency decree",
+            "suspend constitution",
+            "suspend parliament"
+          ],
+          "phi002_significance": "Temporary sovereignty transfer that never ends — classic GCSP blocker",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-015",
+          "name": "Election Manipulation Signal",
+          "what_to_watch": [
+            "election fraud",
+            "voter suppression",
+            "electoral manipulation",
+            "ballot stuffing",
+            "election interference",
+            "vote rigging"
+          ],
+          "phi002_significance": "Pseudo-democracy — pretends to serve the people while manufacturing consent",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-016",
+          "name": "Diplomatic Expulsion",
+          "what_to_watch": [
+            "expelled ambassador",
+            "persona non grata",
+            "diplomatic expulsion",
+            "recalled ambassador",
+            "severed diplomatic ties",
+            "closed embassy"
+          ],
+          "phi002_significance": "Sovereignty signal — breakdown in state relationships affecting people",
+          "tier": "STATE"
+        },
+        {
+          "id": "POWER-017",
+          "name": "Debt Trap Sovereignty Extraction",
+          "what_to_watch": [
+            "port concession",
+            "debt for equity",
+            "infrastructure seized",
+            "asset transfer debt",
+            "loan default sovereign",
+            "debt restructuring conditions"
+          ],
+          "phi002_significance": "Direct+Active debt trap — sovereignty theft through finance",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-018",
+          "name": "Foreign Military Base Negotiation",
+          "what_to_watch": [
+            "military base agreement",
+            "base rights",
+            "basing agreement",
+            "military presence agreement",
+            "status of forces",
+            "overseas base"
+          ],
+          "phi002_significance": "Indirect+Active debt trap — sovereignty traded for security guarantees",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-019",
+          "name": "International Court or Tribunal Action",
+          "what_to_watch": [
+            "ICC indictment",
+            "international court",
+            "war crimes tribunal",
+            "ICJ ruling",
+            "international criminal court",
+            "arrest warrant issued"
+          ],
+          "phi002_significance": "Accountability signal — law-governed society vs impunity",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-020",
+          "name": "Targeted Assassination or Political Killing",
+          "what_to_watch": [
+            "assassination",
+            "political killing",
+            "targeted killing",
+            "opposition leader killed",
+            "journalist killed",
+            "activist murdered"
+          ],
+          "phi002_significance": "Sovereignty theft through elimination — blocking people from growing freely",
+          "tier": "TIER1"
         }
       ]
     },
-
     "TECH": {
       "id": "TECH",
       "name": "Technology & Innovation",
-      "actors": ["US", "China", "EU", "Big Tech", "Research institutions"],
+      "actors": [
+        "US",
+        "China",
+        "EU",
+        "Big Tech",
+        "Research institutions"
+      ],
       "indicators": [
         {
           "id": "TECH-001",
@@ -174,7 +339,11 @@
           "actor": "Global",
           "what_to_watch": "New AI model releases, benchmark scores, capability jumps from OpenAI, Google, Anthropic, Chinese labs",
           "why_matters": "AI capability shifts change military, economic, and intelligence balance",
-          "sources": ["arxiv.org", "openai.com", "deepmind.com"],
+          "sources": [
+            "arxiv.org",
+            "openai.com",
+            "deepmind.com"
+          ],
           "frequency": "weekly",
           "signal_type": "capability_shift"
         },
@@ -185,7 +354,11 @@
           "actor": "US-China",
           "what_to_watch": "US BIS export control updates, chip restrictions on China, Dutch ASML decisions",
           "why_matters": "Chip restrictions are the frontline of US-China tech war",
-          "sources": ["bis.doc.gov", "reuters.com", "ft.com"],
+          "sources": [
+            "bis.doc.gov",
+            "reuters.com",
+            "ft.com"
+          ],
           "frequency": "weekly",
           "signal_type": "policy_signal"
         },
@@ -196,7 +369,11 @@
           "actor": "US-China",
           "what_to_watch": "Government quantum funding, breakthrough papers, qubit count records",
           "why_matters": "Quantum breakthrough breaks current encryption — civilization-level event",
-          "sources": ["arxiv.org", "nature.com", "quantamagazine.org"],
+          "sources": [
+            "arxiv.org",
+            "nature.com",
+            "quantamagazine.org"
+          ],
           "frequency": "weekly",
           "signal_type": "capability_shift"
         },
@@ -207,7 +384,11 @@
           "actor": "Global",
           "what_to_watch": "State-attributed cyber attacks on infrastructure, government, finance",
           "why_matters": "Cyber attacks are precursor to or substitute for kinetic conflict",
-          "sources": ["cisa.gov", "ncsc.gov.uk", "reuters.com"],
+          "sources": [
+            "cisa.gov",
+            "ncsc.gov.uk",
+            "reuters.com"
+          ],
           "frequency": "daily",
           "signal_type": "conflict_risk"
         },
@@ -218,7 +399,11 @@
           "actor": "US-China-Russia",
           "what_to_watch": "Satellite launches, anti-satellite tests, space militarization signals",
           "why_matters": "Space dominance = intelligence, GPS, and military communication dominance",
-          "sources": ["nasa.gov", "spaceforce.mil", "reuters.com"],
+          "sources": [
+            "nasa.gov",
+            "spaceforce.mil",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "capability_shift"
         },
@@ -229,7 +414,11 @@
           "actor": "US-China",
           "what_to_watch": "Pentagon AI programs, Chinese PLA AI announcements, autonomous weapons",
           "why_matters": "AI in military changes speed and nature of conflict",
-          "sources": ["defense.gov", "cnas.org", "reuters.com"],
+          "sources": [
+            "defense.gov",
+            "cnas.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "capability_shift"
         },
@@ -240,17 +429,180 @@
           "actor": "US-China",
           "what_to_watch": "Supply chain bifurcation, friend-shoring announcements, tech standard battles",
           "why_matters": "Decoupling reshapes global economy into two tech blocs",
-          "sources": ["reuters.com", "ft.com", "wsj.com"],
+          "sources": [
+            "reuters.com",
+            "ft.com",
+            "wsj.com"
+          ],
           "frequency": "weekly",
           "signal_type": "structural_shift"
+        },
+        {
+          "id": "TECH-008",
+          "name": "Surveillance Infrastructure Deployment",
+          "what_to_watch": [
+            "mass surveillance",
+            "facial recognition deployment",
+            "surveillance cameras",
+            "biometric surveillance",
+            "CCTV expansion",
+            "population monitoring"
+          ],
+          "phi002_significance": "Rights contraction — surveillance apparatus blocks free thought and movement",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-009",
+          "name": "Internet Shutdown or Throttling",
+          "what_to_watch": [
+            "internet shutdown",
+            "internet blackout",
+            "throttled internet",
+            "social media blocked",
+            "VPN ban",
+            "internet restriction"
+          ],
+          "phi002_significance": "Critical GCSP blocker — cuts access to education, communication, freedom",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-010",
+          "name": "Cyber Attack on Critical Infrastructure",
+          "what_to_watch": [
+            "cyberattack infrastructure",
+            "critical infrastructure hack",
+            "power grid attack",
+            "water system hack",
+            "hospital cyberattack",
+            "ransomware critical"
+          ],
+          "phi002_significance": "Physical reality attack through cyber — disrupts people's material foundation",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-011",
+          "name": "AI Regulation or Weapons Development",
+          "what_to_watch": [
+            "AI regulation",
+            "artificial intelligence ban",
+            "autonomous weapons",
+            "lethal autonomous",
+            "AI governance",
+            "AI weapons system"
+          ],
+          "phi002_significance": "TECH+POWER cross-talk — who controls AI controls future sovereignty",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TECH-012",
+          "name": "Digital Rights Restriction",
+          "what_to_watch": [
+            "digital rights",
+            "online censorship",
+            "content moderation law",
+            "social media law",
+            "platform ban",
+            "digital authoritarianism"
+          ],
+          "phi002_significance": "EFF territory — rights contraction planned through tech policy",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-013",
+          "name": "Encryption or Privacy Law Change",
+          "what_to_watch": [
+            "encryption backdoor",
+            "end-to-end encryption ban",
+            "privacy law",
+            "data privacy",
+            "surveillance law",
+            "lawful access"
+          ],
+          "phi002_significance": "Indirect sovereignty theft — state access to private communication",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-014",
+          "name": "Semiconductor or Chip Export Control",
+          "what_to_watch": [
+            "chip ban",
+            "semiconductor restriction",
+            "export control chip",
+            "GPU ban",
+            "chip export license",
+            "semiconductor sanctions"
+          ],
+          "phi002_significance": "TECH+POWER cross-talk — technology as geopolitical weapon",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TECH-015",
+          "name": "Critical Tech Supply Chain Event",
+          "what_to_watch": [
+            "supply chain disruption tech",
+            "rare earth tech",
+            "chip shortage",
+            "technology decoupling",
+            "tech supply chain",
+            "critical technology"
+          ],
+          "phi002_significance": "Physical reality — who controls tech supply chains controls futures",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TECH-016",
+          "name": "Space Militarization Signal",
+          "what_to_watch": [
+            "space weapon",
+            "anti-satellite",
+            "ASAT test",
+            "space force",
+            "satellite weapon",
+            "space militarization"
+          ],
+          "phi002_significance": "New sovereignty frontier — space as next theater of rights contraction",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TECH-017",
+          "name": "Disinformation Technology Deployment",
+          "what_to_watch": [
+            "deepfake",
+            "AI-generated propaganda",
+            "synthetic media",
+            "information warfare tech",
+            "bot network",
+            "automated disinformation"
+          ],
+          "phi002_significance": "TECH+NARRATIVE cross-talk — technology used to manufacture division",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-018",
+          "name": "Satellite Imagery or Intelligence Restriction",
+          "what_to_watch": [
+            "satellite imagery ban",
+            "remote sensing restriction",
+            "satellite access denied",
+            "imagery blackout",
+            "Planet Labs",
+            "commercial satellite restricted"
+          ],
+          "phi002_significance": "Information suppression — hiding ground truth from people",
+          "tier": "TIER1"
         }
       ]
     },
-
     "FINANCE": {
       "id": "FINANCE",
       "name": "Finance & Economic Warfare",
-      "actors": ["US Fed", "China PBOC", "IMF", "World Bank", "Crypto markets"],
+      "actors": [
+        "US Fed",
+        "China PBOC",
+        "IMF",
+        "World Bank",
+        "Crypto markets"
+      ],
       "indicators": [
         {
           "id": "FINANCE-001",
@@ -259,7 +611,10 @@
           "actor": "US Fed",
           "what_to_watch": "Fed rate decisions, chair speeches, FOMC minutes",
           "why_matters": "Fed moves ripple through every global market within hours",
-          "sources": ["federalreserve.gov", "reuters.com"],
+          "sources": [
+            "federalreserve.gov",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "market_signal"
         },
@@ -270,7 +625,10 @@
           "actor": "US-EU",
           "what_to_watch": "OFAC designations, EU sanctions lists, secondary sanctions threats",
           "why_matters": "Sanctions are financial warfare — direct economic impact",
-          "sources": ["ofac.treas.gov", "eur-lex.europa.eu"],
+          "sources": [
+            "ofac.treas.gov",
+            "eur-lex.europa.eu"
+          ],
           "frequency": "daily",
           "signal_type": "policy_signal"
         },
@@ -281,7 +639,11 @@
           "actor": "Russia-China-Iran",
           "what_to_watch": "Shell company formations, alternative payment systems, crypto flows",
           "why_matters": "Evasion routes show how targets adapt and survive sanctions",
-          "sources": ["reuters.com", "occrp.org", "bis.doc.gov"],
+          "sources": [
+            "reuters.com",
+            "occrp.org",
+            "bis.doc.gov"
+          ],
           "frequency": "weekly",
           "signal_type": "network_signal"
         },
@@ -292,7 +654,11 @@
           "actor": "China-Russia-BRICS",
           "what_to_watch": "Yuan internationalization, BRICS currency talks, SWIFT alternatives",
           "why_matters": "Dollar dominance = US financial power — any erosion matters",
-          "sources": ["reuters.com", "ft.com", "imf.org"],
+          "sources": [
+            "reuters.com",
+            "ft.com",
+            "imf.org"
+          ],
           "frequency": "weekly",
           "signal_type": "structural_shift"
         },
@@ -303,7 +669,11 @@
           "actor": "Global",
           "what_to_watch": "SEC crypto actions, PBOC digital yuan, EU MiCA implementation",
           "why_matters": "Crypto regulation shapes how sanctions can be evaded or enforced",
-          "sources": ["sec.gov", "bis.org", "reuters.com"],
+          "sources": [
+            "sec.gov",
+            "bis.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "policy_signal"
         },
@@ -314,7 +684,11 @@
           "actor": "OPEC-US-Russia",
           "what_to_watch": "OPEC production decisions, US strategic reserve moves, Russia oil revenue",
           "why_matters": "Oil price = inflation = political stability worldwide",
-          "sources": ["opec.org", "eia.gov", "reuters.com"],
+          "sources": [
+            "opec.org",
+            "eia.gov",
+            "reuters.com"
+          ],
           "frequency": "daily",
           "signal_type": "market_signal"
         },
@@ -325,17 +699,183 @@
           "actor": "US-China-EU",
           "what_to_watch": "New tariffs, trade restrictions, WTO disputes",
           "why_matters": "Trade war = economic decoupling signal + inflation pressure",
-          "sources": ["ustr.gov", "wto.org", "reuters.com"],
+          "sources": [
+            "ustr.gov",
+            "wto.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "policy_signal"
+        },
+        {
+          "id": "FINANCE-008",
+          "name": "IMF or World Bank Conditionality",
+          "what_to_watch": [
+            "IMF conditions",
+            "World Bank conditions",
+            "structural adjustment",
+            "austerity conditions",
+            "IMF program",
+            "conditionality",
+            "privatization requirement"
+          ],
+          "phi002_significance": "Direct+Passive debt trap — development loans that develop the lender",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-009",
+          "name": "Sovereign Debt Default Risk",
+          "what_to_watch": [
+            "sovereign default",
+            "debt default",
+            "debt crisis",
+            "debt restructuring",
+            "bond yield crisis",
+            "debt unsustainable",
+            "IMF bailout"
+          ],
+          "phi002_significance": "Indirect+Passive debt trap — systemic architecture trapping nations",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-010",
+          "name": "Currency Devaluation or Crisis",
+          "what_to_watch": [
+            "currency devaluation",
+            "currency crisis",
+            "exchange rate collapse",
+            "hyperinflation",
+            "currency depreciation",
+            "dollar peg break"
+          ],
+          "phi002_significance": "Physical reality — currency collapse destroys people's material foundation",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-011",
+          "name": "Financial Warfare Signal",
+          "what_to_watch": [
+            "SWIFT exclusion",
+            "financial weapon",
+            "dollar weaponization",
+            "financial warfare",
+            "reserve currency threat",
+            "SWIFT ban"
+          ],
+          "phi002_significance": "Indirect+Active debt trap — using financial system as geopolitical lever",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-012",
+          "name": "Capital Flight or Oligarch Asset Movement",
+          "what_to_watch": [
+            "capital flight",
+            "oligarch assets",
+            "wealth flight",
+            "offshore transfer",
+            "asset relocation",
+            "billionaire exodus"
+          ],
+          "phi002_significance": "NETWORK+FINANCE cross-talk — elites extracting before crisis hits people",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-013",
+          "name": "Asset Seizure or Confiscation",
+          "what_to_watch": [
+            "asset seizure",
+            "asset confiscation",
+            "frozen assets",
+            "seized assets",
+            "asset forfeiture",
+            "property confiscated"
+          ],
+          "phi002_significance": "Cui Bono — who benefits from the seizure? Who loses sovereignty?",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-014",
+          "name": "Crypto Sanctions Evasion or Regulation",
+          "what_to_watch": [
+            "cryptocurrency sanctions",
+            "crypto regulation",
+            "bitcoin sanctions",
+            "crypto ban",
+            "USDT sanctions",
+            "stablecoin regulation",
+            "crypto dark money"
+          ],
+          "phi002_significance": "NETWORK+FINANCE cross-talk — new financial dark zones opening or closing",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-015",
+          "name": "Austerity Policy Implementation",
+          "what_to_watch": [
+            "austerity measures",
+            "public spending cuts",
+            "welfare cuts",
+            "budget cuts education",
+            "health budget cuts",
+            "subsidy removal"
+          ],
+          "phi002_significance": "Critical GCSP blocker — cutting education/healthcare = blocking human maturity",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-016",
+          "name": "Illicit Financial Flow Detection",
+          "what_to_watch": [
+            "illicit financial flows",
+            "money laundering detected",
+            "financial crime network",
+            "FATF",
+            "tax haven exposure",
+            "financial investigation"
+          ],
+          "phi002_significance": "NETWORK+FINANCE cross-talk — dark money enabling power without accountability",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-017",
+          "name": "Trade War or Economic Coercion",
+          "what_to_watch": [
+            "trade war",
+            "economic coercion",
+            "tariff retaliation",
+            "trade sanctions",
+            "import ban",
+            "export restriction"
+          ],
+          "phi002_significance": "Indirect+Active debt trap — economic pressure as sovereignty lever",
+          "tier": "STATE"
+        },
+        {
+          "id": "FINANCE-018",
+          "name": "Development Finance Trap Signal",
+          "what_to_watch": [
+            "Belt and Road",
+            "Chinese loan",
+            "infrastructure loan terms",
+            "loan default infrastructure",
+            "debt diplomacy",
+            "predatory lending"
+          ],
+          "phi002_significance": "Direct+Active debt trap — Belt and Road sovereignty extraction pattern",
+          "tier": "TIER1"
         }
       ]
     },
-
     "MILITARY": {
       "id": "MILITARY",
       "name": "Military & Hard Power",
-      "actors": ["US", "China", "Russia", "NATO", "Regional powers"],
+      "actors": [
+        "US",
+        "China",
+        "Russia",
+        "NATO",
+        "Regional powers"
+      ],
       "indicators": [
         {
           "id": "MILITARY-001",
@@ -344,7 +884,11 @@
           "actor": "Global",
           "what_to_watch": "PLA exercises near Taiwan, NATO exercises near Russia, US Indo-Pacific drills",
           "why_matters": "Exercises signal intent and test readiness — often precede escalation",
-          "sources": ["defense.gov", "nato.int", "reuters.com"],
+          "sources": [
+            "defense.gov",
+            "nato.int",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "escalation_signal"
         },
@@ -355,7 +899,11 @@
           "actor": "US-Russia-China",
           "what_to_watch": "US arms sales to Taiwan, Japan, Ukraine — Russian and Chinese arms deals",
           "why_matters": "Arms sales show alliance commitments and shift military balance",
-          "sources": ["dsca.mil", "sipri.org", "reuters.com"],
+          "sources": [
+            "dsca.mil",
+            "sipri.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "alliance_health"
         },
@@ -366,7 +914,11 @@
           "actor": "US-Russia-China",
           "what_to_watch": "Nuclear doctrine updates, warhead count changes, delivery system tests",
           "why_matters": "Nuclear posture shifts are the highest-stakes signals",
-          "sources": ["state.gov", "armscontrol.org", "reuters.com"],
+          "sources": [
+            "state.gov",
+            "armscontrol.org",
+            "reuters.com"
+          ],
           "frequency": "monthly",
           "signal_type": "escalation_signal"
         },
@@ -377,7 +929,11 @@
           "actor": "Global",
           "what_to_watch": "Ukraine frontline changes, Middle East conflict levels, Asia flashpoints",
           "why_matters": "Active conflicts draw in great powers and reshape alliances",
-          "sources": ["reuters.com", "bbc.com", "acleddata.com"],
+          "sources": [
+            "reuters.com",
+            "bbc.com",
+            "acleddata.com"
+          ],
           "frequency": "daily",
           "signal_type": "conflict_risk"
         },
@@ -388,17 +944,187 @@
           "actor": "Global",
           "what_to_watch": "Defense budget increases — especially China, US, NATO members",
           "why_matters": "Budget reveals long-term military intent",
-          "sources": ["sipri.org", "defense.gov", "reuters.com"],
+          "sources": [
+            "sipri.org",
+            "defense.gov",
+            "reuters.com"
+          ],
           "frequency": "monthly",
           "signal_type": "capability_shift"
+        },
+        {
+          "id": "MILITARY-006",
+          "name": "Troop Deployment to Foreign Soil",
+          "what_to_watch": [
+            "troops deployed",
+            "military deployment",
+            "soldiers sent",
+            "boots on ground",
+            "foreign military deployment",
+            "expeditionary force"
+          ],
+          "phi002_significance": "Sovereignty signal — whose military is where tells us who controls territory",
+          "tier": "STATE"
+        },
+        {
+          "id": "MILITARY-007",
+          "name": "Naval Chokepoint Activity",
+          "what_to_watch": [
+            "Strait of Hormuz",
+            "South China Sea",
+            "Red Sea",
+            "Bab el-Mandeb",
+            "Taiwan Strait",
+            "naval blockade",
+            "chokepoint",
+            "Malacca Strait"
+          ],
+          "phi002_significance": "Physical reality — chokepoints control energy and trade for millions",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-008",
+          "name": "Nuclear Posture Signal",
+          "what_to_watch": [
+            "nuclear warning",
+            "nuclear threat",
+            "nuclear readiness",
+            "nuclear weapon",
+            "nuclear posture",
+            "first strike",
+            "nuclear escalation"
+          ],
+          "phi002_significance": "Existential GCSP threat — nuclear signals affect all human futures",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-009",
+          "name": "Ceasefire Violation or Collapse",
+          "what_to_watch": [
+            "ceasefire violation",
+            "ceasefire collapsed",
+            "truce broken",
+            "ceasefire failed",
+            "peace deal collapsed",
+            "resuming hostilities"
+          ],
+          "phi002_significance": "People's sovereignty signal — peace agreements broken affect civilians most",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-010",
+          "name": "Proxy War Escalation",
+          "what_to_watch": [
+            "proxy war",
+            "proxy forces",
+            "militia backed by",
+            "supported armed group",
+            "proxy escalation",
+            "armed proxy"
+          ],
+          "phi002_significance": "Sovereignty theft through proxies — people fight other nations' wars",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-011",
+          "name": "Mercenary or Private Military Force",
+          "what_to_watch": [
+            "mercenary",
+            "Wagner Group",
+            "private military",
+            "PMC",
+            "private contractor military",
+            "hired fighters"
+          ],
+          "phi002_significance": "Sovereignty signal — unaccountable military force outside democratic control",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-012",
+          "name": "Siege or Blockade Implementation",
+          "what_to_watch": [
+            "siege",
+            "blockade",
+            "encirclement",
+            "cut off supplies",
+            "humanitarian corridor",
+            "blocked access",
+            "surrounded"
+          ],
+          "phi002_significance": "Direct physical GCSP blocker — people's access to food/medicine cut",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-013",
+          "name": "Drone Strike or Targeted Strike Campaign",
+          "what_to_watch": [
+            "drone strike",
+            "targeted strike",
+            "airstrike",
+            "air campaign",
+            "precision strike",
+            "missile strike",
+            "drone warfare"
+          ],
+          "phi002_significance": "Physical reality — targeted killing outside declared war zones",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-014",
+          "name": "Weapons Transfer or Arms Deal",
+          "what_to_watch": [
+            "weapons transfer",
+            "arms deal",
+            "military aid",
+            "weapon supply",
+            "defense package",
+            "arms embargo",
+            "military equipment"
+          ],
+          "phi002_significance": "Cui Bono — who benefits from arming which side of which conflict",
+          "tier": "STATE"
+        },
+        {
+          "id": "MILITARY-015",
+          "name": "Ethnic or Civilian Targeting Allegation",
+          "what_to_watch": [
+            "civilian casualties",
+            "ethnic cleansing",
+            "genocide allegation",
+            "war crimes",
+            "civilian targeting",
+            "indiscriminate bombing",
+            "humanitarian law violation"
+          ],
+          "phi002_significance": "Direct GCSP destruction — people blocked from growing by being killed",
+          "tier": "TIER1"
+        },
+        {
+          "id": "MILITARY-016",
+          "name": "Military Alliance Activation or Shift",
+          "what_to_watch": [
+            "NATO activation",
+            "defense treaty",
+            "mutual defense",
+            "Article 5",
+            "military alliance",
+            "defense pact activated",
+            "security guarantee"
+          ],
+          "phi002_significance": "Sovereignty signal — alliances redrawn change who protects whom",
+          "tier": "TIER1"
         }
       ]
     },
-
     "NARRATIVE": {
       "id": "NARRATIVE",
       "name": "Narrative & Information",
-      "actors": ["State media", "Social platforms", "Think tanks", "Intelligence services"],
+      "actors": [
+        "State media",
+        "Social platforms",
+        "Think tanks",
+        "Intelligence services"
+      ],
       "indicators": [
         {
           "id": "NARRATIVE-001",
@@ -407,7 +1133,11 @@
           "actor": "China-Russia-US",
           "what_to_watch": "Global Times, People's Daily, RT, VOA — sudden tone or framing changes",
           "why_matters": "State media shifts signal policy changes before official announcements",
-          "sources": ["globaltimes.cn", "rt.com", "voanews.com"],
+          "sources": [
+            "globaltimes.cn",
+            "rt.com",
+            "voanews.com"
+          ],
           "frequency": "daily",
           "signal_type": "language_shift"
         },
@@ -418,7 +1148,11 @@
           "actor": "Global",
           "what_to_watch": "Detected bot networks, coordinated inauthentic behavior, platform takedowns",
           "why_matters": "Influence ops precede or accompany physical operations",
-          "sources": ["dfrlab.org", "stanford.edu/internet-observatory", "reuters.com"],
+          "sources": [
+            "dfrlab.org",
+            "stanford.edu/internet-observatory",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "information_warfare"
         },
@@ -429,7 +1163,11 @@
           "actor": "Global",
           "what_to_watch": "Fact-checker findings, platform removals, false narrative spread patterns",
           "why_matters": "Disinformation shapes public opinion before policy can respond",
-          "sources": ["bellingcat.com", "euvsdisinfo.eu", "poynter.org"],
+          "sources": [
+            "bellingcat.com",
+            "euvsdisinfo.eu",
+            "poynter.org"
+          ],
           "frequency": "weekly",
           "signal_type": "information_warfare"
         },
@@ -440,7 +1178,12 @@
           "actor": "US-UK-China",
           "what_to_watch": "RAND, CSIS, Brookings, IISS major papers — new framing of great power competition",
           "why_matters": "Think tanks shape policy 6-18 months ahead",
-          "sources": ["rand.org", "csis.org", "brookings.edu", "iiss.org"],
+          "sources": [
+            "rand.org",
+            "csis.org",
+            "brookings.edu",
+            "iiss.org"
+          ],
           "frequency": "weekly",
           "signal_type": "policy_signal"
         },
@@ -451,17 +1194,180 @@
           "actor": "Global",
           "what_to_watch": "Sudden surge in coverage of specific topic across multiple outlets",
           "why_matters": "Media spike = attention shift = political pressure building",
-          "sources": ["gdelt.org", "reuters.com", "ap.org"],
+          "sources": [
+            "gdelt.org",
+            "reuters.com",
+            "ap.org"
+          ],
           "frequency": "daily",
           "signal_type": "attention_signal"
+        },
+        {
+          "id": "NARRATIVE-006",
+          "name": "Sectarian Violence Incitement",
+          "what_to_watch": [
+            "sectarian violence",
+            "religious violence incitement",
+            "ethnic hatred",
+            "communal violence",
+            "religious persecution",
+            "minority targeted"
+          ],
+          "phi002_significance": "Sectarian Trap — manufactured division blocks people from collective growth",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-007",
+          "name": "Historical Revisionism Campaign",
+          "what_to_watch": [
+            "historical revisionism",
+            "rewrite history",
+            "deny genocide",
+            "glorify atrocity",
+            "colonial revisionism",
+            "war crimes denial"
+          ],
+          "phi002_significance": "PHI-002 attack — erasing historical truth blocks society from learning",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NARRATIVE-008",
+          "name": "Opposition Delegitimization Campaign",
+          "what_to_watch": [
+            "opposition arrested",
+            "opposition banned",
+            "dissident labeled",
+            "protest criminalized",
+            "opposition terrorist",
+            "dissent suppressed"
+          ],
+          "phi002_significance": "Pseudo-democracy — eliminating opposition while claiming to serve people",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-009",
+          "name": "Refugee or Migrant Crisis Narrative",
+          "what_to_watch": [
+            "refugee crisis",
+            "migrant weaponization",
+            "migration as weapon",
+            "refugee flood",
+            "border crisis",
+            "displacement crisis"
+          ],
+          "phi002_significance": "NARRATIVE+RESOURCE cross-talk — displacement used to manufacture fear",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-010",
+          "name": "Media Freedom Crackdown",
+          "what_to_watch": [
+            "journalist arrested",
+            "press freedom",
+            "media ban",
+            "newspaper shut",
+            "journalist killed",
+            "censorship media",
+            "media crackdown"
+          ],
+          "phi002_significance": "Education for growth blocked — free press is GCSP infrastructure",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-011",
+          "name": "Nationalist Mobilization Signal",
+          "what_to_watch": [
+            "nationalist rally",
+            "ultranationalism",
+            "national pride campaign",
+            "ethnic nationalism",
+            "irredentism",
+            "nationalist movement"
+          ],
+          "phi002_significance": "NARRATIVE+POWER cross-talk — nationalism manufactured to justify expansion",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NARRATIVE-012",
+          "name": "Economic Scapegoating Campaign",
+          "what_to_watch": [
+            "scapegoat minority",
+            "blame immigrants economy",
+            "foreign agents",
+            "economic sabotage",
+            "fifth column",
+            "economic enemy"
+          ],
+          "phi002_significance": "Sectarian Trap — economic frustration redirected toward division not change",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NARRATIVE-013",
+          "name": "False Flag or Staged Incident Signal",
+          "what_to_watch": [
+            "false flag",
+            "staged incident",
+            "provocation manufactured",
+            "pretext for war",
+            "incident fabricated",
+            "casus belli"
+          ],
+          "phi002_significance": "Deception detection — pretense used to justify rights contraction",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-014",
+          "name": "Religious Extremism Amplification",
+          "what_to_watch": [
+            "religious extremism",
+            "jihadist recruitment",
+            "extremist narrative",
+            "radicalization signal",
+            "fundamentalist movement",
+            "sectarian mobilization"
+          ],
+          "phi002_significance": "Traditions weaponized to suppress fundamental rights",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-015",
+          "name": "Far-Right or Far-Left Extremist Rise",
+          "what_to_watch": [
+            "far-right election",
+            "extremist party",
+            "radical manifesto",
+            "extremist movement",
+            "white nationalism",
+            "fascist movement"
+          ],
+          "phi002_significance": "Democratic erosion signal — extremes normalize rights contraction",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NARRATIVE-016",
+          "name": "Disinformation Campaign Detection",
+          "what_to_watch": [
+            "disinformation campaign",
+            "fake news coordinated",
+            "information operation",
+            "propaganda network",
+            "troll farm",
+            "coordinated inauthentic behavior"
+          ],
+          "phi002_significance": "PHI-002 attack — manufactured reality blocks people from true understanding",
+          "tier": "TIER1"
         }
       ]
     },
-
     "NETWORK": {
       "id": "NETWORK",
       "name": "Networks & Hidden Connections",
-      "actors": ["Alliances", "Proxies", "Think tanks", "Non-state actors"],
+      "actors": [
+        "Alliances",
+        "Proxies",
+        "Think tanks",
+        "Non-state actors"
+      ],
       "indicators": [
         {
           "id": "NETWORK-001",
@@ -470,7 +1376,11 @@
           "actor": "Global",
           "what_to_watch": "New security pacts, minilaterals (AUKUS, QUAD expansion), partnership upgrades",
           "why_matters": "New alliances reshape balance of power",
-          "sources": ["reuters.com", "state.gov", "nato.int"],
+          "sources": [
+            "reuters.com",
+            "state.gov",
+            "nato.int"
+          ],
           "frequency": "weekly",
           "signal_type": "structural_shift"
         },
@@ -481,7 +1391,11 @@
           "actor": "Iran-Russia-China proxies",
           "what_to_watch": "Hezbollah, Houthis, Wagner-type groups — sudden activation or new funding",
           "why_matters": "Proxy activation = state actor testing limits without direct involvement",
-          "sources": ["reuters.com", "longwarjournal.org", "acleddata.com"],
+          "sources": [
+            "reuters.com",
+            "longwarjournal.org",
+            "acleddata.com"
+          ],
           "frequency": "weekly",
           "signal_type": "conflict_risk"
         },
@@ -492,7 +1406,11 @@
           "actor": "Global",
           "what_to_watch": "Major NGO position shifts, international court filings, civil society mobilization",
           "why_matters": "Non-state actors shape norms and create political pressure",
-          "sources": ["icj-cij.org", "hrw.org", "amnesty.org"],
+          "sources": [
+            "icj-cij.org",
+            "hrw.org",
+            "amnesty.org"
+          ],
           "frequency": "weekly",
           "signal_type": "network_signal"
         },
@@ -503,7 +1421,11 @@
           "actor": "Global",
           "what_to_watch": "Davos, Bilderberg, G7/G20 side meetings — who meets whom privately",
           "why_matters": "Elite meetings precede policy announcements by weeks",
-          "sources": ["reuters.com", "ft.com", "bloomberg.com"],
+          "sources": [
+            "reuters.com",
+            "ft.com",
+            "bloomberg.com"
+          ],
           "frequency": "monthly",
           "signal_type": "network_signal"
         },
@@ -514,17 +1436,180 @@
           "actor": "Global",
           "what_to_watch": "Leaked documents, ICIJ investigations, shell company registrations",
           "why_matters": "Hidden money flows reveal real alliances and intentions",
-          "sources": ["icij.org", "occrp.org", "reuters.com"],
+          "sources": [
+            "icij.org",
+            "occrp.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "network_signal"
+        },
+        {
+          "id": "NETWORK-006",
+          "name": "Shell Company Network Exposure",
+          "what_to_watch": [
+            "shell company",
+            "beneficial ownership",
+            "offshore network",
+            "Pandora Papers",
+            "Panama Papers",
+            "hidden ownership",
+            "anonymous company"
+          ],
+          "phi002_significance": "Dark money enabling power without accountability — GCSP blockade",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-007",
+          "name": "Money Laundering Network",
+          "what_to_watch": [
+            "money laundering",
+            "launder proceeds",
+            "financial crime",
+            "dirty money",
+            "washing money",
+            "proceeds of crime"
+          ],
+          "phi002_significance": "NETWORK+FINANCE cross-talk — criminal finance sustaining authoritarian power",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-008",
+          "name": "Organized Crime State Nexus",
+          "what_to_watch": [
+            "organized crime state",
+            "cartel government link",
+            "mob government",
+            "criminal enterprise political",
+            "kleptocracy",
+            "criminal state"
+          ],
+          "phi002_significance": "Sovereignty captured by criminal networks — people have no real government",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-009",
+          "name": "Drug Trade Financing Signal",
+          "what_to_watch": [
+            "drug trafficking finance",
+            "narco funding",
+            "cartel financing",
+            "drug money politics",
+            "narco state",
+            "drug trade revenue"
+          ],
+          "phi002_significance": "Criminal finance sustaining violence that blocks GCSP development",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-010",
+          "name": "Terrorism or Militant Group Financing",
+          "what_to_watch": [
+            "terrorism financing",
+            "militant group funding",
+            "extremist financing",
+            "fundraising terrorist",
+            "hawala network",
+            "financing armed group"
+          ],
+          "phi002_significance": "Dark financial flows enabling violence against civilian populations",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-011",
+          "name": "Oligarch Wealth Movement",
+          "what_to_watch": [
+            "oligarch wealth",
+            "oligarch assets",
+            "oligarch hidden",
+            "super rich hiding",
+            "wealth concealment",
+            "billionaire sanctuary"
+          ],
+          "phi002_significance": "Cui Bono — who extracted wealth while the people suffered?",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-012",
+          "name": "Corruption Investigation Signal",
+          "what_to_watch": [
+            "corruption investigation",
+            "bribery case",
+            "corruption arrested",
+            "anti-corruption",
+            "corrupt official",
+            "graft investigation"
+          ],
+          "phi002_significance": "Law-governed society signal — corruption vs accountability",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-013",
+          "name": "Kleptocracy or State Capture Signal",
+          "what_to_watch": [
+            "state capture",
+            "kleptocracy",
+            "corruption systemic",
+            "captured institutions",
+            "political capture",
+            "systemic corruption"
+          ],
+          "phi002_significance": "Pseudo-democracy — institutions captured mean no real people's government",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NETWORK-014",
+          "name": "Human Trafficking Network",
+          "what_to_watch": [
+            "human trafficking",
+            "labor trafficking",
+            "sex trafficking",
+            "forced labor",
+            "trafficking network",
+            "modern slavery"
+          ],
+          "phi002_significance": "Direct GCSP destruction — humans commodified, unable to grow freely",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-015",
+          "name": "Cryptocurrency Dark Pool or Evasion",
+          "what_to_watch": [
+            "crypto evasion",
+            "bitcoin ransomware",
+            "crypto dark web",
+            "cryptocurrency crime",
+            "Monero dark",
+            "crypto sanctions bypass"
+          ],
+          "phi002_significance": "NETWORK+FINANCE cross-talk — new dark financial zones",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NETWORK-016",
+          "name": "Intelligence Agency or Spy Network Exposure",
+          "what_to_watch": [
+            "spy network",
+            "intelligence operation",
+            "CIA operation",
+            "espionage network",
+            "foreign agent",
+            "intelligence asset exposed"
+          ],
+          "phi002_significance": "Hidden sovereignty operations affecting people without their knowledge",
+          "tier": "TIER1"
         }
       ]
     },
-
     "RESOURCE": {
       "id": "RESOURCE",
       "name": "Resources & Supply Chains",
-      "actors": ["OPEC", "China", "US", "Commodity markets"],
+      "actors": [
+        "OPEC",
+        "China",
+        "US",
+        "Commodity markets"
+      ],
       "indicators": [
         {
           "id": "RESOURCE-001",
@@ -533,7 +1618,11 @@
           "actor": "China",
           "what_to_watch": "China rare earth export quotas, new restrictions on gallium, germanium, lithium",
           "why_matters": "China controls 60-80% of rare earth processing — restrictions hit tech globally",
-          "sources": ["reuters.com", "mofcom.gov.cn", "ft.com"],
+          "sources": [
+            "reuters.com",
+            "mofcom.gov.cn",
+            "ft.com"
+          ],
           "frequency": "weekly",
           "signal_type": "supply_chain_risk"
         },
@@ -544,7 +1633,11 @@
           "actor": "Russia-OPEC-US",
           "what_to_watch": "Pipeline disruptions, LNG supply changes, energy weaponization signals",
           "why_matters": "Energy is the most direct lever of geopolitical pressure",
-          "sources": ["iea.org", "eia.gov", "reuters.com"],
+          "sources": [
+            "iea.org",
+            "eia.gov",
+            "reuters.com"
+          ],
           "frequency": "daily",
           "signal_type": "supply_chain_risk"
         },
@@ -555,7 +1648,11 @@
           "actor": "Global",
           "what_to_watch": "Grain export restrictions, wheat and rice price spikes, drought reports",
           "why_matters": "Food insecurity causes political instability within 6-12 months",
-          "sources": ["fao.org", "wfp.org", "reuters.com"],
+          "sources": [
+            "fao.org",
+            "wfp.org",
+            "reuters.com"
+          ],
           "frequency": "weekly",
           "signal_type": "stability_risk"
         },
@@ -566,7 +1663,11 @@
           "actor": "US-China-EU",
           "what_to_watch": "Friend-shoring announcements, new manufacturing hub formations, port activity shifts",
           "why_matters": "Supply chain rerouting = long-term economic realignment",
-          "sources": ["reuters.com", "ft.com", "worldbank.org"],
+          "sources": [
+            "reuters.com",
+            "ft.com",
+            "worldbank.org"
+          ],
           "frequency": "weekly",
           "signal_type": "structural_shift"
         },
@@ -577,9 +1678,199 @@
           "actor": "US-China-EU",
           "what_to_watch": "Lithium, cobalt, nickel deals — who secures what mining rights where",
           "why_matters": "Critical minerals = battery tech = EV and military supply chain control",
-          "sources": ["reuters.com", "mining.com", "iea.org"],
+          "sources": [
+            "reuters.com",
+            "mining.com",
+            "iea.org"
+          ],
           "frequency": "weekly",
           "signal_type": "supply_chain_risk"
+        },
+        {
+          "id": "RESOURCE-006",
+          "name": "Water Security Crisis",
+          "what_to_watch": [
+            "water security",
+            "water scarcity",
+            "drought crisis",
+            "water conflict",
+            "transboundary water",
+            "water shortage",
+            "dam dispute"
+          ],
+          "phi002_significance": "Physical floor — no water = no GCSP foundation possible",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-007",
+          "name": "Food Crisis or Famine Signal",
+          "what_to_watch": [
+            "food crisis",
+            "famine",
+            "food insecurity",
+            "hunger crisis",
+            "food shortage",
+            "starvation",
+            "WFP warning",
+            "food emergency"
+          ],
+          "phi002_significance": "Physical floor — food security is the most basic GCSP prerequisite",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-008",
+          "name": "Critical Mineral Supply Disruption",
+          "what_to_watch": [
+            "critical minerals",
+            "rare earth",
+            "lithium supply",
+            "cobalt supply",
+            "mineral export ban",
+            "strategic minerals",
+            "battery minerals"
+          ],
+          "phi002_significance": "RESOURCE+TECH cross-talk — who controls minerals controls energy future",
+          "tier": "TIER2"
+        },
+        {
+          "id": "RESOURCE-009",
+          "name": "Climate-Driven Displacement",
+          "what_to_watch": [
+            "climate displacement",
+            "climate refugee",
+            "sea level rise",
+            "climate migration",
+            "extreme weather displacement",
+            "climate crisis population"
+          ],
+          "phi002_significance": "Physical reality — climate forces movement, blocking stable GCSP foundation",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-010",
+          "name": "Agricultural Land Acquisition",
+          "what_to_watch": [
+            "land grab",
+            "agricultural acquisition",
+            "farmland purchase",
+            "land deal foreign",
+            "foreign land ownership",
+            "land rights"
+          ],
+          "phi002_significance": "Indirect+Active debt trap — land as sovereignty resource extraction",
+          "tier": "TIER2"
+        },
+        {
+          "id": "RESOURCE-011",
+          "name": "Debt for Resources Swap",
+          "what_to_watch": [
+            "debt for resources",
+            "resource backed loan",
+            "mineral backed",
+            "resources for debt",
+            "commodity backed loan",
+            "extraction rights loan"
+          ],
+          "phi002_significance": "Direct+Active debt trap — resources mortgaged for debt relief",
+          "tier": "TIER2"
+        },
+        {
+          "id": "RESOURCE-012",
+          "name": "Energy Poverty Escalation",
+          "what_to_watch": [
+            "energy poverty",
+            "electricity access",
+            "energy crisis population",
+            "power shortage",
+            "energy affordability",
+            "fuel poverty"
+          ],
+          "phi002_significance": "Physical floor — energy access is GCSP foundation",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-013",
+          "name": "Pipeline or Energy Infrastructure Dispute",
+          "what_to_watch": [
+            "pipeline dispute",
+            "pipeline attack",
+            "energy infrastructure",
+            "gas pipeline",
+            "oil pipeline",
+            "energy corridor dispute"
+          ],
+          "phi002_significance": "Physical reality — energy corridors determine who has power",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-014",
+          "name": "Maritime Resource Conflict",
+          "what_to_watch": [
+            "maritime dispute",
+            "exclusive economic zone",
+            "EEZ conflict",
+            "fishing rights dispute",
+            "offshore resources",
+            "South China Sea resources"
+          ],
+          "phi002_significance": "Sovereignty + resource cross-talk — maritime rights = economic future",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-015",
+          "name": "Grain or Food Export Restriction",
+          "what_to_watch": [
+            "grain export ban",
+            "food export restriction",
+            "wheat embargo",
+            "rice export ban",
+            "food export limit",
+            "grain weaponization"
+          ],
+          "phi002_significance": "Food as weapon — RESOURCE+POWER cross-talk affecting millions",
+          "tier": "STATE"
+        },
+        {
+          "id": "RESOURCE-016",
+          "name": "Mining Nationalization or Rights Dispute",
+          "what_to_watch": [
+            "mining nationalization",
+            "mining rights",
+            "resource nationalization",
+            "mining dispute",
+            "extraction rights revoked",
+            "resource sovereignty"
+          ],
+          "phi002_significance": "Cui Bono — resource sovereignty reclaimed or extracted?",
+          "tier": "TIER2"
+        },
+        {
+          "id": "RESOURCE-017",
+          "name": "Environmental Destruction Signal",
+          "what_to_watch": [
+            "deforestation",
+            "environmental destruction",
+            "pollution crisis",
+            "ecosystem collapse",
+            "biodiversity loss",
+            "toxic contamination"
+          ],
+          "phi002_significance": "Safe environment is first GCSP pillar — destruction blocks all others",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-018",
+          "name": "Nuclear Energy or Weapons Proliferation",
+          "what_to_watch": [
+            "nuclear proliferation",
+            "nuclear plant",
+            "uranium enrichment",
+            "nuclear program",
+            "nuclear deal",
+            "nuclear energy deal"
+          ],
+          "phi002_significance": "Dual-use signal — energy or weapons? Sovereignty implications either way",
+          "tier": "TIER1"
         }
       ]
     }
