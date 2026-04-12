@@ -4,9 +4,9 @@
     "project": "Project Lens",
     "version": "2.0",
     "created": "LENS-003",
-    "total_sources": 20,
+    "total_sources": 41,
     "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each.",
-    "updated": "LENS-004",
+    "updated": "LENS-006",
     "audit_note": "Full source audit â€” 12 fixes applied (A/B/C)"
   },
   "sources": [
@@ -513,6 +513,96 @@
       "tier": "TIER2",
       "layer": 1,
       "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again."
+    },
+    {
+      "id": "SRC-037",
+      "name": "IMF News Direct",
+      "domain": "FINANCE",
+      "actor": "IMF",
+      "rss_url": "https://www.imf.org/en/News/rss",
+      "web_url": "https://www.imf.org",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "STATE",
+      "layer": 1,
+      "notes": "IMF official news RSS — statements, policy decisions, country reports. STATE tier: authoritative on sovereign debt, lending programs, financial stability. Fills IMF gap from LENS-005."
+    },
+    {
+      "id": "SRC-038",
+      "name": "World Bank Blogs",
+      "domain": "FINANCE",
+      "actor": "World Bank",
+      "rss_url": "https://blogs.worldbank.org/rss.xml",
+      "web_url": "https://www.worldbank.org",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "World Bank blog RSS — development economics, debt restructuring, infrastructure finance, poverty. TIER2: analytical depth from economists on the ground. Fills WB gap from LENS-005."
+    },
+    {
+      "id": "SRC-039",
+      "name": "Google News: Central Banks",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22central+bank%22+OR+%22Federal+Reserve%22+OR+%22interest+rates%22+OR+%22inflation%22",
+      "web_url": "https://news.google.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — central bank decisions, Federal Reserve, interest rates, inflation signals. Monetary policy intelligence layer. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-040",
+      "name": "Defense News",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "rss_url": "https://www.defensenews.com/rss/",
+      "web_url": "https://www.defensenews.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Defense News — arms procurement, defense contracts, military technology acquisitions. TIER2: specialist trade publication. Best source for procurement signals and arms deal intelligence."
+    },
+    {
+      "id": "SRC-041",
+      "name": "Breaking Defense",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "rss_url": "https://breakingdefense.com/feed/",
+      "web_url": "https://breakingdefense.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Breaking Defense — deep defense policy analysis, Pentagon, NATO, Indo-Pacific strategy. TIER2: read by defense officials and analysts. Strongest source for early military posture signals."
     }
   ]
 }
