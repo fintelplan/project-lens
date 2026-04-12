@@ -2,10 +2,10 @@ name: Lens Collection Pipeline
 # Project Lens — 4x daily collection
 # Runs at: 13:00, 17:00, 21:00, 04:00 UTC (Washington D.C. EDT primary)
 # 09:00 AM D.C. | 01:00 PM D.C. | 05:00 PM D.C. | 12:00 AM D.C.
-# Collects from 20 public sources
+# Collects from 32 public sources (STATE 7 + TIER1 7 + TIER2 9 + TIER3 6 + 1 arXiv)
 # Matches 46 indicators across 7 domains
 # Ethics: public data only (LR-014(E))
-
+# Session: LENS-005 — updated 32 sources + injection detection
 on:
   schedule:
     - cron: '0 13 * * *'   # 9:00 AM Washington D.C. (EDT)
@@ -13,21 +13,17 @@ on:
     - cron: '0 21 * * *'   # 5:00 PM Washington D.C. (EDT)
     - cron: '0 4  * * *'   # 12:00 AM Washington D.C. (EDT) - Asia business hours
   workflow_dispatch:        # Manual trigger
-
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5.3.0
         with:
           python-version: '3.11'
-
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -36,8 +32,7 @@ jobs:
             requests \
             supabase \
             python-dotenv
-
-      - name: Run collection
+      - name: Run collection + injection detection
         run: python code/fetch_text.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
