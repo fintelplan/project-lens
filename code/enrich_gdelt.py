@@ -70,11 +70,25 @@ def query_gdelt(domain: str, query_info: dict, timespan: str = '24h') -> dict:
         'format':   'json',
     }
 
-    try:
-        r = requests.get(GDELT_API, params=params, timeout=20)
-        if not r.ok:
-            print(f'  WARNING: GDELT {domain} returned {r.status_code}')
+    for attempt in range(3):
+        try:
+            r = requests.get(GDELT_API, params=params, timeout=20)
+            if r.status_code == 429:
+                wait = 30 * (2 ** attempt)
+                print(f'  429 rate limit — waiting {wait}s (attempt {attempt+1}/3)')
+                time.sleep(wait)
+                continue
+            if not r.ok:
+                print(f'  WARNING: GDELT {domain} returned {r.status_code}')
+                return {'count': 0, 'avg_tone': None, 'top_themes': []}
+            break
+        except Exception as e:
+            print(f'  ERROR {domain}: {str(e)[:60]}')
             return {'count': 0, 'avg_tone': None, 'top_themes': []}
+    else:
+        print(f'  FAILED {domain}: 3 attempts exhausted')
+        return {'count': 0, 'avg_tone': None, 'top_themes': []}
+    try:
 
         data = r.json()
         # TimelineVol returns timeline array of {date, value} — sum for total count
