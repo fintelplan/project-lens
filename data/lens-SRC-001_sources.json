@@ -516,10 +516,10 @@
     },
     {
       "id": "SRC-037",
-      "name": "IMF News Direct",
+      "name": "Google News: IMF",
       "domain": "FINANCE",
       "actor": "IMF",
-      "rss_url": "https://www.imf.org/en/News/rss",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
       "web_url": "https://www.imf.org",
       "frequency": "daily",
       "tier_coverage": [
@@ -528,16 +528,16 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "tier": "STATE",
+      "tier": "TIER3",
       "layer": 1,
-      "notes": "IMF official news RSS — statements, policy decisions, country reports. STATE tier: authoritative on sovereign debt, lending programs, financial stability. Fills IMF gap from LENS-005."
+      "notes": "Google News IMF topic RSS — replaces broken imf.org direct feed. Covers IMF statements, programs, country reviews. LR-014(E) compliant."
     },
     {
       "id": "SRC-038",
-      "name": "World Bank Blogs",
+      "name": "Google News: World Bank",
       "domain": "FINANCE",
       "actor": "World Bank",
-      "rss_url": "https://blogs.worldbank.org/rss.xml",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
       "web_url": "https://www.worldbank.org",
       "frequency": "daily",
       "tier_coverage": [
@@ -546,9 +546,9 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "tier": "TIER2",
+      "tier": "TIER3",
       "layer": 1,
-      "notes": "World Bank blog RSS — development economics, debt restructuring, infrastructure finance, poverty. TIER2: analytical depth from economists on the ground. Fills WB gap from LENS-005."
+      "notes": "Google News World Bank topic RSS — replaces broken blogs.worldbank.org direct feed. Covers WB lending, development finance, country programs. LR-014(E) compliant."
     },
     {
       "id": "SRC-039",
@@ -570,10 +570,10 @@
     },
     {
       "id": "SRC-040",
-      "name": "Defense News",
+      "name": "Military Times",
       "domain": "MILITARY",
       "actor": "Global",
-      "rss_url": "https://www.defensenews.com/rss/",
+      "rss_url": "https://www.militarytimes.com/arc/outboundfeeds/rss/",
       "web_url": "https://www.defensenews.com",
       "frequency": "daily",
       "tier_coverage": [
@@ -584,7 +584,7 @@
       "language": "en",
       "tier": "TIER2",
       "layer": 1,
-      "notes": "Defense News — arms procurement, defense contracts, military technology acquisitions. TIER2: specialist trade publication. Best source for procurement signals and arms deal intelligence."
+      "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant."
     },
     {
       "id": "SRC-041",

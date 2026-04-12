@@ -236,6 +236,28 @@ def save_pipeline_run(run_data: dict):
     except Exception:
         pass
 
+
+def save_source_health(health_records: list):
+    """LENS-006: Save per-source health to Supabase lens_source_health table."""
+    if not health_records:
+        return
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates',
+    }
+    for record in health_records:
+        try:
+            requests.post(
+                f'{SUPABASE_URL}/rest/v1/lens_source_health',
+                headers=headers,
+                json=record,
+                timeout=10
+            )
+        except Exception:
+            pass
+
 # ── Main ──────────────────────────────────────────────────────
 def main():
     cycle_hour = datetime.now(timezone.utc).hour
@@ -271,6 +293,7 @@ def main():
     for source in sources:
         print(f'Fetching: {source["name"]}...')
         articles = fetch_feed(source)
+        source_fetch_counts[source['id']] = len(articles)  # LENS-006: track count
 
         for article in articles:
             total_collected += 1
@@ -286,6 +309,29 @@ def main():
                 save_indicator_matches(article_id, matches)
 
         time.sleep(1)  # polite delay between sources
+
+    # Save source health to Supabase (LENS-006)
+    run_at = datetime.now(timezone.utc).isoformat()
+    health_records = []
+    sources_map = {s['id']: s for s in sources}
+    for source in sources:
+        sid = source['id']
+        count = source_fetch_counts.get(sid, 0)
+        health_records.append({
+            'run_at': run_at,
+            'cycle': cycle,
+            'source_id': sid,
+            'source_name': source['name'],
+            'domain': source['domain'],
+            'tier': source.get('tier', 'TIER2'),
+            'articles_count': count,
+            'is_dead': count == 0,
+            'used_reserve': count == 0 and bool(source.get('reserve_id')),
+            'reserve_id': source.get('reserve_id') if count == 0 else None,
+        })
+    save_source_health(health_records)
+    dead_count = sum(1 for r in health_records if r['is_dead'])
+    print(f'  Source health saved: {len(health_records)} sources, {dead_count} dead')
 
     # Save pipeline run record
     save_pipeline_run({
@@ -305,10 +351,10 @@ def main():
     print(f'Done')
     print(f'  Articles fetched:  {total_collected}')
     print(f'  Articles saved:    {total_saved}')
-    # Source health summary (LENS-005 FIX-031)
+    # Source health summary (LENS-006: now populated correctly)
     dead_sources = [sid for sid, cnt in source_fetch_counts.items() if cnt == 0]
     if dead_sources:
-        print(f'  Dead sources: {len(dead_sources)} → {dead_sources}')
+        print(f'  Dead sources: {len(dead_sources)} -> {dead_sources}')
     else:
         print(f'  Source health: all {len(source_fetch_counts)} sources alive')
     print(f'  Duplicate skipped: {total_collected - total_saved}')
