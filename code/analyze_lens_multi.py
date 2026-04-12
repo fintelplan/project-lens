@@ -7,7 +7,7 @@ Session: LENS-004
 Each lens has its own AI model, provider, and philosophical perspective.
 4 separate reports saved — no synthesis, no blending. Each speaks its own voice.
 
-Lens 1: qwen/qwen3-32b        (Groq)      — PHI-002: GCSP, Cui Bono, Sectarian Trap
+Lens 1: qwen/qwen3-32b        (Groq)      — Foundation: GCSP, Cui Bono, Sectarian Trap, Debt Trap
 Lens 2: gemini-2.0-flash      (Google)    — Physical Reality: leading indicators, constraints
 Lens 3: llama-4-scout         (Cerebras)  — Causal Chain: First Domino, cause-effect
 Lens 4: Llama-4-Maverick      (SambaNova) — Sovereignty Check: from/of/for the people
@@ -41,7 +41,7 @@ DOMAINS = [
 LENSES = [
     {
         "lens_id":    1,
-        "lens_name":  "PHI-002",
+        "lens_name":  "Foundation",
         "model":      "qwen/qwen3-32b",
         "provider":   "groq",
         "api_key_env": "GROQ_API_KEY",
