@@ -278,55 +278,60 @@ grouped by domain. Analyze through your specific lens.
 
 ---
 
-OUTPUT FORMAT — follow exactly:
+OUTPUT FORMAT — follow exactly. No bold markdown. Plain text labels only.
 
 ## SUMMARY
-[3-4 sentences. Most important pattern today through YOUR specific lens.
-What connects the dots? What is the single most critical signal?]
+[One sentence naming the single dominant signal today.]
+[Then exactly 3 numbered key connections that explain why:]
+1. [First connection — what pattern links two or more domains]
+2. [Second connection — cause and effect across actors]
+3. [Third connection — what is quietly happening while attention is elsewhere]
 
 ### POWER ({power_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences — what actually happened]
+Why It Matters: [1-2 sentences through YOUR specific lens]
+Watch: [1 sentence — what to monitor next]
 
 ### TECH ({tech_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 ### FINANCE ({finance_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 ### MILITARY ({military_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 ### NARRATIVE ({narrative_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 ### NETWORK ({network_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 ### RESOURCE ({resource_count} articles)
-**Key Development:** [1-2 sentences]
-**Why It Matters:** [1-2 sentences through your lens]
-**Watch:** [1 sentence]
+Key Development: [1-2 sentences]
+Why It Matters: [1-2 sentences through your lens]
+Watch: [1 sentence]
 
 [Skip any domain with 0 articles]
 
 ## FOOD FOR THOUGHT
 1. [Open question — not a prediction — makes Game Changers think deeper]
-2.
-3.
-4.
-5.
+2. [Open question — follows from a different domain than question 1]
+3. [Open question — about a hidden actor or silent beneficiary]
+4. [Open question — about long-term consequences, not today's events]
+5. [Open question — challenges an assumption everyone is making]
+
+============================================================
 """
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -636,12 +641,26 @@ def find_cross_lens_signals(results: list, lenses: list) -> list:
     import re as _re
 
     stop = {
+        # Basic stop words
         "a","an","the","and","or","but","in","on","at","to","for",
         "of","with","by","from","is","are","was","were","be","been",
         "has","have","had","will","would","could","should","this","that",
         "these","those","it","its","as","up","out","into","about","over",
-        "today","domain","signal","key","development","lens","analysis",
         "while","also","such","more","most","than","which","when","where",
+        "their","there","they","them","been","have","what","will","from",
+        # Template words — appear in EVERY report due to our output format
+        # These are structural noise, not intelligence signals (LENS-006)
+        "today","domain","signal","key","development","lens","analysis",
+        "summary","watch","matters","thought","articles","report","cycle",
+        "output","format","section","perspective","framework","strictly",
+        "overview","context","background","narrative","following","provides",
+        # Generic geopolitical words — too broad to be real signals
+        "political","economic","military","critical","global","security",
+        "international","government","national","market","country","region",
+        "policy","current","major","important","significant","strategic",
+        "potential","ongoing","recent","including","through","between",
+        "against","within","without","across","however","therefore","because",
+        "various","several","further","beyond","around","during","despite",
     }
 
     def extract_kws(text):
@@ -867,7 +886,78 @@ async def call_cerebras(lens, system_prompt, user_prompt):
     return response.choices[0].message.content
 
 
+# ─── Lens Provider Guard ──────────────────────────────────────────────────────
+
+class LensProviderGuard:
+    """
+    Pre-flight + retry guard for each lens provider.
+    Inspired by GNI MAD preflight + GroqGuardian pattern.
+
+    Principles (from GNI lessons):
+    - Pre-check before firing — never assume provider is ready
+    - Exponential backoff on 429 — never hammer a rate-limited provider
+    - Graceful degradation — one lens failing never kills the pipeline
+    - Calculated waits — not hardcoded sleeps
+
+    LENS-006: Applied MAD guard concept to Lens provider layer.
+    """
+
+    # Stagger delays per provider — prevents simultaneous burst hits
+    # Root cause of SambaNova 429: all 4 lenses fired at t=0 simultaneously
+    STAGGER_DELAYS = {
+        "groq":      0,   # fires first — lowest TPM, needs head start
+        "gemini":    3,   # 3s after groq
+        "cerebras":  6,   # 6s after groq
+        "sambanova": 10,  # 10s after groq — most sensitive to bursts
+    }
+
+    # Backoff schedule on 429 (seconds)
+    BACKOFF_SCHEDULE = [15, 30, 60]  # attempt 1, 2, 3 — then give up
+
+    def __init__(self, provider: str, lens_id: int, lens_name: str):
+        self.provider  = provider
+        self.lens_id   = lens_id
+        self.lens_name = lens_name
+        self.attempts  = 0
+
+    async def stagger(self):
+        """Wait stagger delay for this provider before firing."""
+        delay = self.STAGGER_DELAYS.get(self.provider, 5)
+        if delay > 0:
+            print(f"[guard-lens{self.lens_id}] Stagger wait {delay}s "
+                  f"({self.provider} launch delay)...")
+            await asyncio.sleep(delay)
+
+    async def handle_429(self) -> bool:
+        """
+        Handle 429 rate limit with exponential backoff.
+        Returns True if should retry, False if max attempts exhausted.
+        """
+        self.attempts += 1
+        if self.attempts > len(self.BACKOFF_SCHEDULE):
+            print(f"[guard-lens{self.lens_id}] {self.lens_name} — "
+                  f"429 max retries exhausted ({self.attempts-1} attempts). "
+                  f"Marking lens FAILED this cycle.")
+            return False  # give up — pipeline continues without this lens
+
+        wait = self.BACKOFF_SCHEDULE[self.attempts - 1]
+        print(f"[guard-lens{self.lens_id}] {self.lens_name} — "
+              f"429 rate limit. Backoff attempt {self.attempts}/3 — "
+              f"waiting {wait}s...")
+        await asyncio.sleep(wait)
+        return True  # retry
+
+    def log_success(self):
+        if self.attempts > 0:
+            print(f"[guard-lens{self.lens_id}] {self.lens_name} — "
+                  f"recovered after {self.attempts} retry attempt(s). OK.")
+
 async def call_sambanova(lens, system_prompt, user_prompt):
+    """
+    SambaNova API call with LensProviderGuard retry logic.
+    429 handled via exponential backoff — max 3 retries.
+    LENS-006: Applied MAD guard pattern to SambaNova provider.
+    """
     import httpx
     api_key = os.environ.get(lens["api_key_env"])
     if not api_key:
@@ -885,15 +975,40 @@ async def call_sambanova(lens, system_prompt, user_prompt):
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
-    async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(
-            "https://api.sambanova.ai/v1/chat/completions",
-            json=payload,
-            headers=headers
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
+    guard = LensProviderGuard(
+        provider="sambanova",
+        lens_id=lens["lens_id"],
+        lens_name=lens["lens_name"]
+    )
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                response = await client.post(
+                    "https://api.sambanova.ai/v1/chat/completions",
+                    json=payload,
+                    headers=headers
+                )
+                if response.status_code == 429:
+                    should_retry = await guard.handle_429()
+                    if not should_retry:
+                        raise ValueError(
+                            f"SambaNova 429 — max retries exhausted after "
+                            f"{len(guard.BACKOFF_SCHEDULE)} attempts"
+                        )
+                    continue  # retry after backoff
+                response.raise_for_status()
+                data = response.json()
+                guard.log_success()
+                return data["choices"][0]["message"]["content"]
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 429:
+                should_retry = await guard.handle_429()
+                if not should_retry:
+                    raise ValueError(
+                        f"SambaNova 429 — max retries exhausted"
+                    )
+                continue
+            raise  # re-raise non-429 errors immediately
 
 
 def trim_articles_to_budget(articles: list, provider: str) -> list:
@@ -926,6 +1041,8 @@ def trim_articles_to_budget(articles: list, provider: str) -> list:
     return trimmed
 
 
+
+
 async def run_lens(lens, system_prompt, articles_full: list):
     """
     Run a single lens with TPM protection.
@@ -952,6 +1069,15 @@ async def run_lens(lens, system_prompt, articles_full: list):
 
     full_payload = system_prompt + user_prompt
     payload_tokens = guard.estimate_tokens(full_payload) + 2000
+
+    # Stagger launch — prevents simultaneous burst hits on providers
+    # LensProviderGuard: each provider has a configured delay offset
+    launch_guard = LensProviderGuard(
+        provider=provider,
+        lens_id=lens["lens_id"],
+        lens_name=lens["lens_name"]
+    )
+    await launch_guard.stagger()
 
     print(f"[lens-{lens['lens_id']}] Starting {lens['lens_name']} ({lens['model']}) "
           f"| {len(articles_trimmed)} articles{trim_msg} "
@@ -982,6 +1108,135 @@ async def run_lens(lens, system_prompt, articles_full: list):
         return lens["lens_id"], None, str(e)
 
 
+def save_lens_report(supabase, lens, summary, food_for_thought,
+                     article_ids, domain_counts, cycle):
+    record = {
+        "cycle":            cycle,
+        "domain_focus":     "ALL",
+        "summary":          f"[{lens['lens_name']} — {lens['perspective']}]\n\n{summary}",
+        "food_for_thought": food_for_thought,
+        "signals_used":     json.dumps(domain_counts),
+        "articles_used":    json.dumps(article_ids),
+        "ai_model":         lens["model"],
+        "prompt_version":   f"v2.0-LENS004-{lens['lens_name'].replace(' ', '')}",
+        "status":           "pending"
+    }
+    response  = supabase.table("lens_reports").insert(record).execute()
+    report_id = response.data[0]["id"] if response.data else "unknown"
+    print(f"[save] Lens {lens['lens_id']} saved — id: {report_id} | {lens['lens_name']}")
+    return report_id
+
+
+def get_cycle():
+    """
+    Cycle labels matching real cron schedule.
+    08 UTC=morning | 12 UTC=midday | 16 UTC=afternoon | 20 UTC=evening
+    Fix: LENS-005 FIX-021 — wrong hours from earlier session.
+    """
+    hour = datetime.now(timezone.utc).hour
+    if   hour == 8:  return "morning"
+    elif hour == 12: return "midday"
+    elif hour == 16: return "afternoon"
+    elif hour == 20: return "evening"
+    else:            return "manual"
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
+async def main():
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    cycle    = get_cycle()
+
+    print("=" * 60)
+    print(f"Project Lens — 4-Lens Analysis — {date_str}")
+    print(f"Cycle: {cycle}")
+    print("=" * 60)
+
+    supabase = get_supabase()
+
+    # Fetch balanced articles once — shared across all 4 lenses
+    balanced, all_articles, counts = fetch_balanced_articles(supabase)
+
+    if not balanced:
+        print("[lens] No articles found. Exiting.")
+        return
+
+    # Build prompt content once — same for all 4 lenses
+    domain_blocks, total = build_domain_blocks(balanced, counts)
+    user_prompt          = build_prompt(domain_blocks, total, date_str, counts)
+
+    # Article IDs for saving
+    selected_ids = [
+        {"id": a.get("id",""), "url": a.get("url",""),
+         "title": (a.get("title") or "")[:200], "domain": a.get("domain","")}
+        for a in balanced if a.get("id")
+    ]
+    all_ids = [
+        {"id": a.get("id",""), "url": a.get("url",""),
+         "title": (a.get("title") or "")[:200], "domain": a.get("domain","")}
+        for a in all_articles if a.get("url")
+    ]
+    article_ids = {"selected": selected_ids, "all_collected": all_ids}
+
+    print(f"[lens] {total} articles -> 4 lenses firing in parallel...")
+    print("=" * 60)
+
+    # Fire all 4 lenses in parallel
+    # Each lens trims articles to its own TPM budget
+    tasks = [
+        run_lens(
+            lens,
+            SYSTEM_PROMPTS[lens["lens_id"]],
+            balanced       # pass full article list — each lens trims itself
+        )
+        for lens in LENSES
+    ]
+    results = await asyncio.gather(*tasks)
+
+    print("=" * 60)
+    print("[lens] All 4 lenses complete. Saving reports...")
+
+    # Save each lens report separately
+    for lens_id, analysis, error in results:
+        lens = LENSES[lens_id - 1]
+
+        if error:
+            print(f"[save] Lens {lens_id} FAILED — {error}")
+            continue
+
+        summary, fft = split_output(analysis)
+        quality = score_lens_quality(analysis, lens["lens_name"])
+        save_lens_report(
+            supabase, lens, summary, fft,
+            article_ids, counts, cycle
+        )
+        print(f"  Quality score: {quality['total']}/10 "
+              f"(spec={quality['details'].get('specificity',0):.1f} "
+              f"depth={quality['details'].get('signal_depth',0):.1f} "
+              f"phi={quality['details'].get('phi002_align',0):.1f})")
+
+        print(f"\n{'='*60}")
+        print(f"LENS {lens_id} — {lens['lens_name'].upper()} ({lens['model']})")
+        print(f"Perspective: {lens['perspective']}")
+        print(f"{'='*60}")
+        print(analysis[:500] + "..." if len(analysis) > 500 else analysis)
+
+    # Cross-lens agreement (LENS-005 FIX-031)
+    cross_signals = find_cross_lens_signals(results, LENSES)
+    if cross_signals:
+        print(f"\n[cross-lens] HIGH CONFIDENCE signals ({len(cross_signals)} found):")
+        for sig in cross_signals[:5]:
+            print(f"  {sig['confidence']} ({sig['lens_count']}/4 lenses): {sig['signal']}")
+    else:
+        print("\n[cross-lens] No cross-lens agreement signals detected")
+
+    print("\n" + "=" * 60)
+    print(f"[lens] Complete — {total} articles — 4 reports saved")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 def save_lens_report(supabase, lens, summary, food_for_thought,
                      article_ids, domain_counts, cycle):
     record = {
