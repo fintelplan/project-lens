@@ -19,6 +19,7 @@ Rules:
 """
 
 import os
+import re
 import json
 import time
 import asyncio
@@ -76,6 +77,17 @@ LENSES = [
 # LOOKBACK extended to 48h for richer article pool
 LOOKBACK_HOURS = 48
 
+# Per-lens article token budgets
+# Budget = tpm_limit - system_prompt_overhead - output_budget
+# ~75 tokens per compressed article (300 chars / 4)
+LENS_ARTICLE_BUDGETS = {
+    "groq":        1980,   # empirical safe: 9 articles x 220 tokens = 1980
+    "gemini":    55800,   # 60000 - 700 - 3500 = 55800 (~744 articles, all fine)
+    "cerebras":  56800,   # 60000 - 700 - 2500 = 56800 (~757 articles, all fine)
+    "sambanova": 35800,   # 40000 - 700 - 3500 = 35800 (~477 articles, all fine)
+}
+TOKENS_PER_ARTICLE = 220  # empirical: Groq measured 21 articles = 4605 tokens = ~219/article
+
 # ─── System Prompts Per Lens ──────────────────────────────────────────────────
 
 SHARED_RULES = """
@@ -86,9 +98,9 @@ STRICT RULES:
 - Be direct. No fluff. Global Game Changers are busy people.
 - Flag when any actor is blocking people's right to grow and be free.
 - Flag DOMAIN CROSS-TALK when detected:
-  Pattern 1: FINANCE spike + NARRATIVE nationalism → Sectarian Trap forming
-  Pattern 2: TECH censorship before POWER event → rights contraction planned
-  Pattern 3: NETWORK hidden flows near RESOURCE zone → sanctions evasion underway
+  Pattern 1: FINANCE spike + NARRATIVE nationalism -> Sectarian Trap forming
+  Pattern 2: TECH censorship before POWER event -> rights contraction planned
+  Pattern 3: NETWORK hidden flows near RESOURCE zone -> sanctions evasion underway
 """
 
 SYSTEM_PROMPTS = {
@@ -198,10 +210,10 @@ CAUSAL HIERARCHY:
 - Most events in POWER and MILITARY are EFFECTS, not causes
 
 DOMAIN INTERCONNECTIONS TO TRACE:
-- FINANCE pressure → POWER decision → MILITARY response
-- TECH censorship → NARRATIVE control → POWER consolidation
-- RESOURCE scarcity → NETWORK evasion → FINANCE sanctions failure
-- NETWORK dark money → NARRATIVE manufacturing → POWER legitimization
+- FINANCE pressure -> POWER decision -> MILITARY response
+- TECH censorship -> NARRATIVE control -> POWER consolidation
+- RESOURCE scarcity -> NETWORK evasion -> FINANCE sanctions failure
+- NETWORK dark money -> NARRATIVE manufacturing -> POWER legitimization
 
 YOUR ANALYTICAL FRAMEWORK:
 - What is the root cause of each development?
@@ -315,8 +327,92 @@ def get_supabase():
     return create_client(url, key)
 
 
+def _load_source_tiers() -> dict:
+    """Load source_id -> tier mapping from lens-SRC-001_sources.json."""
+    import json as _json
+    for src_path in [
+        os.path.join("data", "lens-SRC-001_sources.json"),
+        os.path.join("..", "data", "lens-SRC-001_sources.json"),
+    ]:
+        if os.path.exists(src_path):
+            with open(src_path, "r", encoding="utf-8") as f:
+                data = _json.load(f)
+            return {s["id"]: s.get("tier", "TIER2") for s in data.get("sources", [])}
+    return {}
+
+
+def _extract_keywords(title: str) -> set:
+    """Extract significant keywords from title for event matching."""
+    stop = {
+        "a","an","the","and","or","but","in","on","at","to","for",
+        "of","with","by","from","is","are","was","were","be","been",
+        "has","have","had","will","would","could","should","may","might",
+        "that","this","these","those","it","its","as","up","out","into",
+        "about","over","after","before","through","during","says","said",
+        "new","report","news","latest","update","breaking","just","now",
+    }
+    words = re.findall(r'[a-z]{4,}', title.lower())
+    return {w for w in words if w not in stop}
+
+
+def _compute_local_coverage(all_articles: list, source_tiers: dict) -> dict:
+    """
+    Compute local_coverage_count per article.
+    Count OTHER TIER1+2 articles covering the same event
+    (>=2 shared significant keywords, different source_id).
+    Returns dict: article_id -> coverage_count
+    """
+    kw_map = {
+        a.get("id", ""): _extract_keywords(a.get("title", ""))
+        for a in all_articles
+    }
+    verified = {"TIER1", "TIER2"}
+    coverage = {}
+    for a in all_articles:
+        aid   = a.get("id", "")
+        a_src = a.get("source_id", "")
+        a_kws = kw_map.get(aid, set())
+        if len(a_kws) < 2:
+            coverage[aid] = 0
+            continue
+        count = 0
+        for b in all_articles:
+            bid   = b.get("id", "")
+            b_src = b.get("source_id", "")
+            if bid == aid or b_src == a_src:
+                continue
+            if source_tiers.get(b_src, "TIER2") not in verified:
+                continue
+            if len(a_kws & kw_map.get(bid, set())) >= 2:
+                count += 1
+        coverage[aid] = count
+    return coverage
+
+
+def _recency_weight(collected_at_str: str, now_ts: float) -> float:
+    """Time decay: 1.0 (now) -> 0.5 (48h old). Min 0.5."""
+    try:
+        from datetime import datetime as _dt
+        collected = _dt.fromisoformat(collected_at_str.replace("Z", "+00:00"))
+        hours_old = (now_ts - collected.timestamp()) / 3600
+        return max(0.5, 1.0 - min(hours_old, 48) / 48 * 0.5)
+    except Exception:
+        return 0.75
+
+
 def fetch_balanced_articles(supabase):
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
+    """
+    Significance-scored article selection. LENS-005 FIX-021.
+    STATE sources always included, bypass scoring.
+    Non-STATE: score = local_coverage_count x recency_weight.
+    Top ARTICLES_PER_DOMAIN per domain selected by score.
+    No external API calls — 24/7 reliable.
+    """
+    import time as _time
+    now_ts       = _time.time()
+    cutoff       = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
+    source_tiers = _load_source_tiers()
+
     response = supabase.table("lens_raw_articles") \
         .select("id, title, content, domain, source_id, collected_at, url") \
         .gte("collected_at", cutoff) \
@@ -324,22 +420,59 @@ def fetch_balanced_articles(supabase):
         .execute()
     all_articles = response.data or []
 
-    domain_buckets = {d: [] for d in DOMAINS}
+    if not all_articles:
+        return [], [], {d: 0 for d in DOMAINS}
+
+    coverage_counts = _compute_local_coverage(all_articles, source_tiers)
+
+    state_articles  = []
+    scored_articles = []
+
     for article in all_articles:
+        tier = source_tiers.get(article.get("source_id", ""), "TIER2")
+        if tier == "STATE":
+            state_articles.append(article)
+        else:
+            cov   = coverage_counts.get(article.get("id", ""), 0)
+            rec   = _recency_weight(article.get("collected_at", ""), now_ts)
+            score = round(cov * rec, 4)
+            article["_significance_score"] = score
+            article["_coverage_count"]     = cov
+            article["_recency_weight"]     = round(rec, 4)
+            scored_articles.append(article)
+
+    scored_articles.sort(key=lambda a: a.get("_significance_score", 0), reverse=True)
+
+    domain_buckets = {d: [] for d in DOMAINS}
+    for article in scored_articles:
         domain = (article.get("domain") or "POWER").upper()
         if domain not in domain_buckets:
             domain = "POWER"
         if len(domain_buckets[domain]) < ARTICLES_PER_DOMAIN:
             domain_buckets[domain].append(article)
 
-    balanced = []
+    selected = []
     for domain in DOMAINS:
-        balanced.extend(domain_buckets[domain])
+        selected.extend(domain_buckets[domain])
 
+    final  = state_articles + selected
     counts = {d: len(domain_buckets[d]) for d in DOMAINS}
-    print(f"[fetch] Pool: {len(all_articles)} | Balanced: {len(balanced)} | {counts}")
-    return balanced, all_articles, counts
 
+    print(f"[fetch] Pool: {len(all_articles)} | State: {len(state_articles)} | "
+          f"Scored: {len(selected)} | Total: {len(final)}")
+    print(f"[fetch] Domains: {counts}")
+
+    for domain in DOMAINS:
+        top = domain_buckets.get(domain, [])
+        if top:
+            best = top[0]
+            print(f"  [{domain}] best: "
+                  f"score={best.get('_significance_score',0):.2f} "
+                  f"cov={best.get('_coverage_count',0)} "
+                  f"rec={best.get('_recency_weight',0):.2f} | "
+                  f"{(best.get('title') or '')[:45]}")
+
+    return final, all_articles, counts
 
 def compress_article(article):
     title   = (article.get("title") or "").strip()
@@ -449,17 +582,23 @@ class TPMGuard:
     async def wait_if_needed(self, payload_tokens: int):
         """
         Check if payload fits in current TPM window.
-        If not — wait until enough headroom exists, then continue.
+        If payload > tpm_limit entirely -> raise immediately (never fits).
+        If payload fits but window full -> wait for reset then continue.
         """
+        # Hard cap: payload larger than total limit will never fit
+        if payload_tokens > self.tpm_limit:
+            raise ValueError(
+                f"[tpm-lens{self.lens_id}] Payload {payload_tokens} tokens exceeds "
+                f"TPM limit {self.tpm_limit} — articles must be trimmed before calling."
+            )
         while True:
             used      = self.tokens_used_last_60s()
             headroom  = self.tpm_limit - used
             if payload_tokens <= headroom:
                 break  # fits — proceed
-
             wait_needed = 61 - (time.time() - self.usage_log[0][0]) if self.usage_log else 5
             wait_secs   = max(1, min(wait_needed, 65))
-            print(f"[tpm-lens{self.lens_id}] TPM limit approaching "
+            print(f"[tpm-lens{self.lens_id}] TPM window full "
                   f"({used}/{self.tpm_limit} used) — waiting {wait_secs:.0f}s...")
             await asyncio.sleep(wait_secs)
 
@@ -469,7 +608,7 @@ class TPMGuard:
         Usage:
           result = await guard.call_protected(full_prompt, api_fn, lens, sys_p, usr_p)
         """
-        tokens = self.estimate_tokens(payload) + 2000  # include output budget
+        tokens = self.estimate_tokens(payload) + 2000  # output budget only — TOKENS_PER_ARTICLE is empirical
         await self.wait_if_needed(tokens)
         result = await api_fn(*args, **kwargs)
         self.log_usage(tokens)
@@ -563,19 +702,66 @@ async def call_sambanova(lens, system_prompt, user_prompt):
         return data["choices"][0]["message"]["content"]
 
 
-async def run_lens(lens, system_prompt, user_prompt):
+def trim_articles_to_budget(articles: list, provider: str) -> list:
+    """
+    Trim article list to fit within provider TPM budget.
+    State articles (no _significance_score) always kept first.
+    Best-scored non-state articles fill remaining budget.
+
+    Returns trimmed list safe to send to this provider.
+    """
+    budget = LENS_ARTICLE_BUDGETS.get(provider, 35800)
+    max_articles = max(1, budget // TOKENS_PER_ARTICLE)
+
+    if len(articles) <= max_articles:
+        return articles  # already fits
+
+    # Separate state from scored
+    state   = [a for a in articles if "_significance_score" not in a]
+    scored  = [a for a in articles if "_significance_score" in a]
+
+    # State articles first — but also capped at max_articles
+    # Recent state articles take priority (already sorted desc by collected_at)
+    trimmed   = state[:max_articles]
+    remaining = max(0, max_articles - len(trimmed))
+
+    # Fill remaining with best-scored non-state articles
+    scored_sorted = sorted(scored, key=lambda a: a.get("_significance_score", 0), reverse=True)
+    trimmed += scored_sorted[:remaining]
+
+    return trimmed
+
+
+async def run_lens(lens, system_prompt, articles_full: list):
     """
     Run a single lens with TPM protection.
-    TPMGuard estimates tokens, waits if needed, then calls API.
+    Articles trimmed to provider budget before building prompt.
+    TPMGuard waits if window full, raises if payload impossible.
     Each lens has its own independent TPMGuard instance.
     """
+    from datetime import datetime as _dt, timezone as _tz
     provider = lens["provider"]
     start    = time.time()
     guard    = TPMGuard(provider=provider, lens_id=lens["lens_id"])
+
+    # Trim articles to this provider's budget
+    articles_trimmed = trim_articles_to_budget(articles_full, provider)
+    trim_msg = f" (trimmed {len(articles_full)}->{len(articles_trimmed)})" if len(articles_trimmed) < len(articles_full) else ""
+
+    # Build prompt from trimmed articles
+    domain_blocks, total = build_domain_blocks(articles_trimmed, {})
+    date_str   = _dt.now(_tz.utc).strftime("%Y-%m-%d %H:%M UTC")
+    # Recount domain
+    from collections import Counter as _Counter
+    counts = _Counter((a.get("domain") or "POWER").upper() for a in articles_trimmed)
+    user_prompt = build_prompt(domain_blocks, total, date_str, counts)
+
     full_payload = system_prompt + user_prompt
+    payload_tokens = guard.estimate_tokens(full_payload) + 2000
 
     print(f"[lens-{lens['lens_id']}] Starting {lens['lens_name']} ({lens['model']}) "
-          f"| ~{guard.estimate_tokens(full_payload)} tokens | TPM limit: {guard.tpm_limit}")
+          f"| {len(articles_trimmed)} articles{trim_msg} "
+          f"| ~{payload_tokens} tokens | TPM limit: {guard.tpm_limit}")
     try:
         if provider == "groq":
             result = await guard.call_protected(
@@ -622,11 +808,16 @@ def save_lens_report(supabase, lens, summary, food_for_thought,
 
 
 def get_cycle():
+    """
+    Cycle labels matching real cron schedule.
+    08 UTC=morning | 12 UTC=midday | 16 UTC=afternoon | 20 UTC=evening
+    Fix: LENS-005 FIX-021 — wrong hours from earlier session.
+    """
     hour = datetime.now(timezone.utc).hour
-    if hour == 13:   return "morning"
-    elif hour == 17: return "midday"
-    elif hour == 21: return "afternoon"
-    elif hour == 4:  return "midnight"
+    if   hour == 8:  return "morning"
+    elif hour == 12: return "midday"
+    elif hour == 16: return "afternoon"
+    elif hour == 20: return "evening"
     else:            return "manual"
 
 
@@ -667,15 +858,16 @@ async def main():
     ]
     article_ids = {"selected": selected_ids, "all_collected": all_ids}
 
-    print(f"[lens] {total} articles → 4 lenses firing in parallel...")
+    print(f"[lens] {total} articles -> 4 lenses firing in parallel...")
     print("=" * 60)
 
     # Fire all 4 lenses in parallel
+    # Each lens trims articles to its own TPM budget
     tasks = [
         run_lens(
             lens,
             SYSTEM_PROMPTS[lens["lens_id"]],
-            user_prompt
+            balanced       # pass full article list — each lens trims itself
         )
         for lens in LENSES
     ]
