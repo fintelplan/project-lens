@@ -625,6 +625,112 @@ def build_prompt(domain_blocks, total, date_str, counts):
 
 
 
+
+def find_cross_lens_signals(results: list, lenses: list) -> list:
+    """
+    Find signals appearing in 3+ lens reports = HIGH CONFIDENCE.
+    Extracts keywords from each report, finds overlap across lenses.
+    Returns list of high-confidence signals with lens_count.
+    LENS-005 FIX-031
+    """
+    import re as _re
+
+    stop = {
+        "a","an","the","and","or","but","in","on","at","to","for",
+        "of","with","by","from","is","are","was","were","be","been",
+        "has","have","had","will","would","could","should","this","that",
+        "these","those","it","its","as","up","out","into","about","over",
+        "today","domain","signal","key","development","lens","analysis",
+        "while","also","such","more","most","than","which","when","where",
+    }
+
+    def extract_kws(text):
+        words = _re.findall(r'[a-z]{5,}', (text or '').lower())
+        return {w for w in words if w not in stop}
+
+    # Build keyword sets per lens
+    lens_kws = {}
+    for lens_id, analysis, error in results:
+        if error or not analysis:
+            continue
+        lens_kws[lens_id] = extract_kws(analysis[:3000])
+
+    if len(lens_kws) < 2:
+        return []
+
+    # Find keywords appearing in 3+ lenses
+    all_kws = set()
+    for kws in lens_kws.values():
+        all_kws |= kws
+
+    signals = []
+    for kw in all_kws:
+        lenses_with_kw = [lid for lid, kws in lens_kws.items() if kw in kws]
+        if len(lenses_with_kw) >= 3:
+            signals.append({
+                "signal": kw,
+                "lens_count": len(lenses_with_kw),
+                "lens_ids": lenses_with_kw,
+                "confidence": "CRITICAL" if len(lenses_with_kw) == 4 else "HIGH"
+            })
+
+    # Sort by lens_count descending
+    signals.sort(key=lambda s: s["lens_count"], reverse=True)
+    return signals[:20]  # top 20 signals
+
+
+def score_lens_quality(analysis: str, lens_name: str) -> dict:
+    """
+    Score lens output quality 0-10. Deterministic, no AI needed.
+    5 dimensions × 2 points each = 10 max.
+    LENS-005 FIX-031
+    """
+    if not analysis:
+        return {"total": 0, "details": {}}
+
+    text = analysis.lower()
+
+    # 1. Specificity (0-2): named actors, places, mechanisms
+    specificity_kws = ["iran","trump","china","russia","nato","imf","strait","hormuz",
+                        "bitcoin","ceasefire","sanctions","blockade","ukraine","israel"]
+    spec_hits = sum(1 for kw in specificity_kws if kw in text)
+    specificity = min(2.0, spec_hits * 0.25)
+
+    # 2. Signal depth (0-2): cause-effect language, not just description
+    depth_kws = ["because","therefore","triggers","causes","leads to","results in",
+                  "cui bono","first domino","root cause","underlying","consequence"]
+    depth_hits = sum(1 for kw in depth_kws if kw in text)
+    depth = min(2.0, depth_hits * 0.4)
+
+    # 3. PHI-002 alignment (0-2): GCSP framework applied
+    phi_kws = ["gcsp","sovereignty","rights","freedom","blocked","people","democracy",
+                "pretense","debt trap","sectarian","cui bono"]
+    phi_hits = sum(1 for kw in phi_kws if kw in text)
+    phi_align = min(2.0, phi_hits * 0.4)
+
+    # 4. Cross-domain detection (0-2): domains mentioned together
+    domain_kws = ["power","tech","finance","military","narrative","network","resource"]
+    domain_hits = sum(1 for kw in domain_kws if kw in text)
+    cross_domain = min(2.0, max(0, domain_hits - 2) * 0.5)
+
+    # 5. Food for thought quality (0-2): questions present
+    has_food = "food for thought" in text
+    question_count = text.count("?")
+    food_quality = min(2.0, (1.0 if has_food else 0) + question_count * 0.2)
+
+    total = round(specificity + depth + phi_align + cross_domain + food_quality, 2)
+
+    return {
+        "total": total,
+        "details": {
+            "specificity":   round(specificity, 2),
+            "signal_depth":  round(depth, 2),
+            "phi002_align":  round(phi_align, 2),
+            "cross_domain":  round(cross_domain, 2),
+            "food_quality":  round(food_quality, 2),
+        }
+    }
+
 # ─── TPM Guard ────────────────────────────────────────────────────────────────
 
 class TPMGuard:
@@ -973,16 +1079,30 @@ async def main():
             continue
 
         summary, fft = split_output(analysis)
+        quality = score_lens_quality(analysis, lens["lens_name"])
         save_lens_report(
             supabase, lens, summary, fft,
             article_ids, counts, cycle
         )
+        print(f"  Quality score: {quality['total']}/10 "
+              f"(spec={quality['details'].get('specificity',0):.1f} "
+              f"depth={quality['details'].get('signal_depth',0):.1f} "
+              f"phi={quality['details'].get('phi002_align',0):.1f})")
 
         print(f"\n{'='*60}")
         print(f"LENS {lens_id} — {lens['lens_name'].upper()} ({lens['model']})")
         print(f"Perspective: {lens['perspective']}")
         print(f"{'='*60}")
         print(analysis[:500] + "..." if len(analysis) > 500 else analysis)
+
+    # Cross-lens agreement (LENS-005 FIX-031)
+    cross_signals = find_cross_lens_signals(results, LENSES)
+    if cross_signals:
+        print(f"\n[cross-lens] HIGH CONFIDENCE signals ({len(cross_signals)} found):")
+        for sig in cross_signals[:5]:
+            print(f"  {sig['confidence']} ({sig['lens_count']}/4 lenses): {sig['signal']}")
+    else:
+        print("\n[cross-lens] No cross-lens agreement signals detected")
 
     print("\n" + "=" * 60)
     print(f"[lens] Complete — {total} articles — 4 reports saved")

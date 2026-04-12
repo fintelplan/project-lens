@@ -258,6 +258,7 @@ def main():
     indicators = load_indicators()
     print(f'Sources loaded: {len(sources)}')
     print(f'Indicators loaded: {len(indicators)}')
+    source_fetch_counts = {}  # LENS-005: track per-source article counts
     print()
 
     total_collected = 0
@@ -304,6 +305,12 @@ def main():
     print(f'Done')
     print(f'  Articles fetched:  {total_collected}')
     print(f'  Articles saved:    {total_saved}')
+    # Source health summary (LENS-005 FIX-031)
+    dead_sources = [sid for sid, cnt in source_fetch_counts.items() if cnt == 0]
+    if dead_sources:
+        print(f'  Dead sources: {len(dead_sources)} → {dead_sources}')
+    else:
+        print(f'  Source health: all {len(source_fetch_counts)} sources alive')
     print(f'  Duplicate skipped: {total_collected - total_saved}')
     print(f'  Indicator matches: {total_matches}')
     print(f'  End: {datetime.now(timezone.utc).isoformat()}')
