@@ -32,7 +32,19 @@ load_dotenv()
 # ─── Config ───────────────────────────────────────────────────────────────────
 
 MAX_CHARS_EACH    = 300
-ARTICLES_PER_DOMAIN = 3
+# Per-domain article allocation — weighted by causal position (LENS-005 FIX-028)
+# Hidden signals get more slots: TECH/NARRATIVE/NETWORK are early warning
+# RESOURCE → FINANCE → NETWORK → POWER → NARRATIVE → MILITARY → TECH (causal chain)
+ARTICLES_PER_DOMAIN = {
+    "POWER":     3,   # geopolitical anchor — unchanged
+    "TECH":      4,   # hidden signals — surveillance, rights contraction earliest warning
+    "FINANCE":   2,   # Debt Trap captured via NETWORK signals
+    "MILITARY":  2,   # effect not cause — POWER signals precede these
+    "NARRATIVE": 4,   # Sectarian Trap + PHI-002 pretense detection
+    "NETWORK":   4,   # dark money, enablers, Cui Bono — highest leverage domain
+    "RESOURCE":  2,   # physical floor — present but Debt Trap covered by FINANCE
+}
+ARTICLES_PER_DOMAIN_TOTAL = sum(ARTICLES_PER_DOMAIN.values())  # = 21
 
 DOMAINS = [
     "POWER", "TECH", "FINANCE",
@@ -355,6 +367,77 @@ def _extract_keywords(title: str) -> set:
     return {w for w in words if w not in stop}
 
 
+def _compute_velocity(all_articles: list) -> dict:
+    """
+    Compute velocity score per article.
+    Velocity = how fast this article's topic is accelerating vs 6h baseline.
+
+    recent_count = articles with similar title keywords in last 6 hours
+    baseline = articles with similar keywords in last 48h / 8 (per 6h window)
+    velocity = recent_count / max(1, baseline)
+    multiplier = min(2.0, max(1.0, 1.0 + (velocity - 1.0) × 0.5))
+
+    Breaking news (4× acceleration) → multiplier = 2.0 (score doubled)
+    Normal flow (1× rate)           → multiplier = 1.0 (unchanged)
+    LENS-005 FIX-029
+    """
+    import time as _time
+    now_ts   = _time.time()
+    window6h = 6 * 3600
+    window48h = 48 * 3600
+
+    # Pre-compute keywords per article
+    kw_map = {
+        a.get("id", ""): _extract_keywords(a.get("title", ""))
+        for a in all_articles
+    }
+
+    velocity = {}
+    for a in all_articles:
+        aid      = a.get("id", "")
+        a_kws    = kw_map.get(aid, set())
+        if len(a_kws) < 2:
+            velocity[aid] = 1.0
+            continue
+
+        try:
+            from datetime import datetime as _dt
+            collected = _dt.fromisoformat(a.get("collected_at","").replace("Z","+00:00"))
+            art_ts    = collected.timestamp()
+        except Exception:
+            velocity[aid] = 1.0
+            continue
+
+        recent_count   = 0
+        baseline_count = 0
+
+        for b in all_articles:
+            bid   = b.get("id","")
+            if bid == aid:
+                continue
+            b_kws = kw_map.get(bid, set())
+            if len(a_kws & b_kws) < 2:
+                continue
+            try:
+                b_collected = _dt.fromisoformat(b.get("collected_at","").replace("Z","+00:00"))
+                b_ts        = b_collected.timestamp()
+            except Exception:
+                continue
+
+            age = now_ts - b_ts
+            if age <= window6h:
+                recent_count += 1
+            if age <= window48h:
+                baseline_count += 1
+
+        baseline_per_window = max(1, baseline_count / 8)
+        vel                 = recent_count / baseline_per_window
+        multiplier          = min(2.0, max(1.0, 1.0 + (vel - 1.0) * 0.5))
+        velocity[aid]       = round(multiplier, 4)
+
+    return velocity
+
+
 def _compute_local_coverage(all_articles: list, source_tiers: dict) -> dict:
     """
     Compute local_coverage_count per article.
@@ -424,6 +507,7 @@ def fetch_balanced_articles(supabase):
         return [], [], {d: 0 for d in DOMAINS}
 
     coverage_counts = _compute_local_coverage(all_articles, source_tiers)
+    velocity_scores = _compute_velocity(all_articles)
 
     state_articles  = []
     scored_articles = []
@@ -435,10 +519,12 @@ def fetch_balanced_articles(supabase):
         else:
             cov   = coverage_counts.get(article.get("id", ""), 0)
             rec   = _recency_weight(article.get("collected_at", ""), now_ts)
-            score = round(cov * rec, 4)
+            vel   = velocity_scores.get(article.get("id", ""), 1.0)
+            score = round(cov * rec * vel, 4)
             article["_significance_score"] = score
             article["_coverage_count"]     = cov
             article["_recency_weight"]     = round(rec, 4)
+            article["_velocity_mult"]      = vel
             scored_articles.append(article)
 
     scored_articles.sort(key=lambda a: a.get("_significance_score", 0), reverse=True)
@@ -448,7 +534,8 @@ def fetch_balanced_articles(supabase):
         domain = (article.get("domain") or "POWER").upper()
         if domain not in domain_buckets:
             domain = "POWER"
-        if len(domain_buckets[domain]) < ARTICLES_PER_DOMAIN:
+        limit = ARTICLES_PER_DOMAIN.get(domain, 3) if isinstance(ARTICLES_PER_DOMAIN, dict) else ARTICLES_PER_DOMAIN
+        if len(domain_buckets[domain]) < limit:
             domain_buckets[domain].append(article)
 
     selected = []
@@ -469,8 +556,9 @@ def fetch_balanced_articles(supabase):
             print(f"  [{domain}] best: "
                   f"score={best.get('_significance_score',0):.2f} "
                   f"cov={best.get('_coverage_count',0)} "
-                  f"rec={best.get('_recency_weight',0):.2f} | "
-                  f"{(best.get('title') or '')[:45]}")
+                  f"rec={best.get('_recency_weight',0):.2f} "
+                  f"vel={best.get('_velocity_mult',1.0):.2f} | "
+                  f"{(best.get('title') or '')[:40]}")
 
     return final, all_articles, counts
 

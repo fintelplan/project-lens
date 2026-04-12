@@ -535,6 +535,64 @@
           "phi002_significance": "PHI-002 pretense: 'sovereignty' used to shield power from accountability to people",
           "pretense_type": "sovereignty_shield",
           "tier": "TIER2"
+        },
+        {
+          "id": "POWER-021",
+          "name": "Domestic Lawfare and Judicial Weaponization",
+          "what_to_watch": [
+            "opposition leader jailed",
+            "court bans party",
+            "judicial overhaul",
+            "politically motivated charges",
+            "judiciary capture",
+            "court packed",
+            "rule of law undermined"
+          ],
+          "phi002_significance": "PHI-002: law used as weapon against people's representatives — judiciary becomes tool of oppression not justice",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-022",
+          "name": "Citizenship Stripping or Statelessness",
+          "what_to_watch": [
+            "citizenship revoked",
+            "stateless minority",
+            "passport canceled",
+            "denaturalization",
+            "citizenship stripped",
+            "nationality removed"
+          ],
+          "phi002_significance": "Removing legal personhood = ultimate rights contraction — people erased from political existence",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-023",
+          "name": "Multilateral Exit Velocity",
+          "what_to_watch": [
+            "withdrawal from organization",
+            "treaty termination",
+            "bilateral pivot",
+            "exit multilateral",
+            "leave international body",
+            "quit treaty"
+          ],
+          "phi002_significance": "Governance vacuum — institutional exits create ungoverned spaces where authoritarian actors fill the void",
+          "tier": "STATE"
+        },
+        {
+          "id": "POWER-PHI-007",
+          "name": "Anti-Corruption Pretense: Purging Rivals Under Law",
+          "what_to_watch": [
+            "anti-corruption purge rival",
+            "political opponent arrested corruption",
+            "selective prosecution",
+            "anti-graft political",
+            "corruption charge opposition",
+            "rival jailed corruption"
+          ],
+          "phi002_significance": "PHI-002 pretense: anti-corruption theater used to eliminate political competition not actual corruption",
+          "pretense_type": "anticorruption_purge",
+          "tier": "TIER1"
         }
       ]
     },
@@ -806,6 +864,53 @@
             "commercial satellite restricted"
           ],
           "phi002_significance": "Information suppression — hiding ground truth from people",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-PHI-001",
+          "name": "Smart City as Surveillance Grid",
+          "what_to_watch": [
+            "smart city surveillance",
+            "digital ID mandatory",
+            "biometric tracking convenience",
+            "smart city monitor",
+            "citizen scoring system",
+            "digital twin population"
+          ],
+          "phi002_significance": "PHI-002 pretense: modernization framing total surveillance as convenience — the open-air digital prison",
+          "pretense_type": "modernization_surveillance",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TECH-020",
+          "name": "Transnational Digital Repression",
+          "what_to_watch": [
+            "Pegasus spyware",
+            "spyware dissident",
+            "transnational repression digital",
+            "hack dissident abroad",
+            "surveillance exile",
+            "remote targeting journalist"
+          ],
+          "phi002_significance": "Sovereignty crosses borders — surveillance follows people even when they flee, blocking GCSP everywhere",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TECH-CT-001",
+          "name": "Western Tech Enabling Authoritarians",
+          "what_to_watch": [
+            "western tech sold authoritarian",
+            "surveillance tech export",
+            "dual-use technology transfer",
+            "facial recognition export",
+            "tech company authoritarian",
+            "democratic tech authoritarian use"
+          ],
+          "phi002_significance": "TECH+NETWORK: democratic companies enabling rights contraction globally — Cui Bono at systemic scale",
+          "cross_domains": [
+            "NETWORK",
+            "POWER"
+          ],
           "tier": "TIER1"
         }
       ]
@@ -1821,6 +1926,90 @@
           "phi002_significance": "PHI-002 pretense: 'humanitarian' framing for strategic military or political operations",
           "pretense_type": "humanitarian_cover",
           "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-017",
+          "name": "Accusation in a Mirror: Projection Campaign",
+          "what_to_watch": [
+            "accusing opposition of coup",
+            "preemptive blame",
+            "false flag warning by aggressor",
+            "enemy planning what we are doing",
+            "projection propaganda",
+            "mirror accusation"
+          ],
+          "phi002_significance": "Most dangerous pretense pattern: aggressor accuses victim of their own planned action — creates confusion and pre-justifies atrocity",
+          "pretense_type": "projection_accusation",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-PHI-004",
+          "name": "Victimhood Pretense: Aggression as Self-Defense",
+          "what_to_watch": [
+            "preemptive self-defense",
+            "existential threat narrative",
+            "defensive strike",
+            "we had no choice",
+            "forced to act",
+            "provoked into action"
+          ],
+          "phi002_significance": "PHI-002 pretense: aggressor manufactures victim status to justify attack — reverses perpetrator and victim roles",
+          "pretense_type": "victimhood_aggressor",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-018",
+          "name": "Weaponization of Traditional and Gender Values",
+          "what_to_watch": [
+            "traditional values campaign",
+            "anti-woke propaganda",
+            "gender ideology threat",
+            "family values political",
+            "traditional culture rights",
+            "moral values legislation"
+          ],
+          "phi002_significance": "Sectarian Trap through values war — divides people horizontally while power is concentrated vertically",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TRANS-001",
+          "name": "Transition: Narrative Spike → Military Escalation",
+          "what_to_watch": [
+            "imminent conflict",
+            "inevitable war",
+            "will not hesitate",
+            "red line crossed",
+            "last warning",
+            "no choice but",
+            "exhausted diplomatic options",
+            "military option"
+          ],
+          "phi002_significance": "TRANSITION signal: narrative hardening precedes military action by 24-72h — detect momentum not just events",
+          "transition_type": "narrative_to_military",
+          "cross_domains": [
+            "MILITARY",
+            "POWER"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "TRANS-002",
+          "name": "Transition: Finance Pressure → Political Instability",
+          "what_to_watch": [
+            "inflation protest",
+            "currency crisis protest",
+            "economic emergency powers",
+            "financial collapse emergency",
+            "price rise unrest",
+            "austerity protest"
+          ],
+          "phi002_significance": "TRANSITION signal: economic pressure converting to political instability — Sectarian Trap activation window",
+          "transition_type": "finance_to_instability",
+          "cross_domains": [
+            "FINANCE",
+            "POWER"
+          ],
+          "tier": "TIER1"
         }
       ]
     },
@@ -2062,6 +2251,55 @@
             "intelligence asset exposed"
           ],
           "phi002_significance": "Hidden sovereignty operations affecting people without their knowledge",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-017",
+          "name": "Professional Enabler Exposure",
+          "what_to_watch": [
+            "western law firm oligarch",
+            "accounting firm sanctioned",
+            "offshore wealth manager",
+            "enabler kleptocracy",
+            "lawyer money laundering",
+            "banker sanctions evasion"
+          ],
+          "phi002_significance": "Without lawyers, accountants and bankers the shell companies don't exist — expose the enablers to collapse the network",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NETWORK-PHI-001",
+          "name": "Fake Civil Society: GONGOs",
+          "what_to_watch": [
+            "government organized NGO",
+            "state backed civil society",
+            "fake grassroots",
+            "astroturfing",
+            "GONGO",
+            "manufactured civil society",
+            "state-controlled NGO"
+          ],
+          "phi002_significance": "PHI-002 pretense: governments create fake people's organizations to simulate accountability while maintaining control",
+          "pretense_type": "civil_society_fake",
+          "tier": "TIER2"
+        },
+        {
+          "id": "TRANS-003",
+          "name": "Transition: Sanctions → Network Evasion Spike",
+          "what_to_watch": [
+            "sanctions evasion new",
+            "new sanctions workaround",
+            "crypto bypass sanctions",
+            "shell company sanctions",
+            "alternative payment sanctions",
+            "dark channel sanctions"
+          ],
+          "phi002_significance": "TRANSITION signal: new sanctions immediately activate evasion networks — detect the adaptation not just the sanction",
+          "transition_type": "sanctions_to_evasion",
+          "cross_domains": [
+            "FINANCE",
+            "POWER"
+          ],
           "tier": "TIER1"
         }
       ]
@@ -2335,6 +2573,54 @@
             "nuclear energy deal"
           ],
           "phi002_significance": "Dual-use signal — energy or weapons? Sovereignty implications either way",
+          "tier": "TIER1"
+        },
+        {
+          "id": "RESOURCE-PHI-001",
+          "name": "Green Transition Pretense: Climate Action as Land Grab",
+          "what_to_watch": [
+            "green colonialism",
+            "EV mineral land grab",
+            "indigenous displaced solar",
+            "conservation eviction",
+            "green bond land grab",
+            "climate displacement indigenous"
+          ],
+          "phi002_significance": "PHI-002 pretense: climate framing used to displace people from their land — most dangerous 2026 rights contraction pattern",
+          "pretense_type": "green_colonialism",
+          "tier": "TIER2"
+        },
+        {
+          "id": "RESOURCE-019",
+          "name": "Water Weaponization: Upstream Control",
+          "what_to_watch": [
+            "dam construction upstream",
+            "river flow restricted",
+            "water diplomacy threat",
+            "water diversion conflict",
+            "upstream dam blocking",
+            "transboundary water weapon"
+          ],
+          "phi002_significance": "Controlling water = controlling survival of downstream populations — most basic physical GCSP threat",
+          "tier": "TIER1"
+        },
+        {
+          "id": "TRANS-004",
+          "name": "Transition: Resource Disruption → Military Presence",
+          "what_to_watch": [
+            "naval deployment pipeline",
+            "military protection oil",
+            "warship energy route",
+            "troops energy infrastructure",
+            "military energy supply",
+            "naval chokepoint deploy"
+          ],
+          "phi002_significance": "TRANSITION signal: resource disruption triggers military response — causal chain RESOURCE→MILITARY live",
+          "transition_type": "resource_to_military",
+          "cross_domains": [
+            "MILITARY",
+            "POWER"
+          ],
           "tier": "TIER1"
         }
       ]
