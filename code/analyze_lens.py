@@ -207,6 +207,27 @@ def fetch_recent_articles(supabase):
     return articles
 
 
+def fetch_all_article_links(supabase):
+    """Fetch ALL article links from last LOOKBACK_HOURS — no limit."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
+    response = supabase.table("lens_raw_articles") \
+        .select("id, url, title, domain, collected_at") \
+        .gte("collected_at", cutoff) \
+        .order("collected_at", desc=True) \
+        .execute()
+    all_articles = response.data or []
+    print(f"[fetch] {len(all_articles)} total articles in DB (last {LOOKBACK_HOURS}h)")
+    return [
+        {
+            "id":     a.get("id", ""),
+            "url":    a.get("url", ""),
+            "title":  (a.get("title") or "")[:200],
+            "domain": a.get("domain", "")
+        }
+        for a in all_articles if a.get("url")
+    ]
+
+
 def group_by_domain(articles):
     grouped = {d: [] for d in DOMAINS}
     for article in articles:
@@ -303,7 +324,7 @@ def save_report(supabase, summary, food_for_thought, article_ids,
     }
     response  = supabase.table("lens_reports").insert(record).execute()
     report_id = response.data[0]["id"] if response.data else "unknown"
-    print(f"[save] Saved — id: {report_id} | cycle: {cycle}")
+    print(f"[save] Saved — id: {report_id} | cycle: {cycle} | selected: {len(article_ids.get('selected', []))} | total: {len(article_ids.get('all_collected', []))}")
     return report_id
 
 
@@ -323,10 +344,12 @@ def main():
         print("[lens] No articles in last 24h. Exiting.")
         return
 
+    all_article_links = fetch_all_article_links(supabase)
+
     grouped                      = group_by_domain(articles)
     domain_blocks, total, counts = build_domain_blocks(grouped)
-    # Save full article metadata: id + url + title + domain (LR-036(C))
-    article_ids = [
+
+    selected_articles = [
         {
             "id":     a.get("id", ""),
             "url":    a.get("url", ""),
@@ -336,6 +359,12 @@ def main():
         for a in articles if a.get("id")
     ]
 
+    article_ids = {
+        "selected":      selected_articles,
+        "all_collected": all_article_links
+    }
+
+    print(f"[lens] Collected: {len(all_article_links)} | Selected for AI: {len(selected_articles)}")
     print(f"[lens] Domains: {counts}")
 
     if total == 0:
