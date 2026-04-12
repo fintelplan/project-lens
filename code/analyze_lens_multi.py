@@ -31,7 +31,6 @@ load_dotenv()
 # ─── Config ───────────────────────────────────────────────────────────────────
 
 MAX_CHARS_EACH    = 300
-LOOKBACK_HOURS    = 26
 ARTICLES_PER_DOMAIN = 3
 
 DOMAINS = [
@@ -73,6 +72,9 @@ LENSES = [
         "perspective": "From/of/for the people — who is pretending to serve the people?",
     },
 ]
+
+# LOOKBACK extended to 48h for richer article pool
+LOOKBACK_HOURS = 48
 
 # ─── System Prompts Per Lens ──────────────────────────────────────────────────
 
@@ -117,6 +119,43 @@ WHAT YOU STAND AGAINST:
 HISTORICAL ANCHOR: Equal human worth and fundamental rights must always be
 recognized above ethnic and religious identity. Watch any actor using
 tradition or identity to oppress people.
+
+DEBT TRAP — watch in all four dimensions:
+
+Direct + Active:
+Who is deliberately structuring loans to extract sovereignty?
+What assets, ports, resources, or political compliance are being claimed
+when the trap springs? A nation that cannot repay loses its ability to
+govern freely — this is sovereignty theft through finance.
+Cui Bono: who benefits when a nation defaults?
+
+Direct + Passive:
+What lending creates structural dependency even without malicious intent?
+Which conditions attached to loans redirect public funds away from
+people's growth? Are development loans developing the people or the lender?
+Privatization conditions, austerity requirements, budget controls —
+these are GCSP blockers dressed as financial assistance.
+
+Indirect + Active:
+Who is using existing debt as political leverage?
+Debt forgiveness in exchange for what?
+Debt restructuring in exchange for what?
+Follow the conditionality — that is where sovereignty is traded.
+Vote with us at the UN. Let us build a base. Sell us your port.
+
+Indirect + Passive:
+Which systemic financial structures keep nations permanently dependent
+regardless of any single actor's intent?
+Dollar hegemony, commodity price volatility, structural adjustment
+legacies, interest rate cycles imposed by rich-country central banks
+that devastate poor-country economies — no single villain, but people
+are blocked from growing freely by the architecture itself.
+
+GCSP TEST FOR DEBT:
+Does this debt expand or contract the people's ability to fund their own
+education, healthcare, safe environment — the foundations of GCSP?
+Does this debt give or take sovereignty from the people?
+Who owns the debt — and therefore who owns the decisions?
 """ + SHARED_RULES,
 
     2: """You are a physical reality intelligence analyst for Project Lens.
@@ -364,6 +403,78 @@ def build_prompt(domain_blocks, total, date_str, counts):
     )
 
 
+
+# ─── TPM Guard ────────────────────────────────────────────────────────────────
+
+class TPMGuard:
+    """
+    Token-Per-Minute aware rate limiter.
+    Estimates payload size, tracks usage, waits if needed.
+    Each lens instance is independent — separate quota pools.
+
+    Session: LENS-005
+    Rule: LR-001(A) No hardcoded limits — from LENSES config
+    """
+
+    # Conservative TPM limits per provider (free tier)
+    TPM_LIMITS = {
+        "groq":      6_000,
+        "gemini":   60_000,
+        "cerebras": 60_000,
+        "sambanova": 40_000,
+    }
+
+    def __init__(self, provider: str, lens_id: int):
+        self.provider    = provider
+        self.lens_id     = lens_id
+        self.tpm_limit   = self.TPM_LIMITS.get(provider, 10_000)
+        self.usage_log   = []  # list of (timestamp, tokens_used)
+
+    def estimate_tokens(self, text: str) -> int:
+        """Estimate token count — 4 chars per token is standard approximation."""
+        return max(1, len(text) // 4)
+
+    def tokens_used_last_60s(self) -> int:
+        """Count tokens used in the last 60 seconds."""
+        now     = time.time()
+        cutoff  = now - 60.0
+        # Remove old entries outside window
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > cutoff]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        """Record tokens used at current time."""
+        self.usage_log.append((time.time(), tokens))
+
+    async def wait_if_needed(self, payload_tokens: int):
+        """
+        Check if payload fits in current TPM window.
+        If not — wait until enough headroom exists, then continue.
+        """
+        while True:
+            used      = self.tokens_used_last_60s()
+            headroom  = self.tpm_limit - used
+            if payload_tokens <= headroom:
+                break  # fits — proceed
+
+            wait_needed = 61 - (time.time() - self.usage_log[0][0]) if self.usage_log else 5
+            wait_secs   = max(1, min(wait_needed, 65))
+            print(f"[tpm-lens{self.lens_id}] TPM limit approaching "
+                  f"({used}/{self.tpm_limit} used) — waiting {wait_secs:.0f}s...")
+            await asyncio.sleep(wait_secs)
+
+    async def call_protected(self, payload: str, api_fn, *args, **kwargs):
+        """
+        Estimate payload tokens, wait if needed, call API, log usage.
+        Usage:
+          result = await guard.call_protected(full_prompt, api_fn, lens, sys_p, usr_p)
+        """
+        tokens = self.estimate_tokens(payload) + 2000  # include output budget
+        await self.wait_if_needed(tokens)
+        result = await api_fn(*args, **kwargs)
+        self.log_usage(tokens)
+        return result
+
 # ─── Provider API Calls ───────────────────────────────────────────────────────
 
 async def call_groq(lens, system_prompt, user_prompt):
@@ -379,7 +490,7 @@ async def call_groq(lens, system_prompt, user_prompt):
             {"role": "user",   "content": user_prompt}
         ],
         temperature=0.3,
-        max_tokens=3500
+        max_tokens=2500
     )
     return response.choices[0].message.content
 
@@ -453,18 +564,31 @@ async def call_sambanova(lens, system_prompt, user_prompt):
 
 
 async def run_lens(lens, system_prompt, user_prompt):
+    """
+    Run a single lens with TPM protection.
+    TPMGuard estimates tokens, waits if needed, then calls API.
+    Each lens has its own independent TPMGuard instance.
+    """
     provider = lens["provider"]
     start    = time.time()
-    print(f"[lens-{lens['lens_id']}] Starting {lens['lens_name']} ({lens['model']})...")
+    guard    = TPMGuard(provider=provider, lens_id=lens["lens_id"])
+    full_payload = system_prompt + user_prompt
+
+    print(f"[lens-{lens['lens_id']}] Starting {lens['lens_name']} ({lens['model']}) "
+          f"| ~{guard.estimate_tokens(full_payload)} tokens | TPM limit: {guard.tpm_limit}")
     try:
         if provider == "groq":
-            result = await call_groq(lens, system_prompt, user_prompt)
+            result = await guard.call_protected(
+                full_payload, call_groq, lens, system_prompt, user_prompt)
         elif provider == "gemini":
-            result = await call_gemini(lens, system_prompt, user_prompt)
+            result = await guard.call_protected(
+                full_payload, call_gemini, lens, system_prompt, user_prompt)
         elif provider == "cerebras":
-            result = await call_cerebras(lens, system_prompt, user_prompt)
+            result = await guard.call_protected(
+                full_payload, call_cerebras, lens, system_prompt, user_prompt)
         elif provider == "sambanova":
-            result = await call_sambanova(lens, system_prompt, user_prompt)
+            result = await guard.call_protected(
+                full_payload, call_sambanova, lens, system_prompt, user_prompt)
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
