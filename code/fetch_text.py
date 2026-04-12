@@ -15,6 +15,7 @@ import hashlib
 import time
 import requests
 import feedparser
+from lens_injection_detector import scan_article
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
@@ -72,7 +73,7 @@ def fetch_feed(source: dict) -> list:
                 except Exception:
                     published_at = None
 
-            articles.append({
+            article_candidate = {
                 'url': url,
                 'url_hash': hash_url(url),
                 'title': title[:500] if title else '',
@@ -88,8 +89,19 @@ def fetch_feed(source: dict) -> list:
                 'raw_metadata': json.dumps({
                     'actor': source.get('actor', ''),
                     'tier_coverage': source.get('tier_coverage', []),
+                    'tier': source.get('tier', 'TIER2'),
                 })
-            })
+            }
+            # ── Injection detection (LENS-005) ───────────────────────────
+            scan = scan_article(article_candidate, source_tier=source.get('tier', 'TIER2'))
+            if scan['action'] == 'REMOVE':
+                # Direct prompt injection — silently drop, never reaches AI
+                continue
+            if scan['action'] == 'FLAG':
+                # Lens-specific attack — include but tag for AI awareness
+                article_candidate['injection_flag'] = scan['injection_flag']
+                article_candidate['injection_reason'] = scan['reason']
+            articles.append(article_candidate)
 
         print(f'  OK {source["name"]}: {len(articles)} articles')
 
