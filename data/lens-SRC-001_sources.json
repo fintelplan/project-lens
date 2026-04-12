@@ -2,18 +2,20 @@
   "meta": {
     "file": "lens-SRC-001_sources.json",
     "project": "Project Lens",
-    "version": "1.0",
+    "version": "2.0",
     "created": "LENS-003",
     "total_sources": 20,
-    "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each."
+    "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each.",
+    "updated": "LENS-004",
+    "audit_note": "Full source audit \u00e2\u20ac\u201d 12 fixes applied (A/B/C)"
   },
   "sources": [
     {
       "id": "SRC-001",
-      "name": "US State Department",
+      "name": "US State Dept via Google News",
       "domain": "POWER",
       "actor": "US",
-      "rss_url": "https://www.state.gov/rss-feeds/",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+%22US+State+Department%22+foreign+policy&ceid=US:en&hl=en-US&gl=US",
       "web_url": "https://www.state.gov",
       "frequency": "daily",
       "tier_coverage": [
@@ -22,7 +24,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Official US foreign policy statements"
+      "notes": "US State Dept press releases via Google News RSS \u00e2\u20ac\u201d state.gov direct RSS returns 0 articles. Google News indexes state.gov and provides public RSS. LR-014(E) compliant."
     },
     {
       "id": "SRC-002",
@@ -42,10 +44,10 @@
     },
     {
       "id": "SRC-003",
-      "name": "China MFA",
+      "name": "Xinhua World News",
       "domain": "POWER",
       "actor": "China",
-      "rss_url": "https://www.fmprc.gov.cn/rss.xml",
+      "rss_url": "https://www.xinhuanet.com/english/rss/worldrss.xml",
       "web_url": "https://www.fmprc.gov.cn/eng",
       "frequency": "daily",
       "tier_coverage": [
@@ -54,7 +56,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Official Chinese foreign ministry briefings"
+      "notes": "Xinhua official Chinese state news \u00e2\u20ac\u201d Fix C: replaced broken China MFA RSS"
     },
     {
       "id": "SRC-004",
@@ -74,9 +76,9 @@
     },
     {
       "id": "SRC-005",
-      "name": "NATO News",
+      "name": "UN News",
       "domain": "POWER",
-      "actor": "NATO",
+      "actor": "UN",
       "rss_url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
       "web_url": "https://www.nato.int",
       "frequency": "daily",
@@ -86,14 +88,14 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Official NATO alliance statements and news"
+      "notes": "UN official global news \u00e2\u20ac\u201d Fix B: relabeled from NATO (URL was already UN News)"
     },
     {
       "id": "SRC-006",
-      "name": "Reuters World News",
+      "name": "Reuters via Google News",
       "domain": "POWER",
       "actor": "Global",
-      "rss_url": "https://rsshub.app/reuters/world",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com&ceid=US:en&hl=en-US&gl=US",
       "web_url": "https://www.reuters.com",
       "frequency": "daily",
       "tier_coverage": [
@@ -103,14 +105,14 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Global news wire \u2014 broad coverage across all domains"
+      "notes": "Reuters articles via Google News RSS \u00e2\u20ac\u201d Reuters killed direct RSS June 2020. Google News indexes reuters.com and provides public RSS. Last 24h articles. LR-014(E) compliant."
     },
     {
       "id": "SRC-007",
-      "name": "AP News Top Stories",
+      "name": "AP News via Google News",
       "domain": "POWER",
       "actor": "Global",
-      "rss_url": "https://rsshub.app/apnews/topics/apf-topnews",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&ceid=US:en&hl=en-US&gl=US",
       "web_url": "https://apnews.com",
       "frequency": "daily",
       "tier_coverage": [
@@ -120,7 +122,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Associated Press \u2014 reliable global news wire"
+      "notes": "AP News articles via Google News RSS \u00e2\u20ac\u201d AP blocked RSSHub 403. Google News indexes apnews.com and provides public RSS. Last 24h articles. LR-014(E) compliant."
     },
     {
       "id": "SRC-008",
@@ -143,7 +145,7 @@
       "name": "RAND Corporation",
       "domain": "NARRATIVE",
       "actor": "Think Tank",
-      "rss_url": "https://www.brookings.edu/feed/",
+      "rss_url": "https://www.rand.org/news/press.xml",
       "web_url": "https://www.rand.org",
       "frequency": "weekly",
       "tier_coverage": [
@@ -152,11 +154,11 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Leading US think tank \u2014 shapes policy 6-18 months ahead"
+      "notes": "RAND think tank press releases \u00e2\u20ac\u201d Fix A: correct RAND RSS URL"
     },
     {
       "id": "SRC-010",
-      "name": "CSIS \u2014 Center for Strategic Studies",
+      "name": "CSIS \u00e2\u20ac\u201d Center for Strategic Studies",
       "domain": "NARRATIVE",
       "actor": "Think Tank",
       "rss_url": "https://www.csis.org/rss.xml",
@@ -172,9 +174,9 @@
     },
     {
       "id": "SRC-011",
-      "name": "OFAC Sanctions Updates",
-      "domain": "FINANCE",
-      "actor": "US",
+      "name": "War on the Rocks",
+      "domain": "MILITARY",
+      "actor": "Think Tank",
       "rss_url": "https://warontherocks.com/feed/",
       "web_url": "https://ofac.treas.gov",
       "frequency": "daily",
@@ -183,13 +185,13 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Official US sanctions designations \u2014 tier 1 only"
+      "notes": "Military strategy analysis \u00e2\u20ac\u201d Fix B: relabeled from OFAC (URL was already War on the Rocks)"
     },
     {
       "id": "SRC-012",
-      "name": "IMF News",
-      "domain": "FINANCE",
-      "actor": "IMF",
+      "name": "Foreign Policy Magazine",
+      "domain": "NARRATIVE",
+      "actor": "Global",
       "rss_url": "https://foreignpolicy.com/feed/",
       "web_url": "https://www.imf.org",
       "frequency": "weekly",
@@ -199,12 +201,12 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "International Monetary Fund global economic signals"
+      "notes": "Foreign Policy analysis \u00e2\u20ac\u201d Fix B: relabeled from IMF (URL was already Foreign Policy)"
     },
     {
       "id": "SRC-013",
-      "name": "BIS \u2014 Bank for International Settlements",
-      "domain": "FINANCE",
+      "name": "The Diplomat",
+      "domain": "POWER",
       "actor": "Global",
       "rss_url": "https://thediplomat.com/feed/",
       "web_url": "https://www.bis.org",
@@ -215,7 +217,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Central bank of central banks \u2014 financial stability signals"
+      "notes": "Asia-Pacific geopolitics \u00e2\u20ac\u201d Fix B: relabeled from BIS (URL was already The Diplomat)"
     },
     {
       "id": "SRC-014",
@@ -231,7 +233,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Preprint server \u2014 AI capability breakthroughs appear here first"
+      "notes": "arXiv AI preprints \u00e2\u20ac\u201d correct URL: rss.arxiv.org/rss/cs.AI. Returns 0 articles on Saturday+Sunday by design (arXiv policy). Works Mon-Fri automatically. No fix needed for weekends \u00e2\u20ac\u201d this is expected behavior. Do not change URL."
     },
     {
       "id": "SRC-015",
@@ -247,7 +249,7 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Leading tech journalism \u2014 AI, quantum, semiconductor coverage"
+      "notes": "Leading tech journalism \u00e2\u20ac\u201d AI, quantum, semiconductor coverage"
     },
     {
       "id": "SRC-016",
@@ -263,11 +265,11 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Open source investigation \u2014 conflict verification and network analysis"
+      "notes": "Open source investigation \u00e2\u20ac\u201d conflict verification and network analysis"
     },
     {
       "id": "SRC-017",
-      "name": "DFRLab \u2014 Digital Forensic Research Lab",
+      "name": "DFRLab \u00e2\u20ac\u201d Digital Forensic Research Lab",
       "domain": "NARRATIVE",
       "actor": "Think Tank",
       "rss_url": "https://medium.com/feed/dfrlab",
@@ -283,8 +285,8 @@
     },
     {
       "id": "SRC-018",
-      "name": "SIPRI \u2014 Stockholm Peace Research Institute",
-      "domain": "MILITARY",
+      "name": "Al Jazeera World",
+      "domain": "POWER",
       "actor": "Global",
       "rss_url": "https://www.aljazeera.com/xml/rss/all.xml",
       "web_url": "https://www.sipri.org",
@@ -295,12 +297,12 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Arms trade, military spending, conflict data"
+      "notes": "Al Jazeera global news \u00e2\u20ac\u201d Fix B: relabeled from SIPRI (URL was already Al Jazeera)"
     },
     {
       "id": "SRC-019",
-      "name": "IEA \u2014 International Energy Agency",
-      "domain": "RESOURCE",
+      "name": "BBC World News",
+      "domain": "POWER",
       "actor": "Global",
       "rss_url": "http://feeds.bbci.co.uk/news/world/rss.xml",
       "web_url": "https://www.iea.org",
@@ -311,11 +313,11 @@
       ],
       "ethics_verified": true,
       "language": "en",
-      "notes": "Energy supply, oil market, resource security data"
+      "notes": "BBC global news \u00e2\u20ac\u201d Fix B: relabeled from IEA (URL was already BBC World)"
     },
     {
       "id": "SRC-020",
-      "name": "ICIJ \u2014 International Consortium of Investigative Journalists",
+      "name": "ICIJ \u00e2\u20ac\u201d International Consortium of Investigative Journalists",
       "domain": "NETWORK",
       "actor": "Global",
       "rss_url": "https://www.icij.org/feed/",

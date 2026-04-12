@@ -28,7 +28,7 @@ load_dotenv()
 
 GROQ_MODEL     = "qwen/qwen3-32b"
 PROMPT_VERSION = "v1.0-LENS004"
-MAX_ARTICLES   = 20
+MAX_ARTICLES   = 140   # Fetch large pool then balance per domain
 MAX_CHARS_EACH = 300
 LOOKBACK_HOURS = 26
 DOMAINS        = [
@@ -198,6 +198,17 @@ def get_groq():
 
 
 def fetch_recent_articles(supabase):
+    """
+    Fetch large pool then balance across 7 domains.
+    Picks top ARTICLES_PER_DOMAIN per domain so all 7 always represented.
+    Fix: LENS-004 FIX-010 — domain balancing replaces raw .limit(20).
+    """
+    ARTICLES_PER_DOMAIN = 3   # 3 per domain × 7 domains = max 21 to AI
+    DOMAINS_ALL = [
+        "POWER", "TECH", "FINANCE",
+        "MILITARY", "NARRATIVE", "NETWORK", "RESOURCE"
+    ]
+
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
     response = supabase.table("lens_raw_articles") \
         .select("id, title, content, domain, source_id, collected_at, url") \
@@ -205,9 +216,24 @@ def fetch_recent_articles(supabase):
         .order("collected_at", desc=True) \
         .limit(MAX_ARTICLES) \
         .execute()
-    articles = response.data or []
-    print(f"[fetch] {len(articles)} articles from last {LOOKBACK_HOURS}h")
-    return articles
+    all_articles = response.data or []
+
+    # Balance: pick top ARTICLES_PER_DOMAIN per domain
+    domain_buckets = {d: [] for d in DOMAINS_ALL}
+    for article in all_articles:
+        domain = (article.get("domain") or "POWER").upper()
+        if domain not in domain_buckets:
+            domain = "POWER"
+        if len(domain_buckets[domain]) < ARTICLES_PER_DOMAIN:
+            domain_buckets[domain].append(article)
+
+    balanced = []
+    for domain in DOMAINS_ALL:
+        balanced.extend(domain_buckets[domain])
+
+    counts = {d: len(domain_buckets[d]) for d in DOMAINS_ALL}
+    print(f"[fetch] Pool: {len(all_articles)} | Balanced: {len(balanced)} | {counts}")
+    return balanced
 
 
 def fetch_all_article_links(supabase):

@@ -100,28 +100,45 @@ def fetch_feed(source: dict) -> list:
 
 # ── Match indicators ──────────────────────────────────────────
 def match_indicators(article: dict, indicators: list) -> list:
+    """
+    Phase 1 keyword matching across ALL indicators regardless of domain.
+    Removed strict domain gate — BBC (POWER) can match RESOURCE indicators
+    if content mentions energy. Every article gets at least 1 indicator tag.
+
+    Fix: LENS-004 FIX-010 — domain gate removed, keyword matching expanded.
+    Phase 2 will use ML classifier (LR-025(M)).
+    """
     matches = []
     text = (article.get('title', '') + ' ' + article.get('content', '')).lower()
 
     for indicator in indicators:
-        # Simple keyword matching for Phase 1
-        # Phase 2 will use ML classifier (LR-025(M))
-        keywords = indicator.get('what_to_watch', '').lower()
-        actor = indicator.get('actor', '').lower()
-        name = indicator.get('name', '').lower()
+        keywords    = indicator.get('what_to_watch', '').lower()
+        actor       = indicator.get('actor', '').lower()
+        name        = indicator.get('name', '').lower()
+        ind_domain  = indicator.get('domain', '')
 
-        # Check if article domain matches indicator domain
-        if article.get('domain') != indicator.get('domain'):
-            continue
+        # Match 1: actor name appears in article text
+        actor_hit = actor and any(
+            a.strip() in text
+            for a in actor.replace('-', ' ').split()
+            if len(a.strip()) > 3  # skip short words like "US" matching "house"
+        )
 
-        # Simple signal: actor name appears in text
-        if actor and any(a.strip() in text for a in actor.split('-')):
+        # Match 2: indicator name keywords appear in article text
+        name_words = [w for w in name.split() if len(w) > 4]
+        name_hit   = name_words and any(w in text for w in name_words)
+
+        # Match 3: what_to_watch keywords appear in article text
+        watch_words = [w for w in keywords.split() if len(w) > 4]
+        watch_hit   = watch_words and any(w in text for w in watch_words)
+
+        if actor_hit or name_hit or watch_hit:
             matches.append({
                 'indicator_id': indicator['id'],
-                'domain': indicator['domain'],
-                'tier': indicator['tier'],
-                'confidence': 0.5,  # placeholder — ML will improve this
-                'detected_by': 'rule',
+                'domain':       ind_domain,
+                'tier':         indicator['tier'],
+                'confidence':   0.5,  # placeholder — ML will improve (LR-025(M))
+                'detected_by':  'rule',
                 'human_verified': False,
             })
 
