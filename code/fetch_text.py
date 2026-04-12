@@ -104,6 +104,20 @@ def fetch_feed(source: dict) -> list:
             articles.append(article_candidate)
 
         print(f'  OK {source["name"]}: {len(articles)} articles')
+        if len(articles) == 0 and source.get('reserve_id'):
+            rid = source.get('reserve_id')
+            rsrc = next((s for s in sources if s['id'] == rid), None)
+            if rsrc:
+                print(f'  RESERVE: {source["name"]} dead -> {rsrc["name"]}...')
+                try:
+                    import requests as _rq
+                    rf = feedparser.parse(_rq.get(rsrc['rss_url'],timeout=10,headers={'User-Agent':'Mozilla/5.0'}).content)
+                    for entry in rf.entries[:20]:
+                        u = entry.get('link','')
+                        if u: articles.append({'url':u,'url_hash':hash_url(u),'title':entry.get('title','')[:500],'content':(entry.get('summary','') or '')[:2000],'source_id':rsrc['id'],'source_name':rsrc['name']+' [RESERVE]','published_at':None,'collected_at':datetime.now(timezone.utc).isoformat(),'modality':'text','language':'en','domain':source['domain'],'is_verified':False,'raw_metadata':'{}'})
+                    print(f'  RESERVE OK: {len(articles)} articles')
+                except Exception as re2:
+                    print(f'  RESERVE ERROR: {str(re2)[:50]}')
 
     except Exception as e:
         print(f'  ERROR {source["name"]}: {str(e)[:60]}')
