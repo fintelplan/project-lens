@@ -1,16 +1,17 @@
 name: Lens Collection Pipeline
 # Project Lens — 4x daily collection
-# Runs at: 08:00, 12:00, 16:00, 20:00 UTC
+# Runs at: 13:00, 17:00, 21:00, 04:00 UTC (Washington D.C. EDT primary)
+# 09:00 AM D.C. | 01:00 PM D.C. | 05:00 PM D.C. | 12:00 AM D.C.
 # Collects from 20 public sources
 # Matches 46 indicators across 7 domains
 # Ethics: public data only (LR-014(E))
 
 on:
   schedule:
-    - cron: '0 8 * * *'    # Morning UTC
-    - cron: '0 12 * * *'   # Midday UTC
-    - cron: '0 16 * * *'   # Afternoon UTC
-    - cron: '0 20 * * *'   # Evening UTC
+    - cron: '0 13 * * *'   # 9:00 AM Washington D.C. (EDT)
+    - cron: '0 17 * * *'   # 1:00 PM Washington D.C. (EDT)
+    - cron: '0 21 * * *'   # 5:00 PM Washington D.C. (EDT)
+    - cron: '0 4  * * *'   # 12:00 AM Washington D.C. (EDT) - Asia business hours
   workflow_dispatch:        # Manual trigger
 
 jobs:
