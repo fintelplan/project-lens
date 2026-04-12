@@ -124,7 +124,7 @@ def match_indicators(article: dict, indicators: list) -> list:
     text = (article.get('title', '') + ' ' + article.get('content', '')).lower()
 
     for indicator in indicators:
-        keywords    = indicator.get('what_to_watch', '').lower()
+        keywords = ' '.join(indicator.get('what_to_watch', [])).lower() if isinstance(indicator.get('what_to_watch'), list) else indicator.get('what_to_watch', '').lower()
         actor       = indicator.get('actor', '').lower()
         name        = indicator.get('name', '').lower()
         ind_domain  = indicator.get('domain', '')
