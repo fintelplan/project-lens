@@ -400,6 +400,46 @@
       "tier": "TIER3",
       "layer": 4,
       "notes": "Yahoo News general RSS — 50 articles of broad world news. Layer 4 wide-angle backup. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-026",
+      "name": "EFF Digital Rights",
+      "rss_url": "https://www.eff.org/rss/updates.xml",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Electronic Frontier Foundation — digital rights, AI surveillance, privacy, cyber law. TIER1: original reporting and legal analysis. Best source for rights-contracting tech deployments. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-027",
+      "name": "Wired Magazine",
+      "rss_url": "https://www.wired.com/feed/rss",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Wired — geopolitical tech coverage: AI chips, semiconductor wars, surveillance, cyber warfare, export controls. TIER2: analytical depth. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-028",
+      "name": "Ars Technica",
+      "rss_url": "https://feeds.arstechnica.com/arstechnica/index",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Ars Technica — deep tech analysis, AI, security, infrastructure. TIER2: specialist depth. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-029",
+      "name": "IEEE Spectrum",
+      "rss_url": "https://spectrum.ieee.org/feeds/feed.rss",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "IEEE Spectrum — semiconductor engineering, AI hardware, critical infrastructure tech. TIER2: engineering specialist. Only source for semiconductor/chip-level intelligence. LR-014(E) compliant."
     }
   ]
 }
