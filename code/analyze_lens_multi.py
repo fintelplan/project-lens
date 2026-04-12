@@ -75,14 +75,19 @@ LENSES = [
         "provider":   "cerebras",
         "api_key_env": "CEREBRAS_API_KEY",
         "perspective": "First Domino — what causes what across domains?",
+        "stagger_override": 6,        # fires at 6s — Lens 4 fires at 21s (15s gap)
     },
     {
         "lens_id":    4,
         "lens_name":  "Sovereignty Check",
-        "model":      "Llama-4-Maverick-17B-128E-Instruct",
-        "provider":   "sambanova",
-        "api_key_env": "SAMBANOVA_API_KEY",
+        "model":      "llama-3.3-70b",
+        "provider":   "cerebras",
+        "api_key_env": "CEREBRAS_API_KEY",
         "perspective": "From/of/for the people — who is pretending to serve the people?",
+        "stagger_override": 21,       # 6s cerebras default + 15s gap from Lens 3
+        "fallback_provider":  "sambanova",
+        "fallback_model":     "Llama-3.3-70b",
+        "fallback_api_key_env": "SAMBANOVA_API_KEY",
     },
 ]
 
@@ -661,10 +666,16 @@ def find_cross_lens_signals(results: list, lenses: list) -> list:
         "potential","ongoing","recent","including","through","between",
         "against","within","without","across","however","therefore","because",
         "various","several","further","beyond","around","during","despite",
+        # OUR OWN DOMAIN NAMES — appear in every report as section headers
+        # These are structural noise, never real intelligence signals (LENS-006)
+        "network","finance","resource","narrative","sovereignty","physical",
+        "causal","foundation","reality","military","technology","geopolitical",
     }
 
     def extract_kws(text):
-        words = _re.findall(r'[a-z]{5,}', (text or '').lower())
+        # Min 7 chars — removes noise like "force","other","power","action"
+        # LENS-006: raised from 5 to 7 to eliminate generic single-domain words
+        words = _re.findall(r'[a-z]{7,}', (text or '').lower())
         return {w for w in words if w not in stop}
 
     # Build keyword sets per lens
@@ -920,12 +931,16 @@ class LensProviderGuard:
         self.lens_name = lens_name
         self.attempts  = 0
 
-    async def stagger(self):
-        """Wait stagger delay for this provider before firing."""
-        delay = self.STAGGER_DELAYS.get(self.provider, 5)
+    async def stagger(self, override: int = None):
+        """
+        Wait stagger delay for this provider before firing.
+        override: per-lens stagger_override from LENSES config.
+        Used to give Lens 4 extra 15s gap from Lens 3 on same provider.
+        """
+        delay = override if override is not None else self.STAGGER_DELAYS.get(self.provider, 5)
         if delay > 0:
             print(f"[guard-lens{self.lens_id}] Stagger wait {delay}s "
-                  f"({self.provider} launch delay)...")
+                  f"({'override' if override is not None else self.provider} launch delay)...")
             await asyncio.sleep(delay)
 
     async def handle_429(self) -> bool:
@@ -1071,13 +1086,15 @@ async def run_lens(lens, system_prompt, articles_full: list):
     payload_tokens = guard.estimate_tokens(full_payload) + 2000
 
     # Stagger launch — prevents simultaneous burst hits on providers
-    # LensProviderGuard: each provider has a configured delay offset
+    # Per-lens stagger_override used when two lenses share the same provider
+    # Lens 3 Cerebras=6s, Lens 4 Cerebras=21s — 15s gap prevents burst hit
     launch_guard = LensProviderGuard(
         provider=provider,
         lens_id=lens["lens_id"],
         lens_name=lens["lens_name"]
     )
-    await launch_guard.stagger()
+    stagger_override = lens.get("stagger_override", None)
+    await launch_guard.stagger(override=stagger_override)
 
     print(f"[lens-{lens['lens_id']}] Starting {lens['lens_name']} ({lens['model']}) "
           f"| {len(articles_trimmed)} articles{trim_msg} "
@@ -1105,6 +1122,54 @@ async def run_lens(lens, system_prompt, articles_full: list):
     except Exception as e:
         elapsed = time.time() - start
         print(f"[lens-{lens['lens_id']}] ERROR in {elapsed:.1f}s: {e}")
+
+        # Try fallback provider if configured (LENS-006)
+        fallback_provider = lens.get("fallback_provider")
+        fallback_model    = lens.get("fallback_model")
+        fallback_key_env  = lens.get("fallback_api_key_env")
+
+        if fallback_provider and fallback_model and fallback_key_env:
+            print(f"[lens-{lens['lens_id']}] Trying fallback: "
+                  f"{fallback_provider} {fallback_model}...")
+            fallback_lens = dict(lens)
+            fallback_lens["provider"]    = fallback_provider
+            fallback_lens["model"]       = fallback_model
+            fallback_lens["api_key_env"] = fallback_key_env
+            fallback_lens.pop("fallback_provider", None)
+            fallback_lens.pop("fallback_model", None)
+            fallback_lens.pop("fallback_api_key_env", None)
+            fallback_lens.pop("stagger_override", None)
+            try:
+                articles_fb = trim_articles_to_budget(articles_full, fallback_provider)
+                domain_blocks_fb, total_fb = build_domain_blocks(articles_fb, {})
+                from datetime import datetime as _dt, timezone as _tz
+                from collections import Counter as _Counter
+                date_str_fb = _dt.now(_tz.utc).strftime("%Y-%m-%d %H:%M UTC")
+                counts_fb   = _Counter((a.get("domain") or "POWER").upper()
+                                       for a in articles_fb)
+                user_prompt_fb = build_prompt(domain_blocks_fb, total_fb,
+                                              date_str_fb, counts_fb)
+                system_prompt_fb = SYSTEM_PROMPTS[lens["lens_id"]]
+                if fallback_provider == "sambanova":
+                    result_fb = await call_sambanova(fallback_lens,
+                                                     system_prompt_fb,
+                                                     user_prompt_fb)
+                elif fallback_provider == "cerebras":
+                    result_fb = await call_cerebras(fallback_lens,
+                                                    system_prompt_fb,
+                                                    user_prompt_fb)
+                else:
+                    result_fb = await call_groq(fallback_lens,
+                                               system_prompt_fb,
+                                               user_prompt_fb)
+                fb_elapsed = time.time() - start
+                print(f"[lens-{lens['lens_id']}] Fallback OK in "
+                      f"{fb_elapsed:.1f}s — {len(result_fb)} chars")
+                return lens["lens_id"], result_fb + " [FALLBACK]", None
+            except Exception as fb_e:
+                print(f"[lens-{lens['lens_id']}] Fallback FAILED: {fb_e}")
+                return lens["lens_id"], None, f"Primary: {e} | Fallback: {fb_e}"
+
         return lens["lens_id"], None, str(e)
 
 
@@ -1219,7 +1284,10 @@ async def main():
         print(f"LENS {lens_id} — {lens['lens_name'].upper()} ({lens['model']})")
         print(f"Perspective: {lens['perspective']}")
         print(f"{'='*60}")
-        print(analysis[:500] + "..." if len(analysis) > 500 else analysis)
+        # Strip think tags before console display (LENS-006)
+        # Supabase data already clean via split_output() — console only fix
+        clean_analysis = strip_think_tags(analysis)
+        print(clean_analysis[:500] + "..." if len(clean_analysis) > 500 else clean_analysis)
 
     # Cross-lens agreement (LENS-005 FIX-031)
     cross_signals = find_cross_lens_signals(results, LENSES)
@@ -1348,7 +1416,10 @@ async def main():
         print(f"LENS {lens_id} — {lens['lens_name'].upper()} ({lens['model']})")
         print(f"Perspective: {lens['perspective']}")
         print(f"{'='*60}")
-        print(analysis[:500] + "..." if len(analysis) > 500 else analysis)
+        # Strip think tags before console display (LENS-006)
+        # Supabase data already clean via split_output() — console only fix
+        clean_analysis = strip_think_tags(analysis)
+        print(clean_analysis[:500] + "..." if len(clean_analysis) > 500 else clean_analysis)
 
     # Cross-lens agreement (LENS-005 FIX-031)
     cross_signals = find_cross_lens_signals(results, LENSES)
