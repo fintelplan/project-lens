@@ -86,7 +86,7 @@ LENSES = [
         "perspective": "From/of/for the people — who is pretending to serve the people?",
         "stagger_override": 21,       # 6s cerebras default + 15s gap from Lens 3
         "fallback_provider":  "sambanova",
-        "fallback_model":     "llama3.1-8b",
+        "fallback_model":     "Meta-Llama-3.3-70B-Instruct",  # SambaNova format — LR-005(A)
         "fallback_api_key_env": "SAMBANOVA_API_KEY",
     },
 ]
