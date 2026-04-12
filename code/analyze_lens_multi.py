@@ -80,13 +80,13 @@ LENSES = [
     {
         "lens_id":    4,
         "lens_name":  "Sovereignty Check",
-        "model":      "llama-3.3-70b",
+        "model":      "qwen-3-235b-a22b-instruct-2507",
         "provider":   "cerebras",
         "api_key_env": "CEREBRAS_API_KEY",
         "perspective": "From/of/for the people — who is pretending to serve the people?",
         "stagger_override": 21,       # 6s cerebras default + 15s gap from Lens 3
         "fallback_provider":  "sambanova",
-        "fallback_model":     "Llama-3.3-70b",
+        "fallback_model":     "llama3.1-8b",
         "fallback_api_key_env": "SAMBANOVA_API_KEY",
     },
 ]
@@ -1287,7 +1287,10 @@ async def main():
         # Strip think tags before console display (LENS-006)
         # Supabase data already clean via split_output() — console only fix
         clean_analysis = strip_think_tags(analysis)
-        print(clean_analysis[:500] + "..." if len(clean_analysis) > 500 else clean_analysis)
+        summary_print, fft_print = split_output(analysis)
+        print(summary_print)
+        print()
+        print(fft_print)
 
     # Cross-lens agreement (LENS-005 FIX-031)
     cross_signals = find_cross_lens_signals(results, LENSES)
@@ -1419,7 +1422,10 @@ async def main():
         # Strip think tags before console display (LENS-006)
         # Supabase data already clean via split_output() — console only fix
         clean_analysis = strip_think_tags(analysis)
-        print(clean_analysis[:500] + "..." if len(clean_analysis) > 500 else clean_analysis)
+        summary_print, fft_print = split_output(analysis)
+        print(summary_print)
+        print()
+        print(fft_print)
 
     # Cross-lens agreement (LENS-005 FIX-031)
     cross_signals = find_cross_lens_signals(results, LENSES)
