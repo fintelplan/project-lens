@@ -247,7 +247,8 @@
       "ethics_verified": true,
       "language": "en",
       "notes": "arXiv AI preprints â€” correct URL: rss.arxiv.org/rss/cs.AI. Returns 0 articles on Saturday+Sunday by design (arXiv policy). Works Mon-Fri automatically. No fix needed for weekends â€” this is expected behavior. Do not change URL.",
-      "tier": "TIER3"
+      "tier": "TIER3",
+      "reserve_id": "SRC-015"
     },
     {
       "id": "SRC-015",
@@ -332,7 +333,8 @@
       "ethics_verified": true,
       "language": "en",
       "notes": "BBC global news â€” Fix B: relabeled from IEA (URL was already BBC World)",
-      "tier": "TIER1"
+      "tier": "TIER1",
+      "reserve_id": "SRC-033"
     },
     {
       "id": "SRC-020",
@@ -349,7 +351,8 @@
       "ethics_verified": true,
       "language": "en",
       "notes": "Hidden financial networks and non-state actor investigations",
-      "tier": "TIER1"
+      "tier": "TIER1",
+      "reserve_id": "SRC-034"
     },
     {
       "id": "SRC-021",
@@ -470,6 +473,46 @@
       "tier": "TIER3",
       "layer": 2,
       "notes": "Google News topic RSS — IEA, energy transition, renewable energy, energy poverty. GCSP physical foundation intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-033",
+      "name": "Financial Times World",
+      "rss_url": "https://www.ft.com/rss/home/uk",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Financial Times — gold standard for financial intelligence. Primary source for sanctions, central bank signals, sovereign debt. TIER1: original reporting with institutional credibility. Reserve for BBC when BBC fails."
+    },
+    {
+      "id": "SRC-034",
+      "name": "OCCRP — Organized Crime and Corruption",
+      "rss_url": "https://occrp.org/en/feed",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Organized Crime and Corruption Reporting Project. Investigative journalism exposing money laundering networks, oligarch assets, state-crime nexus. TIER1: 430 official investigations triggered. Reserve for ICIJ when ICIJ fails."
+    },
+    {
+      "id": "SRC-035",
+      "name": "Relief Web",
+      "rss_url": "https://reliefweb.int/updates/rss.xml",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 2,
+      "notes": "UN OCHA-managed humanitarian intelligence platform. Covers conflicts, disasters, displacement, humanitarian crises. TIER2: authoritative on human impact of military conflicts — fills ACLED gap."
+    },
+    {
+      "id": "SRC-036",
+      "name": "Crisis Group",
+      "rss_url": "https://www.crisisgroup.org/rss.xml",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again."
     }
   ]
 }
