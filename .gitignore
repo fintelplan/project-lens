@@ -7,3 +7,4 @@ fetch_log.txt
 fetch_output.txt
 lens-FIX-*.py
 lens-TEST-*.py
+code/.lens_stagger
