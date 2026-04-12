@@ -93,7 +93,7 @@
       "ethics_verified": true,
       "language": "en",
       "notes": "UN official global news â€” Fix B: relabeled from NATO (URL was already UN News)",
-      "tier": "TIER1"
+      "tier": "STATE"
     },
     {
       "id": "SRC-006",
@@ -350,6 +350,56 @@
       "language": "en",
       "notes": "Hidden financial networks and non-state actor investigations",
       "tier": "TIER1"
+    },
+    {
+      "id": "SRC-021",
+      "name": "Google News: Corruption Dark Money",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22corruption%22+OR+%22dark+money%22+OR+%22money+laundering%22",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — corruption, dark money, money laundering. Layer 2 topic-filtered. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-022",
+      "name": "Google News: Sanctions Evasion",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions+evasion%22+OR+%22shell+company%22+OR+%22oligarch%22",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — sanctions evasion, shell companies, oligarch assets. Cui Bono intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-023",
+      "name": "Google News: Energy Security",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22energy+security%22+OR+%22oil+price%22+OR+%22gas+supply%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — energy security, oil price, gas supply. Physical reality intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-024",
+      "name": "Google News: Financial Stability",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions%22+OR+%22financial+stability%22+OR+%22debt+crisis%22",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — sanctions, financial stability, debt crisis. Cui Bono financial intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-025",
+      "name": "Yahoo News RSS",
+      "rss_url": "https://news.yahoo.com/rss/",
+      "domain": "POWER",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 4,
+      "notes": "Yahoo News general RSS — 50 articles of broad world news. Layer 4 wide-angle backup. LR-014(E) compliant."
     }
   ]
 }
