@@ -3,3 +3,7 @@
 __pycache__/
 node_modules/
 venv/
+fetch_log.txt
+fetch_output.txt
+lens-FIX-*.py
+lens-TEST-*.py
