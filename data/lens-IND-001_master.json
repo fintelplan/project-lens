@@ -318,6 +318,223 @@
           ],
           "phi002_significance": "Sovereignty theft through elimination — blocking people from growing freely",
           "tier": "TIER1"
+        },
+        {
+          "id": "POWER-CT-001",
+          "name": "Election + Dark Money (Pseudo-Democracy Signal)",
+          "what_to_watch": [
+            "election campaign finance",
+            "dark money election",
+            "campaign funding foreign",
+            "election funding hidden",
+            "oligarch election",
+            "political donation secret"
+          ],
+          "phi002_significance": "POWER+NETWORK cross-talk: pseudo-democracy funded by hidden actors",
+          "cross_domains": [
+            "NETWORK",
+            "FINANCE"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-CT-002",
+          "name": "Coup + Resource Rights (Sovereignty Theft)",
+          "what_to_watch": [
+            "coup mining rights",
+            "military takeover resources",
+            "junta mineral",
+            "overthrow oil",
+            "seizure natural resources",
+            "military resource control"
+          ],
+          "phi002_significance": "POWER+RESOURCE cross-talk: resource sovereignty theft through force",
+          "cross_domains": [
+            "RESOURCE",
+            "MILITARY"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-CT-003",
+          "name": "Sanctions + Energy Leverage (Debt Trap via Energy)",
+          "what_to_watch": [
+            "energy sanctions",
+            "oil sanctions",
+            "gas sanctions",
+            "energy weapon",
+            "energy coercion",
+            "fuel supply sanction"
+          ],
+          "phi002_significance": "POWER+RESOURCE cross-talk: energy used as sovereign coercion tool",
+          "cross_domains": [
+            "RESOURCE",
+            "FINANCE"
+          ],
+          "tier": "STATE"
+        },
+        {
+          "id": "POWER-CT-004",
+          "name": "Tech Censorship Before Political Event",
+          "what_to_watch": [
+            "internet blocked election",
+            "social media shutdown protest",
+            "platform banned political",
+            "censorship political event",
+            "digital blackout political"
+          ],
+          "phi002_significance": "TECH+POWER cross-talk: rights contraction planned before power move",
+          "cross_domains": [
+            "TECH",
+            "NARRATIVE"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-CT-005",
+          "name": "Nationalism + Resource Claim",
+          "what_to_watch": [
+            "historic territory",
+            "sovereign territory claim",
+            "resource claim sovereignty",
+            "nationalist resource",
+            "reclaim territory",
+            "historical rights mineral"
+          ],
+          "phi002_significance": "NARRATIVE+RESOURCE+POWER: nationalism manufactured to justify resource capture",
+          "cross_domains": [
+            "NARRATIVE",
+            "RESOURCE"
+          ],
+          "tier": "TIER2"
+        },
+        {
+          "id": "POWER-DT-001",
+          "name": "Debt Trap Sovereignty Extraction: Voting Pattern Change",
+          "what_to_watch": [
+            "UN vote change creditor",
+            "abstain UN vote loan",
+            "diplomatic shift debt",
+            "policy change after loan",
+            "foreign policy creditor",
+            "debt diplomacy UN"
+          ],
+          "phi002_significance": "Debt Trap Indirect+Active: sovereignty expressed through voting traded for debt relief",
+          "debt_trap_dimension": "Indirect+Active",
+          "tier": "TIER2"
+        },
+        {
+          "id": "POWER-DT-002",
+          "name": "Debt Trap Strategic Asset: Port/Base/Infrastructure Seizure",
+          "what_to_watch": [
+            "Hambantota",
+            "port debt seized",
+            "strategic port loan",
+            "infrastructure debt control",
+            "base debt exchange",
+            "Gwadar",
+            "Djibouti port debt",
+            "Piraeus debt"
+          ],
+          "phi002_significance": "Debt Trap Direct+Active: named examples of completed sovereignty extraction",
+          "debt_trap_dimension": "Direct+Active",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-PHI-001",
+          "name": "Security Pretense: Surveillance Justified by Safety",
+          "what_to_watch": [
+            "security surveillance justified",
+            "safety camera network",
+            "national security monitor",
+            "security track citizens",
+            "counter terrorism surveillance",
+            "safety facial recognition",
+            "security data collection"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'security' used to justify surveillance — tracking people not threats",
+          "pretense_type": "security_for_control",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-PHI-002",
+          "name": "Stability Pretense: Authoritarianism Justified by Order",
+          "what_to_watch": [
+            "stability requires strong leader",
+            "order before democracy",
+            "stability crackdown",
+            "security before rights",
+            "emergency stability",
+            "strong hand stability",
+            "chaos democracy"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'stability' used to justify authoritarian control over people",
+          "pretense_type": "stability_for_control",
+          "tier": "TIER2"
+        },
+        {
+          "id": "POWER-PHI-003",
+          "name": "Democracy Pretense: Elections Without Real Choice",
+          "what_to_watch": [
+            "election no opposition",
+            "vote one candidate",
+            "election boycott",
+            "no real alternative",
+            "sham election",
+            "controlled election",
+            "97 percent vote",
+            "election formality"
+          ],
+          "phi002_significance": "PHI-002 pretense: performing democracy while denying actual sovereignty to people",
+          "pretense_type": "democracy_facade",
+          "tier": "TIER1"
+        },
+        {
+          "id": "POWER-PHI-004",
+          "name": "Development Pretense: Aid Serving Donor Not Recipient",
+          "what_to_watch": [
+            "development tied aid",
+            "aid condition donor",
+            "development project donor company",
+            "aid contractor foreign",
+            "development benefit donor",
+            "tied aid",
+            "aid roundtrip"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'development' framing extraction as assistance",
+          "pretense_type": "development_extraction",
+          "tier": "TIER2"
+        },
+        {
+          "id": "POWER-PHI-005",
+          "name": "Tradition Pretense: Culture Used to Suppress Rights",
+          "what_to_watch": [
+            "cultural tradition rights",
+            "tradition override rights",
+            "culture suppress women",
+            "traditional values rights",
+            "religious tradition rights",
+            "custom over law",
+            "heritage restrict freedom"
+          ],
+          "phi002_significance": "PHI-002 core: tradition weaponized to suppress fundamental rights and GCSP",
+          "pretense_type": "tradition_suppression",
+          "tier": "TIER2"
+        },
+        {
+          "id": "POWER-PHI-006",
+          "name": "Sovereignty Pretense: Protecting People vs Protecting Power",
+          "what_to_watch": [
+            "sovereignty protect regime",
+            "national sovereignty crackdown",
+            "sovereignty justify",
+            "interference internal affairs rights",
+            "sovereignty shield abuse",
+            "internal matter atrocity"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'sovereignty' used to shield power from accountability to people",
+          "pretense_type": "sovereignty_shield",
+          "tier": "TIER2"
         }
       ]
     },
@@ -863,6 +1080,173 @@
           ],
           "phi002_significance": "Direct+Active debt trap — Belt and Road sovereignty extraction pattern",
           "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-CT-001",
+          "name": "Finance Spike + Nationalist Narrative (Sectarian Trap)",
+          "what_to_watch": [
+            "economic crisis nationalism",
+            "financial crisis ethnic",
+            "recession blame minority",
+            "economic scapegoat",
+            "inflation foreign cause",
+            "poverty ethnic blame"
+          ],
+          "phi002_significance": "FINANCE+NARRATIVE cross-talk: Sectarian Trap forming from economic pressure",
+          "cross_domains": [
+            "NARRATIVE",
+            "POWER"
+          ],
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-CT-002",
+          "name": "Dark Money + Political Power Transfer",
+          "what_to_watch": [
+            "corruption election",
+            "bribe official",
+            "dark money politics",
+            "slush fund political",
+            "offshore political",
+            "secret donation"
+          ],
+          "phi002_significance": "NETWORK+FINANCE+POWER: money flow enabling illegitimate power",
+          "cross_domains": [
+            "NETWORK",
+            "POWER"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-CT-003",
+          "name": "Network Dark Flows + Resource Zone",
+          "what_to_watch": [
+            "sanctions evasion energy",
+            "illicit oil trade",
+            "dark money minerals",
+            "smuggling resources",
+            "black market energy",
+            "illegal mining finance"
+          ],
+          "phi002_significance": "NETWORK+RESOURCE cross-talk: sanctions evasion through resource trade",
+          "cross_domains": [
+            "NETWORK",
+            "RESOURCE"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-DT-001",
+          "name": "Debt Trap Direct+Active: Predatory Infrastructure Loan",
+          "what_to_watch": [
+            "port concession loan",
+            "infrastructure default seizure",
+            "asset collateral loan",
+            "strategic asset debt",
+            "loan default port",
+            "harbor concession",
+            "airport concession debt",
+            "railroad default"
+          ],
+          "phi002_significance": "Debt Trap Direct+Active: deliberately structured to extract sovereignty assets",
+          "debt_trap_dimension": "Direct+Active",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-DT-002",
+          "name": "Debt Trap Direct+Passive: Development Dependency Creation",
+          "what_to_watch": [
+            "privatization condition loan",
+            "budget control condition",
+            "health spending cap",
+            "education budget condition",
+            "subsidy removal loan condition",
+            "structural adjustment",
+            "pension reform condition",
+            "utility privatization"
+          ],
+          "phi002_significance": "Debt Trap Direct+Passive: loan conditions redirecting public funds from people",
+          "debt_trap_dimension": "Direct+Passive",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-DT-003",
+          "name": "Debt Trap Indirect+Active: Debt as Political Leverage",
+          "what_to_watch": [
+            "debt forgiveness political",
+            "debt relief condition vote",
+            "loan forgiven exchange",
+            "refinancing political",
+            "debt swap military base",
+            "debt restructure vote UN",
+            "forgive debt recognition",
+            "debt cancel alliance"
+          ],
+          "phi002_significance": "Debt Trap Indirect+Active: existing debt weaponized for political compliance",
+          "debt_trap_dimension": "Indirect+Active",
+          "tier": "TIER1"
+        },
+        {
+          "id": "FINANCE-DT-004",
+          "name": "Debt Trap Indirect+Passive: Systemic Financial Architecture",
+          "what_to_watch": [
+            "dollar denominated debt",
+            "exchange rate debt",
+            "commodity price debt burden",
+            "interest rate developing",
+            "Federal Reserve developing countries",
+            "dollar hegemony developing",
+            "structural debt Global South"
+          ],
+          "phi002_significance": "Debt Trap Indirect+Passive: global financial architecture keeping nations dependent",
+          "debt_trap_dimension": "Indirect+Passive",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-DT-005",
+          "name": "Debt Trap GCSP Test: Public Budget vs Debt Service",
+          "what_to_watch": [
+            "debt service education budget",
+            "debt payment health",
+            "interest payment social",
+            "debt burden public service",
+            "repayment cut welfare",
+            "loan repayment cuts",
+            "debt crowding out"
+          ],
+          "phi002_significance": "GCSP Test: debt service contracting people's access to education and healthcare",
+          "debt_trap_dimension": "GCSP_Test",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-PHI-001",
+          "name": "Growth Pretense: GDP Growth Not Reaching People",
+          "what_to_watch": [
+            "GDP growth inequality",
+            "growth poverty unchanged",
+            "economy growing wages falling",
+            "growth elite capture",
+            "GDP rich only",
+            "growth not inclusive"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'growth' claimed while GCSP conditions for people deteriorate",
+          "pretense_type": "growth_facade",
+          "tier": "TIER2"
+        },
+        {
+          "id": "FINANCE-PHI-002",
+          "name": "Investment Pretense: Foreign Investment Extracting Value",
+          "what_to_watch": [
+            "profit repatriation",
+            "tax avoidance foreign company",
+            "transfer pricing developing",
+            "investment extraction",
+            "FDI profit outflow",
+            "foreign company tax base erosion"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'investment' framing value extraction from people as development",
+          "pretense_type": "investment_extraction",
+          "tier": "TIER2"
         }
       ]
     },
@@ -1355,6 +1739,87 @@
             "coordinated inauthentic behavior"
           ],
           "phi002_significance": "PHI-002 attack — manufactured reality blocks people from true understanding",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-CT-001",
+          "name": "Tech Platform + Narrative Manufacturing",
+          "what_to_watch": [
+            "algorithm manipulation",
+            "platform amplify extremism",
+            "tech platform propaganda",
+            "social media radicalization",
+            "platform hate speech",
+            "algorithm bias political"
+          ],
+          "phi002_significance": "TECH+NARRATIVE cross-talk: technology used to manufacture and scale division",
+          "cross_domains": [
+            "TECH",
+            "POWER"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-CT-002",
+          "name": "Military Operation + Narrative Cover",
+          "what_to_watch": [
+            "military operation framed",
+            "war narrative",
+            "operation named",
+            "military justification narrative",
+            "peacekeeping cover",
+            "humanitarian intervention narrative"
+          ],
+          "phi002_significance": "MILITARY+NARRATIVE cross-talk: military action wrapped in false narrative",
+          "cross_domains": [
+            "MILITARY",
+            "POWER"
+          ],
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-PHI-001",
+          "name": "Peace Pretense: Ceasefire as Tactical Pause",
+          "what_to_watch": [
+            "ceasefire tactical",
+            "truce rearm",
+            "peace talk delay",
+            "ceasefire violated immediately",
+            "peace process stall",
+            "negotiations bad faith"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'peace' used as cover for tactical repositioning",
+          "pretense_type": "peace_theater",
+          "tier": "TIER1"
+        },
+        {
+          "id": "NARRATIVE-PHI-002",
+          "name": "Reform Pretense: Change Announced Without Change Delivered",
+          "what_to_watch": [
+            "reform announced no implementation",
+            "promised reform delayed",
+            "reform rhetoric no action",
+            "change promised stall",
+            "policy reform reversed",
+            "reform cosmetic"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'reform' performed for international audience not delivered to people",
+          "pretense_type": "reform_theater",
+          "tier": "TIER2"
+        },
+        {
+          "id": "NARRATIVE-PHI-003",
+          "name": "Humanitarian Pretense: Aid as Strategic Tool",
+          "what_to_watch": [
+            "humanitarian aid military",
+            "aid corridor strategic",
+            "humanitarian access political",
+            "relief political condition",
+            "aid weapon",
+            "humanitarian pretense military"
+          ],
+          "phi002_significance": "PHI-002 pretense: 'humanitarian' framing for strategic military or political operations",
+          "pretense_type": "humanitarian_cover",
           "tier": "TIER1"
         }
       ]
