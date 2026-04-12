@@ -1,0 +1,38 @@
+name: Lens GDELT Enrichment
+
+on:
+  schedule:
+    # Runs 15 min after analyze — never blocks main pipeline
+    # collect:  13:00 17:00 21:00 04:00 UTC
+    # analyze:  13:30 17:30 21:30 04:30 UTC
+    # gdelt:    13:45 17:45 21:45 04:45 UTC
+    - cron: '45 13 * * *'
+    - cron: '45 17 * * *'
+    - cron: '45 21 * * *'
+    - cron: '45 4  * * *'
+  workflow_dispatch:  # manual trigger for testing
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv feedparser
+
+      - name: Run GDELT enrichment
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python code/enrich_gdelt.py
