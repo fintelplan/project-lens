@@ -512,14 +512,15 @@
       "actor": "Global",
       "tier": "TIER2",
       "layer": 1,
-      "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again."
+      "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again.",
+      "reserve_id": "SRC-042"
     },
     {
       "id": "SRC-037",
       "name": "Google News: IMF",
       "domain": "FINANCE",
       "actor": "IMF",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
       "web_url": "https://www.imf.org",
       "frequency": "daily",
       "tier_coverage": [
@@ -537,7 +538,7 @@
       "name": "Google News: World Bank",
       "domain": "FINANCE",
       "actor": "World Bank",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
       "web_url": "https://www.worldbank.org",
       "frequency": "daily",
       "tier_coverage": [
@@ -584,7 +585,8 @@
       "language": "en",
       "tier": "TIER2",
       "layer": 1,
-      "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant."
+      "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant.",
+      "reserve_id": "SRC-043"
     },
     {
       "id": "SRC-041",
@@ -603,6 +605,31 @@
       "tier": "TIER2",
       "layer": 1,
       "notes": "Breaking Defense — deep defense policy analysis, Pentagon, NATO, Indo-Pacific strategy. TIER2: read by defense officials and analysts. Strongest source for early military posture signals."
+    },
+    {
+      "id": "SRC-042",
+      "name": "Google News: Crisis Group",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22Crisis+Group%22+OR+%22conflict+prevention%22+%22ceasefire%22+OR+%22peace+talks%22",
+      "domain": "MILITARY",
+      "tier": "TIER2",
+      "actor": "Crisis Group",
+      "language": "en",
+      "tier_coverage": [
+        "MILITARY",
+        "POWER"
+      ]
+    },
+    {
+      "id": "SRC-043",
+      "name": "Google News: Defense Military",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22military%22+%22defense%22+%22pentagon%22+OR+%22armed+forces%22+OR+%22deployment%22",
+      "domain": "MILITARY",
+      "tier": "TIER2",
+      "actor": "Military News",
+      "language": "en",
+      "tier_coverage": [
+        "MILITARY"
+      ]
     }
   ]
 }

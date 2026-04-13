@@ -46,7 +46,7 @@ def hash_url(url: str) -> str:
     return hashlib.sha256(url.encode()).hexdigest()[:32]
 
 # ── Fetch RSS feed ────────────────────────────────────────────
-def fetch_feed(source: dict) -> list:
+def fetch_feed(source: dict, all_sources: list = None) -> list:
     articles = []
     try:
         headers = {
@@ -107,7 +107,7 @@ def fetch_feed(source: dict) -> list:
         print(f'  OK {source["name"]}: {len(articles)} articles')
         if len(articles) == 0 and source.get('reserve_id'):
             rid = source.get('reserve_id')
-            rsrc = next((s for s in sources if s['id'] == rid), None)
+            rsrc = next((s for s in (all_sources or []) if s['id'] == rid), None)
             if rsrc:
                 print(f'  RESERVE: {source["name"]} dead -> {rsrc["name"]}...')
                 try:
@@ -299,7 +299,7 @@ def main():
 
     def fetch_one(src):
         try:
-            return src, fetch_feed(src)
+            return src, fetch_feed(src, sources)
         except Exception:
             return src, []
 
