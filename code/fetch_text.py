@@ -199,6 +199,9 @@ def save_article(article: dict) -> str | None:
         return None
 
 def save_indicator_matches(article_id: str, matches: list):
+    # LENS-008 FIX: bulk POST — was 1 HTTP request per match (2301 requests/run = ~690s)
+    # Now: 1 HTTP request per article — ~200 requests/run instead of 2301
+    # Root cause of collection 15min timeout. Supabase accepts array for bulk insert.
     if not matches or not article_id:
         return
 
@@ -209,17 +212,21 @@ def save_indicator_matches(article_id: str, matches: list):
         'Prefer': 'resolution=ignore-duplicates',
     }
 
+    bulk = []
     for match in matches:
-        match['article_id'] = article_id
-        try:
-            requests.post(
-                f'{SUPABASE_URL}/rest/v1/lens_indicator_matches',
-                headers=headers,
-                json=match,
-                timeout=10
-            )
-        except Exception:
-            pass
+        m = dict(match)
+        m['article_id'] = article_id
+        bulk.append(m)
+
+    try:
+        requests.post(
+            f'{SUPABASE_URL}/rest/v1/lens_indicator_matches',
+            headers=headers,
+            json=bulk,
+            timeout=15
+        )
+    except Exception:
+        pass
 
 def save_pipeline_run(run_data: dict):
     headers = {
