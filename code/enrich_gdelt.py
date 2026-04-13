@@ -89,13 +89,21 @@ def query_gdelt(domain: str, query_info: dict, timespan: str = '24h') -> dict:
         print(f'  FAILED {domain}: 3 attempts exhausted')
         return {'count': 0, 'avg_tone': None, 'top_themes': []}
     try:
-        # LENS-008 FIX: check empty body before .json()
-        # GitHub runner IPs get silent-blocked — GDELT returns 200 with empty body
+        # LENS-008 FIX: detect GitHub IP block before calling .json()
+        # GitHub runner IPs get silent-blocked — GDELT returns 200 with empty
+        # or non-JSON body. Check both empty body AND invalid JSON explicitly.
         if not r.text.strip():
-            print(f'  GDELT_BLOCKED {domain}: 200 OK but empty body (GitHub IP blocked)')
+            print(f'  GDELT_BLOCKED {domain}: empty body (GitHub runner IP blocked)')
             return {'count': 0, 'avg_tone': None, 'top_themes': []}
 
-        data = r.json()
+        try:
+            data = r.json()
+        except (ValueError, json.JSONDecodeError):
+            # Non-JSON body = GitHub IP blocked (HTML error page or garbage)
+            preview = repr(r.text[:40])
+            print(f'  GDELT_BLOCKED {domain}: invalid body (GitHub IP blocked) — {preview}')
+            return {'count': 0, 'avg_tone': None, 'top_themes': []}
+
         # TimelineVol returns timeline array of {date, value} — sum for total count
         timeline = data.get('timeline', [{}])[0].get('data', [])
         count = int(sum(p.get('value', 0) for p in timeline))
