@@ -859,42 +859,68 @@ async def call_groq(lens, system_prompt, user_prompt):
 
 
 async def call_gemini(lens, system_prompt, user_prompt):
+    # LENS-008: retry once on 503 UNAVAILABLE (transient overload) — wait 30s
     from google import genai
     from google.genai import types
     api_key = os.environ.get(lens["api_key_env"])
     if not api_key:
         raise ValueError(f"{lens['api_key_env']} not set")
     client = genai.Client(api_key=api_key)
-    response = await asyncio.to_thread(
-        client.models.generate_content,
-        model=lens["model"],
-        contents=user_prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            temperature=0.3,
-            max_output_tokens=3500,
-            thinking_config=types.ThinkingConfig(thinking_budget=0)
-        )
-    )
-    return response.text
+    last_error = None
+    for attempt in range(2):  # attempt 0 = first try, attempt 1 = retry
+        try:
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model=lens["model"],
+                contents=user_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    temperature=0.3,
+                    max_output_tokens=3500,
+                    thinking_config=types.ThinkingConfig(thinking_budget=0)
+                )
+            )
+            return response.text
+        except Exception as e:
+            last_error = e
+            err_str = str(e)
+            if ("503" in err_str or "UNAVAILABLE" in err_str) and attempt == 0:
+                print(f"[lens-2] Gemini 503 UNAVAILABLE — waiting 30s, retry 1/1...")
+                await asyncio.sleep(30)
+                continue
+            raise
+    raise last_error
 
 
 async def call_cerebras(lens, system_prompt, user_prompt):
+    # LENS-008: retry once on 429 queue_exceeded (transient congestion) — wait 120s
     from cerebras.cloud.sdk import AsyncCerebras
     api_key = os.environ.get(lens["api_key_env"])
     if not api_key:
         raise ValueError(f"{lens['api_key_env']} not set")
     client = AsyncCerebras(api_key=api_key)
-    response = await client.chat.completions.create(
-        model=lens["model"],
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_prompt}
-        ],
-        temperature=0.3,
-        max_completion_tokens=2500
-    )
-    return response.choices[0].message.content
+    last_error = None
+    for attempt in range(2):  # attempt 0 = first try, attempt 1 = retry
+        try:
+            response = await client.chat.completions.create(
+                model=lens["model"],
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_completion_tokens=2500
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            last_error = e
+            err_str = str(e)
+            if "429" in err_str and "queue" in err_str.lower() and attempt == 0:
+                print(f"[lens-3/4] Cerebras 429 queue_exceeded — waiting 120s, retry 1/1...")
+                await asyncio.sleep(120)
+                continue
+            raise
+    raise last_error
 
 
 # ─── Lens Provider Guard ──────────────────────────────────────────────────────
