@@ -89,6 +89,11 @@ def query_gdelt(domain: str, query_info: dict, timespan: str = '24h') -> dict:
         print(f'  FAILED {domain}: 3 attempts exhausted')
         return {'count': 0, 'avg_tone': None, 'top_themes': []}
     try:
+        # LENS-008 FIX: check empty body before .json()
+        # GitHub runner IPs get silent-blocked — GDELT returns 200 with empty body
+        if not r.text.strip():
+            print(f'  GDELT_BLOCKED {domain}: 200 OK but empty body (GitHub IP blocked)')
+            return {'count': 0, 'avg_tone': None, 'top_themes': []}
 
         data = r.json()
         # TimelineVol returns timeline array of {date, value} — sum for total count
@@ -157,7 +162,7 @@ def main():
             'timespan':      '24h',
         })
 
-        time.sleep(10)  # polite delay — GDELT is a shared public resource
+        time.sleep(3)   # LENS-008: reduced 10s->3s (saves 49s/run, still polite)
 
     print()
     save_enrichment(records)
