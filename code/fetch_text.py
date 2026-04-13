@@ -15,6 +15,7 @@ import hashlib
 import time
 import requests
 import feedparser
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from lens_injection_detector import scan_article
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -51,7 +52,7 @@ def fetch_feed(source: dict) -> list:
         headers = {
             'User-Agent': 'Mozilla/5.0 (compatible; ProjectLens/1.0; +https://github.com/fintelplan/project-lens)'
         }
-        response = requests.get(source['rss_url'], headers=headers, timeout=15)
+        response = requests.get(source['rss_url'], headers=headers, timeout=8)
         if not response.ok:
             print(f'  WARNING: {source["name"]} returned {response.status_code}')
             return []
@@ -111,7 +112,7 @@ def fetch_feed(source: dict) -> list:
                 print(f'  RESERVE: {source["name"]} dead -> {rsrc["name"]}...')
                 try:
                     import requests as _rq
-                    rf = feedparser.parse(_rq.get(rsrc['rss_url'],timeout=10,headers={'User-Agent':'Mozilla/5.0'}).content)
+                    rf = feedparser.parse(_rq.get(rsrc['rss_url'],timeout=8,headers={'User-Agent':'Mozilla/5.0'}).content)
                     for entry in rf.entries[:20]:
                         u = entry.get('link','')
                         if u: articles.append({'url':u,'url_hash':hash_url(u),'title':entry.get('title','')[:500],'content':(entry.get('summary','') or '')[:2000],'source_id':rsrc['id'],'source_name':rsrc['name']+' [RESERVE]','published_at':None,'collected_at':datetime.now(timezone.utc).isoformat(),'modality':'text','language':'en','domain':source['domain'],'is_verified':False,'raw_metadata':'{}'})
@@ -290,9 +291,32 @@ def main():
 
     run_start = datetime.now(timezone.utc).isoformat()
 
+    # Phase 1: Parallel fetch (LENS-007 FIX-001)
+    # Root cause: 41 sources x 15s sequential = ~656s -> timeout
+    # Fix: 10 parallel workers -> ~33s fetch time
+    # Phase 2 save stays sequential -- no Supabase race conditions
+    FETCH_WORKERS = 10
+
+    def fetch_one(src):
+        try:
+            return src, fetch_feed(src)
+        except Exception:
+            return src, []
+
+    print(f'[collect] Fetching {len(sources)} sources ({FETCH_WORKERS} workers)...')
+    fetched_results = {}
+    with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as executor:
+        futures = {executor.submit(fetch_one, src): src for src in sources}
+        for future in as_completed(futures):
+            src, articles = future.result()
+            fetched_results[src['id']] = (src, articles)
+
+    print(f'[collect] All fetched. Processing and saving...')
+    print()
+
+    # Phase 2: Sequential save -- safe, no race conditions
     for source in sources:
-        print(f'Fetching: {source["name"]}...')
-        articles = fetch_feed(source)
+        source, articles = fetched_results.get(source['id'], (source, []))
         source_fetch_counts[source['id']] = len(articles)  # LENS-006: track count
 
         for article in articles:
@@ -307,8 +331,6 @@ def main():
             if article_id:
                 total_saved += 1
                 save_indicator_matches(article_id, matches)
-
-        time.sleep(1)  # polite delay between sources
 
     # Save source health to Supabase (LENS-006)
     run_at = datetime.now(timezone.utc).isoformat()
