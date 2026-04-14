@@ -1,8 +1,8 @@
 """
 lens_s2e_legitimacy_v3.py — System 2 Position E: Legitimacy Filter
 Project Lens | LENS-009
-Model: llama-3.3-70b (Cerebras — CEREBRAS_API_KEY)
-UPDATED: switched to Cerebras for provider diversity
+Model: llama-3.1-8b-instant (Groq — GROQ_S2_API_KEY)
+UPDATED: moved to Groq S2 — Cerebras model strings unavailable
 """
 
 import os
@@ -99,7 +99,7 @@ def truncate_report(text: str) -> str:
     if not text: return ""
     return text[:MAX_REPORT_CHARS] + "\n[...truncated]" if len(text) > MAX_REPORT_CHARS else text
 
-def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
+def call_legitimacy_filter(client: Groq, report: dict) -> Optional[dict]:
     report_id = report.get("id", "unknown")
     domain_focus = report.get("domain_focus", "unknown")
     summary = truncate_report(report.get("summary", ""))
@@ -108,7 +108,7 @@ def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
     user_message = f"Extract state actors and apply the 6-point legitimacy assessment.\n\nLens: {domain_focus}\nReport ID: {report_id}\n\n--- REPORT START ---\n{summary}\n--- REPORT END ---\n\nReturn JSON only."
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-E calling Cerebras for {domain_focus} (attempt {attempt})")
+            log.info(f"S2-E calling Groq for {domain_focus} (attempt {attempt})")
             response = client.chat.completions.create(model=MODEL, messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_message}], max_tokens=MAX_TOKENS, temperature=TEMPERATURE)
             raw = response.choices[0].message.content.strip()
             if raw.startswith("```"):
