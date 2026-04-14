@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx google-generativeai mistralai
+          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx "mistralai>=1.0.0"
 
       - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:

@@ -1,10 +1,10 @@
 """
-lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
+lens_s2b_coordination_v2.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
 Model: gemini-1.5-flash (Google — 1M context window)
+FIXED: switched from google.generativeai (deprecated) to google.genai
 Input: lens_reports (latest cycle) — ALL reports in ONE call
 Output: injection_reports (analyst='S2-B')
-Key advantage: 1M context = cross-report pattern detection in single pass
 """
 
 import os
@@ -14,7 +14,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-import google.generativeai as genai
+import google.genai as genai
+import google.genai.types as genai_types
 from supabase import create_client, Client
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -31,14 +32,8 @@ MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 15
-MAX_REPORT_CHARS = 8000   # per report — gemini handles large context well
-
-COORDINATION_TYPES = [
-    "TIMING_SYNC",          # multiple sources push same story in same window
-    "VOCAB_MIRROR",         # unusual phrase across ideologically different sources
-    "STRUCTURAL_MIRROR",    # same narrative arc across sources
-    "COORDINATED_SILENCE",  # topic conspicuously absent across sources
-]
+MAX_REPORT_CHARS = 8000
+MAX_TOTAL_CHARS  = 24000
 
 SYSTEM_PROMPT = """You are S2-B Coordination Analyzer for Project Lens, an OSINT intelligence system.
 
@@ -92,18 +87,10 @@ def get_supabase() -> Client:
 
 
 def get_gemini():
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    return genai.GenerativeModel(
-        model_name=MODEL,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=MAX_TOKENS,
-            temperature=TEMPERATURE,
-        )
-    )
+    return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
-    """Fetch the most recent lens_reports."""
     try:
         if cycle:
             result = sb.table("lens_reports") \
@@ -118,7 +105,6 @@ def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
                 .order("created_at", desc=True) \
                 .limit(4) \
                 .execute()
-
         reports = result.data or []
         log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
         return reports
@@ -136,14 +122,18 @@ def truncate_report(text: str) -> str:
 
 
 def build_multi_report_prompt(reports: list[dict]) -> str:
-    """Build a single prompt containing all reports for cross-analysis."""
     sections = []
+    total_chars = 0
     for i, r in enumerate(reports, 1):
         text = truncate_report(r.get("report_text", ""))
-        sections.append(
+        entry = (
             f"=== REPORT {i}: {r.get('lens_name', 'Unknown')} "
             f"(ID: {r.get('id', 'unknown')}) ===\n{text}\n"
         )
+        if total_chars + len(entry) > MAX_TOTAL_CHARS:
+            break
+        sections.append(entry)
+        total_chars += len(entry)
 
     combined = "\n".join(sections)
     return (
@@ -154,25 +144,28 @@ def build_multi_report_prompt(reports: list[dict]) -> str:
     )
 
 
-def call_coordination_analyzer(model, reports: list[dict]) -> Optional[dict]:
-    """Call gemini-1.5-flash with all reports in one pass."""
+def call_coordination_analyzer(client, reports: list[dict]) -> Optional[dict]:
     if len(reports) < 2:
         log.warning("Need at least 2 reports for coordination analysis")
         return None
 
-    prompt = build_multi_report_prompt(reports)
-    log.info(f"S2-B sending {len(reports)} reports to gemini ({len(prompt)} chars)")
+    full_prompt = SYSTEM_PROMPT + "\n\n" + build_multi_report_prompt(reports)
+    log.info(f"S2-B sending {len(reports)} reports to gemini ({len(full_prompt)} chars)")
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             log.info(f"S2-B calling gemini (attempt {attempt})")
-            response = model.generate_content(
-                [SYSTEM_PROMPT + "\n\n" + prompt]
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=full_prompt,
+                config=genai_types.GenerateContentConfig(
+                    max_output_tokens=MAX_TOKENS,
+                    temperature=TEMPERATURE,
+                )
             )
 
             raw = response.text.strip()
 
-            # Strip markdown fences if present
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):
@@ -182,8 +175,7 @@ def call_coordination_analyzer(model, reports: list[dict]) -> Optional[dict]:
             parsed = json.loads(raw)
             log.info(
                 f"S2-B result: {len(parsed.get('findings', []))} findings, "
-                f"score={parsed.get('overall_coordination_score', 0)}, "
-                f"narrative='{parsed.get('dominant_coordinated_narrative', 'none')}'"
+                f"score={parsed.get('overall_coordination_score', 0)}"
             )
             return parsed
 
@@ -194,10 +186,10 @@ def call_coordination_analyzer(model, reports: list[dict]) -> Optional[dict]:
         except Exception as e:
             err = str(e)
             if "429" in err or "quota" in err.lower():
-                log.warning(f"Rate limit (429) attempt {attempt} — sleeping 30s")
+                log.warning(f"Rate limit attempt {attempt} — sleeping 30s")
                 time.sleep(30)
             elif "503" in err:
-                log.warning(f"Service unavailable attempt {attempt} — sleeping 20s")
+                log.warning(f"503 attempt {attempt} — sleeping 20s")
                 time.sleep(20)
             else:
                 log.error(f"Unexpected error attempt {attempt}: {e}")
@@ -215,13 +207,11 @@ def save_coordination_report(
     run_id: str,
     cycle: Optional[str]
 ) -> bool:
-    """Save S2-B coordination findings to injection_reports table."""
     findings = analysis.get("findings", [])
     overall_score = analysis.get("overall_coordination_score", 0.0)
     dominant_narrative = analysis.get("dominant_coordinated_narrative", "none detected")
 
     rows_to_save = []
-
     if not findings:
         rows_to_save.append({
             "run_id": run_id,
@@ -241,17 +231,16 @@ def save_coordination_report(
         })
     else:
         for finding in findings:
-            sources_involved = finding.get("sources_involved", [])
             evidence = finding.get("evidence", {})
             rows_to_save.append({
                 "run_id": run_id,
                 "cycle": cycle,
-                "lens_report_id": None,  # S2-B spans multiple reports
+                "lens_report_id": None,
                 "analyst": "S2-B",
                 "source_id": None,
                 "injection_type": finding.get("coordination_type", "UNKNOWN"),
                 "evidence": {
-                    "sources_involved": sources_involved,
+                    "sources_involved": finding.get("sources_involved", []),
                     "source_1_quote": evidence.get("source_1_quote", ""),
                     "source_2_quote": evidence.get("source_2_quote", ""),
                     "pattern_description": evidence.get("pattern_description", ""),
@@ -279,22 +268,19 @@ def save_coordination_report(
 
 
 def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
-    """Main entry point for S2-B Coordination Analyzer."""
     start = time.time()
     if not run_id:
         run_id = f"s2b_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
 
     log.info(f"=== S2-B Coordination Analyzer START | run_id={run_id} | cycle={cycle} ===")
 
-    # ── Init clients ──────────────────────────────────────────────────────────
     try:
-        sb = get_supabase()
-        model = get_gemini()
+        sb     = get_supabase()
+        client = get_gemini()
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
 
-    # ── Fetch reports ─────────────────────────────────────────────────────────
     reports = fetch_latest_reports(sb, cycle)
     if not reports:
         log.warning("No lens_reports found — S2-B cannot run")
@@ -304,14 +290,11 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning(f"Only {len(reports)} report(s) — need 2+ for coordination analysis")
         return {"status": "INSUFFICIENT_REPORTS", "reports_analyzed": len(reports)}
 
-    # ── Run coordination analysis (single call, all reports) ──────────────────
-    analysis = call_coordination_analyzer(model, reports)
-
+    analysis = call_coordination_analyzer(client, reports)
     if analysis is None:
         return {"status": "ANALYSIS_FAILED", "reports_analyzed": len(reports)}
 
     saved = save_coordination_report(sb, reports, analysis, run_id, cycle)
-
     elapsed = round(time.time() - start, 1)
 
     summary = {
