@@ -48,9 +48,9 @@ jobs:
           LENS_DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
         run: |
           python code/lens_orchestrator.py
-          echo "Manager passed — proceeding to analyze"
+          echo "System 1 complete — proceeding to System 2"
 
-          - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)
+      - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
