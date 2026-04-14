@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx
+          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx mistralai sambanova-sdk openai
 
       - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:
