@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx
+          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx google-generativeai mistralai
 
       - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:
@@ -49,3 +49,15 @@ jobs:
         run: |
           python code/lens_orchestrator.py
           echo "Manager passed — proceeding to analyze"
+
+          - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MANAGER_API_KEY: ${{ secrets.GROQ_MANAGER_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: |
+          python code/lens_s2_orchestrator.py
+          echo "System 2 complete"
