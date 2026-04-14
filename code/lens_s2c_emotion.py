@@ -1,7 +1,8 @@
 """
-lens_s2c_emotion.py — System 2 Position C: Emotion Decoder
+lens_s2c_emotion_v2.py — System 2 Position C: Emotion Decoder
 Project Lens | LENS-009
-Model: mistral-small-latest (Mistral free tier)
+Model: mixtral-8x7b-32768 (Groq — Mistral model, no mistralai SDK needed)
+FIXED: dropped mistralai SDK dependency — uses Groq client instead
 Input: lens_reports (latest cycle)
 Output: injection_reports (analyst='S2-C')
 Decodes: PRIME → TRIGGER → FRAME → DELIVER → ANCHOR sequence
@@ -14,7 +15,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from mistralai import Mistral
+from groq import Groq
 from supabase import create_client, Client
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -26,15 +27,12 @@ logging.basicConfig(
 log = logging.getLogger("s2c")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "mistral-small-latest"
+MODEL            = "mixtral-8x7b-32768"   # Mistral model on Groq — no SDK needed
 MAX_TOKENS       = 1500
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
 MAX_REPORT_CHARS = 6000
-
-# The 5-step emotional manipulation sequence
-EMOTION_STEPS = ["PRIME", "TRIGGER", "FRAME", "DELIVER", "ANCHOR"]
 
 SYSTEM_PROMPT = """You are S2-C Emotion Decoder for Project Lens, an OSINT intelligence system.
 
@@ -90,8 +88,8 @@ def get_supabase() -> Client:
     return create_client(url, key)
 
 
-def get_mistral() -> Mistral:
-    return Mistral(api_key=os.environ["MISTRAL_API_KEY"])
+def get_groq() -> Groq:
+    return Groq(api_key=os.environ["GROQ_API_KEY"])
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -109,7 +107,6 @@ def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
                 .order("created_at", desc=True) \
                 .limit(4) \
                 .execute()
-
         reports = result.data or []
         log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
         return reports
@@ -126,10 +123,9 @@ def truncate_report(text: str) -> str:
     return text
 
 
-def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
-    """Call mistral-small to decode emotional sequence in one lens report."""
-    report_id  = report.get("id", "unknown")
-    lens_name  = report.get("lens_name", "unknown")
+def call_emotion_decoder(client: Groq, report: dict) -> Optional[dict]:
+    report_id   = report.get("id", "unknown")
+    lens_name   = report.get("lens_name", "unknown")
     report_text = truncate_report(report.get("report_text", ""))
 
     if not report_text.strip():
@@ -146,8 +142,8 @@ def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-C calling mistral for {lens_name} (attempt {attempt})")
-            response = client.chat.complete(
+            log.info(f"S2-C calling {MODEL} for {lens_name} (attempt {attempt})")
+            response = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
@@ -195,18 +191,11 @@ def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
     return None
 
 
-def save_emotion_report(
-    sb: Client,
-    report: dict,
-    analysis: dict,
-    run_id: str
-) -> bool:
-    """Save S2-C emotion decode result to injection_reports table."""
+def save_emotion_report(sb: Client, report: dict, analysis: dict, run_id: str) -> bool:
     manipulation_score = float(analysis.get("manipulation_score", 0.0))
     steps_found        = int(analysis.get("steps_found", 0))
     sequence           = analysis.get("sequence", {})
 
-    # Build flagged_phrases from steps that are present
     flagged = [
         v.get("quote", "")
         for v in sequence.values()
@@ -229,6 +218,7 @@ def save_emotion_report(
             "emotion_target":        analysis.get("emotion_target", "neutral"),
             "audience_posture":      analysis.get("intended_audience_posture", ""),
             "analyst_note":          analysis.get("analyst_note", ""),
+            "model_used":            MODEL,
         },
         "confidence_score": manipulation_score,
         "flagged_phrases":  flagged,
@@ -246,7 +236,6 @@ def save_emotion_report(
 
 
 def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
-    """Main entry point for S2-C Emotion Decoder."""
     start = time.time()
     if not run_id:
         run_id = f"s2c_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
@@ -255,7 +244,7 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     try:
         sb     = get_supabase()
-        client = get_mistral()
+        client = get_groq()
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
@@ -265,9 +254,9 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No lens_reports found — S2-C cannot run")
         return {"status": "NO_REPORTS", "reports_analyzed": 0}
 
-    results      = []
-    saved_count  = 0
-    total_steps  = 0
+    results     = []
+    saved_count = 0
+    total_steps = 0
 
     for i, report in enumerate(reports):
         log.info(f"Processing {i+1}/{len(reports)}: {report.get('lens_name')}")
@@ -283,10 +272,10 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             saved_count += 1
 
         results.append({
-            "lens":              report.get("lens_name"),
-            "status":            "OK",
-            "steps_found":       analysis.get("steps_found", 0),
-            "emotion_target":    analysis.get("emotion_target", "neutral"),
+            "lens":               report.get("lens_name"),
+            "status":             "OK",
+            "steps_found":        analysis.get("steps_found", 0),
+            "emotion_target":     analysis.get("emotion_target", "neutral"),
             "manipulation_score": analysis.get("manipulation_score", 0),
         })
 
@@ -297,14 +286,14 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     elapsed = round(time.time() - start, 1)
 
     summary = {
-        "status":           "COMPLETE",
-        "run_id":           run_id,
-        "cycle":            cycle,
-        "reports_analyzed": len(reports),
-        "reports_saved":    saved_count,
+        "status":            "COMPLETE",
+        "run_id":            run_id,
+        "cycle":             cycle,
+        "reports_analyzed":  len(reports),
+        "reports_saved":     saved_count,
         "total_steps_found": total_steps,
-        "elapsed_seconds":  elapsed,
-        "results":          results,
+        "elapsed_seconds":   elapsed,
+        "results":           results,
     }
 
     log.info(f"=== S2-C COMPLETE | {len(reports)} reports | "
