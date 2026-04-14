@@ -1,8 +1,6 @@
 name: Lens Manager + Analyze
 on:
   schedule:
-    # Orchestrator runs pre-flight + sequential lens execution in one job
-    # Crons: 13:28 17:28 21:28 04:28 UTC (unchanged)
     - cron: '28 13 * * *'
     - cron: '28 17 * * *'
     - cron: '28 21 * * *'
@@ -54,9 +52,11 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_S2_API_KEY: ${{ secrets.GROQ_S2_API_KEY }}
           GROQ_MANAGER_API_KEY: ${{ secrets.GROQ_MANAGER_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          SAMBANOVA_API_KEY: ${{ secrets.SAMBANOVA_API_KEY }}
         run: |
           python code/lens_s2_orchestrator.py
           echo "System 2 complete"
