@@ -81,7 +81,7 @@ def get_supabase() -> Client:
     return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
 def get_groq_s2() -> Groq:
-    return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
+    return Groq(api_key=os.environ["GROQ_S2E_API_KEY"])
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
