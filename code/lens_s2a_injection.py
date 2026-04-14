@@ -92,7 +92,7 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_API_KEY"])
+    return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:

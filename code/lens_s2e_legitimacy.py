@@ -1,7 +1,7 @@
 """
 lens_s2e_legitimacy.py — System 2 Position E: Legitimacy Filter
 Project Lens | LENS-009
-Model: llama-3.1-70b-versatile (Groq)
+Model: llama-3.3-70b-versatile (Groq)
 Input: lens_reports (latest cycle) — extracts named actors
 Output: injection_reports (analyst='S2-E')
 6-point democratic legitimacy check on all actors named in S1 reports
@@ -26,7 +26,7 @@ logging.basicConfig(
 log = logging.getLogger("s2e")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "llama-3.1-70b-versatile"
+MODEL            = "llama-3.3-70b-versatile"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.15      # very low — legitimacy scoring should be consistent
 MAX_RETRIES      = 2
@@ -121,8 +121,8 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    # S2-E uses GROQ_API_KEY — same as S2-A/D but llama-3.1-70b is a different model
-    return Groq(api_key=os.environ["GROQ_API_KEY"])
+    # S2-E uses GROQ_S2E_API_KEY — dedicated quota
+    return Groq(api_key=os.environ["GROQ_S2E_API_KEY"])
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -158,7 +158,7 @@ def truncate_report(text: str) -> str:
 
 
 def call_legitimacy_filter(client: Groq, report: dict) -> Optional[dict]:
-    """Call llama-3.1-70b to assess actor legitimacy in one lens report."""
+    """Call llama-3.3-70b to assess actor legitimacy in one lens report."""
     report_id   = report.get("id", "unknown")
     lens_name   = report.get("lens_name", "unknown")
     report_text = truncate_report(report.get("summary", ""))
@@ -177,7 +177,7 @@ def call_legitimacy_filter(client: Groq, report: dict) -> Optional[dict]:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-E calling llama-3.1-70b for {lens_name} (attempt {attempt})")
+            log.info(f"S2-E calling llama-3.3-70b for {lens_name} (attempt {attempt})")
             response = client.chat.completions.create(
                 model=MODEL,
                 messages=[
