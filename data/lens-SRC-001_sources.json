@@ -868,6 +868,56 @@
       "ethics_verified": true,
       "language": "en",
       "notes": "Google News topic RSS — election interference, democratic backsliding, authoritarian expansion. Direct support for S2-E Legitimacy Filter. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-066",
+      "name": "Dawn (Pakistan)",
+      "url": "https://www.dawn.com/feeds/latest-news",
+      "feed_type": "rss",
+      "domain": "POWER",
+      "tier": "TIER_B",
+      "max_articles": 5,
+      "note": "Pakistan perspective on US-China-India triangle, South Asia, Iran. Non-Western analytical tradition."
+    },
+    {
+      "id": "SRC-067",
+      "name": "Asia Times",
+      "url": "https://asiatimes.com/feed/",
+      "feed_type": "rss",
+      "domain": "POWER",
+      "tier": "TIER_B",
+      "max_articles": 5,
+      "note": "Hong Kong-based. Indo-Pacific from Asian vantage. Strong on China, ASEAN, US-China decoupling."
+    },
+    {
+      "id": "SRC-068",
+      "name": "Middle East Eye",
+      "url": "https://www.middleeasteye.net/rss",
+      "feed_type": "rss",
+      "domain": "POWER",
+      "tier": "TIER_B",
+      "max_articles": 5,
+      "note": "MENA from regional perspective. Gulf, Palestine, Iran, Turkey. Diverges from Western MSM framing."
+    },
+    {
+      "id": "SRC-069",
+      "name": "The Hindu",
+      "url": "https://www.thehindu.com/news/feeder/default.rss",
+      "feed_type": "rss",
+      "domain": "POWER",
+      "tier": "TIER_B",
+      "max_articles": 5,
+      "note": "Indian strategic autonomy perspective. Refuses US-China binary. Critical for Global South signals."
+    },
+    {
+      "id": "SRC-070",
+      "name": "Al Jazeera English",
+      "url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "feed_type": "rss",
+      "domain": "POWER",
+      "tier": "TIER_B",
+      "max_articles": 6,
+      "note": "Qatar-funded. Global South and Muslim-majority world framing. Covers stories Western MSM ignores."
     }
   ]
 }
