@@ -64,7 +64,7 @@ Format:
   "findings": [
     {
       "coordination_type": "<one of the 4 types>",
-      "sources_involved": ["<lens_name_1>", "<lens_name_2>"],
+      "sources_involved": ["<domain_focus_1>", "<domain_focus_2>"],
       "evidence": {
         "source_1_quote": "<exact quote from first report>",
         "source_2_quote": "<exact quote from second report>",
@@ -94,15 +94,15 @@ def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         if cycle:
             result = sb.table("lens_reports") \
-                .select("id, lens_name, report_text, cycle, created_at, source_id") \
+                .select("id, domain_focus, summary, cycle, generated_at") \
                 .eq("cycle", cycle) \
-                .order("created_at", desc=True) \
+                .order("generated_at", desc=True) \
                 .limit(8) \
                 .execute()
         else:
             result = sb.table("lens_reports") \
-                .select("id, lens_name, report_text, cycle, created_at, source_id") \
-                .order("created_at", desc=True) \
+                .select("id, domain_focus, summary, cycle, generated_at") \
+                .order("generated_at", desc=True) \
                 .limit(4) \
                 .execute()
         reports = result.data or []
@@ -125,9 +125,9 @@ def build_multi_report_prompt(reports: list[dict]) -> str:
     sections = []
     total_chars = 0
     for i, r in enumerate(reports, 1):
-        text = truncate_report(r.get("report_text", ""))
+        text = truncate_report(r.get("summary", ""))
         entry = (
-            f"=== REPORT {i}: {r.get('lens_name', 'Unknown')} "
+            f"=== REPORT {i}: {r.get('domain_focus', 'Unknown')} "
             f"(ID: {r.get('id', 'unknown')}) ===\n{text}\n"
         )
         if total_chars + len(entry) > MAX_TOTAL_CHARS:
@@ -227,7 +227,7 @@ def save_coordination_report(
             },
             "confidence_score": 0.0,
             "flagged_phrases": [],
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         })
     else:
         for finding in findings:
@@ -254,7 +254,7 @@ def save_coordination_report(
                     evidence.get("source_1_quote", ""),
                     evidence.get("source_2_quote", ""),
                 ],
-                "created_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
             })
 
     try:

@@ -85,9 +85,9 @@ def call_sambanova(messages: list) -> str:
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         if cycle:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at, source_id").eq("cycle", cycle).order("created_at", desc=True).limit(8).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").eq("cycle", cycle).order("generated_at", desc=True).limit(8).execute()
         else:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at, source_id").order("created_at", desc=True).limit(4).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").order("generated_at", desc=True).limit(4).execute()
         reports = result.data or []
         log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
         return reports
@@ -100,8 +100,8 @@ def truncate_report(text: str) -> str:
 
 def call_emotion_decoder(report: dict) -> Optional[dict]:
     report_id = report.get("id", "unknown")
-    lens_name = report.get("lens_name", "unknown")
-    report_text = truncate_report(report.get("report_text", ""))
+    lens_name = report.get("domain_focus", "unknown")
+    report_text = truncate_report(report.get("summary", ""))
     if not report_text.strip():
         log.warning(f"Empty report_text for {report_id} — skipping"); return None
     user_message = f"Decode the emotional architecture of this intelligence report.\n\nLens: {lens_name}\nReport ID: {report_id}\n\n--- REPORT START ---\n{report_text}\n--- REPORT END ---\n\nReturn JSON only."
@@ -137,11 +137,11 @@ def save_emotion_report(sb: Client, report: dict, analysis: dict, run_id: str) -
     sequence = analysis.get("sequence", {})
     flagged = [v.get("quote", "") for v in sequence.values() if v.get("present") and v.get("quote")]
     injection_type = "EMOTION_SEQUENCE" if steps_found >= 3 else "NONE"
-    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-C", "source_id": report.get("source_id"), "injection_type": injection_type, "evidence": {"sequence": sequence, "steps_found": steps_found, "sequence_completeness": analysis.get("sequence_completeness", 0), "emotion_target": analysis.get("emotion_target", "neutral"), "audience_posture": analysis.get("intended_audience_posture", ""), "analyst_note": analysis.get("analyst_note", ""), "provider": "SambaNova"}, "confidence_score": manipulation_score, "flagged_phrases": flagged, "created_at": datetime.now(timezone.utc).isoformat()}
+    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-C", "source_id": None, "injection_type": injection_type, "evidence": {"sequence": sequence, "steps_found": steps_found, "sequence_completeness": analysis.get("sequence_completeness", 0), "emotion_target": analysis.get("emotion_target", "neutral"), "audience_posture": analysis.get("intended_audience_posture", ""), "analyst_note": analysis.get("analyst_note", ""), "provider": "SambaNova"}, "confidence_score": manipulation_score, "flagged_phrases": flagged, "created_at": datetime.now(timezone.utc).isoformat()}
     try:
         result = sb.table("injection_reports").insert(row).execute()
         saved = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} S2-C row for lens={report.get('lens_name')}"); return True
+        log.info(f"Saved {saved} S2-C row for lens={report.get('domain_focus')}"); return True
     except Exception as e:
         log.error(f"Failed to save S2-C result: {e}"); return False
 
@@ -158,14 +158,14 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No lens_reports found — S2-C cannot run"); return {"status": "NO_REPORTS", "reports_analyzed": 0}
     results = []; saved_count = 0; total_steps = 0
     for i, report in enumerate(reports):
-        log.info(f"Processing {i+1}/{len(reports)}: {report.get('lens_name')}")
+        log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
         analysis = call_emotion_decoder(report)
         if analysis is None:
-            results.append({"lens": report.get("lens_name"), "status": "FAILED"}); continue
+            results.append({"lens": report.get("domain_focus"), "status": "FAILED"}); continue
         total_steps += int(analysis.get("steps_found", 0))
         saved = save_emotion_report(sb, report, analysis, run_id)
         if saved: saved_count += 1
-        results.append({"lens": report.get("lens_name"), "status": "OK", "steps_found": analysis.get("steps_found", 0), "emotion_target": analysis.get("emotion_target", "neutral"), "manipulation_score": analysis.get("manipulation_score", 0)})
+        results.append({"lens": report.get("domain_focus"), "status": "OK", "steps_found": analysis.get("steps_found", 0), "emotion_target": analysis.get("emotion_target", "neutral"), "manipulation_score": analysis.get("manipulation_score", 0)})
         if i < len(reports) - 1:
             log.info("Stagger 6s..."); time.sleep(6)
     elapsed = round(time.time() - start, 1)

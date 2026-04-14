@@ -75,9 +75,9 @@ def get_groq() -> Groq:
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         if cycle:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at, source_id").eq("cycle", cycle).order("created_at", desc=True).limit(8).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").eq("cycle", cycle).order("generated_at", desc=True).limit(8).execute()
         else:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at, source_id").order("created_at", desc=True).limit(4).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").order("generated_at", desc=True).limit(4).execute()
         reports = result.data or []
         log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
         return reports
@@ -91,8 +91,8 @@ def truncate_report(text: str) -> str:
 
 def call_injection_tracer(client: Groq, report: dict) -> Optional[dict]:
     report_id = report.get("id", "unknown")
-    lens_name = report.get("lens_name", "unknown")
-    report_text = truncate_report(report.get("report_text", ""))
+    lens_name = report.get("domain_focus", "unknown")
+    report_text = truncate_report(report.get("summary", ""))
     if not report_text.strip():
         log.warning(f"Empty report_text for {report_id} — skipping")
         return None
@@ -129,14 +129,14 @@ def save_injection_report(sb: Client, report: dict, analysis: dict, run_id: str)
     overall_score = analysis.get("overall_injection_score", 0.0)
     rows_to_save = []
     if not findings:
-        rows_to_save.append({"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-A", "source_id": report.get("source_id"), "injection_type": "NONE", "evidence": {"analyst_note": analysis.get("analyst_note", "No injection patterns detected")}, "confidence_score": 0.0, "flagged_phrases": [], "created_at": datetime.now(timezone.utc).isoformat()})
+        rows_to_save.append({"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-A", "source_id": None, "injection_type": "NONE", "evidence": {"analyst_note": analysis.get("analyst_note", "No injection patterns detected")}, "confidence_score": 0.0, "flagged_phrases": [], "created_at": datetime.now(timezone.utc).isoformat()})
     else:
         for finding in findings:
-            rows_to_save.append({"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-A", "source_id": report.get("source_id"), "injection_type": finding.get("injection_type", "UNKNOWN"), "evidence": {"explanation": finding.get("explanation", ""), "actor_beneficiary": finding.get("actor_beneficiary", "unclear"), "overall_score": overall_score, "analyst_note": analysis.get("analyst_note", "")}, "confidence_score": float(finding.get("confidence", 0.0)), "flagged_phrases": [finding.get("flagged_phrase", "")], "created_at": datetime.now(timezone.utc).isoformat()})
+            rows_to_save.append({"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-A", "source_id": None, "injection_type": finding.get("injection_type", "UNKNOWN"), "evidence": {"explanation": finding.get("explanation", ""), "actor_beneficiary": finding.get("actor_beneficiary", "unclear"), "overall_score": overall_score, "analyst_note": analysis.get("analyst_note", "")}, "confidence_score": float(finding.get("confidence", 0.0)), "flagged_phrases": [finding.get("flagged_phrase", "")], "created_at": datetime.now(timezone.utc).isoformat()})
     try:
         result = sb.table("injection_reports").insert(rows_to_save).execute()
         saved = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} injection_report rows for lens={report.get('lens_name')}")
+        log.info(f"Saved {saved} injection_report rows for lens={report.get('domain_focus')}")
         return True
     except Exception as e:
         log.error(f"Failed to save injection_reports: {e}"); return False
@@ -154,15 +154,15 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No lens_reports found — S2-A cannot run"); return {"status": "NO_REPORTS", "reports_analyzed": 0}
     results = []; total_findings = 0; saved_count = 0
     for i, report in enumerate(reports):
-        log.info(f"Processing report {i+1}/{len(reports)}: {report.get('lens_name')}")
+        log.info(f"Processing report {i+1}/{len(reports)}: {report.get('domain_focus')}")
         analysis = call_injection_tracer(groq_client, report)
         if analysis is None:
-            results.append({"lens": report.get("lens_name"), "status": "FAILED"}); continue
+            results.append({"lens": report.get("domain_focus"), "status": "FAILED"}); continue
         findings_count = len(analysis.get("findings", []))
         total_findings += findings_count
         saved = save_injection_report(sb, report, analysis, run_id)
         if saved: saved_count += 1
-        results.append({"lens": report.get("lens_name"), "status": "OK", "findings": findings_count, "score": analysis.get("overall_injection_score", 0)})
+        results.append({"lens": report.get("domain_focus"), "status": "OK", "findings": findings_count, "score": analysis.get("overall_injection_score", 0)})
         if i < len(reports) - 1:
             log.info("Stagger 6s..."); time.sleep(6)
     elapsed = round(time.time() - start, 1)

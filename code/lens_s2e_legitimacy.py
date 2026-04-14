@@ -53,7 +53,7 @@ Format:
 {
   "analyst": "S2-E",
   "lens_id": "<provided>",
-  "lens_name": "<provided>",
+  "domain_focus": "<provided>",
   "actors_assessed": [
     {
       "actor_name": "<n>",
@@ -86,9 +86,9 @@ def get_cerebras() -> Cerebras:
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         if cycle:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at").eq("cycle", cycle).order("created_at", desc=True).limit(8).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").eq("cycle", cycle).order("generated_at", desc=True).limit(8).execute()
         else:
-            result = sb.table("lens_reports").select("id, lens_name, report_text, cycle, created_at").order("created_at", desc=True).limit(4).execute()
+            result = sb.table("lens_reports").select("id, domain_focus, summary, cycle, generated_at").order("generated_at", desc=True).limit(4).execute()
         reports = result.data or []
         log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
         return reports
@@ -101,14 +101,14 @@ def truncate_report(text: str) -> str:
 
 def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
     report_id = report.get("id", "unknown")
-    lens_name = report.get("lens_name", "unknown")
-    report_text = truncate_report(report.get("report_text", ""))
-    if not report_text.strip():
-        log.warning(f"Empty report_text for {report_id} — skipping"); return None
-    user_message = f"Extract state actors and apply the 6-point legitimacy assessment.\n\nLens: {lens_name}\nReport ID: {report_id}\n\n--- REPORT START ---\n{report_text}\n--- REPORT END ---\n\nReturn JSON only."
+    domain_focus = report.get("domain_focus", "unknown")
+    summary = truncate_report(report.get("summary", ""))
+    if not summary.strip():
+        log.warning(f"Empty summary for {report_id} — skipping"); return None
+    user_message = f"Extract state actors and apply the 6-point legitimacy assessment.\n\nLens: {domain_focus}\nReport ID: {report_id}\n\n--- REPORT START ---\n{summary}\n--- REPORT END ---\n\nReturn JSON only."
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-E calling Cerebras for {lens_name} (attempt {attempt})")
+            log.info(f"S2-E calling Cerebras for {domain_focus} (attempt {attempt})")
             response = client.chat.completions.create(model=MODEL, messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_message}], max_completion_tokens=MAX_TOKENS, temperature=TEMPERATURE)
             raw = response.choices[0].message.content.strip()
             if raw.startswith("```"):
@@ -118,7 +118,7 @@ def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
             parsed = json.loads(raw)
             actors = parsed.get("actors_assessed", [])
             low_actors = parsed.get("low_legitimacy_actors_pushing_narrative", [])
-            log.info(f"S2-E result for {lens_name}: {len(actors)} actors, {len(low_actors)} LOW flagged")
+            log.info(f"S2-E result for {domain_focus}: {len(actors)} actors, {len(low_actors)} LOW flagged")
             return parsed
         except json.JSONDecodeError as e:
             log.warning(f"JSON parse error attempt {attempt}: {e}")
@@ -132,18 +132,18 @@ def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
             else:
                 log.error(f"Unexpected error attempt {attempt}: {e}")
                 if attempt < MAX_RETRIES: time.sleep(RETRY_SLEEP)
-    log.error(f"S2-E failed after {MAX_RETRIES} attempts for {lens_name}"); return None
+    log.error(f"S2-E failed after {MAX_RETRIES} attempts for {domain_focus}"); return None
 
 def save_legitimacy_report(sb: Client, report: dict, analysis: dict, run_id: str) -> bool:
     actors = analysis.get("actors_assessed", [])
     low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
     gap_signal = analysis.get("legitimacy_gap_signal", "")
     injection_type = "LEGITIMACY_GAP" if low_actors else "NONE"
-    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Cerebras"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "created_at": datetime.now(timezone.utc).isoformat()}
+    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Cerebras"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "generated_at": datetime.now(timezone.utc).isoformat()}
     try:
         result = sb.table("injection_reports").insert(row).execute()
         saved = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} S2-E row for lens={report.get('lens_name')}"); return True
+        log.info(f"Saved {saved} S2-E row for lens={report.get('domain_focus')}"); return True
     except Exception as e:
         log.error(f"Failed to save S2-E result: {e}"); return False
 
@@ -160,15 +160,15 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No lens_reports found — S2-E cannot run"); return {"status": "NO_REPORTS", "reports_analyzed": 0}
     results = []; saved_count = 0; total_low = 0
     for i, report in enumerate(reports):
-        log.info(f"Processing {i+1}/{len(reports)}: {report.get('lens_name')}")
+        log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
         analysis = call_legitimacy_filter(client, report)
         if analysis is None:
-            results.append({"lens": report.get("lens_name"), "status": "FAILED"}); continue
+            results.append({"lens": report.get("domain_focus"), "status": "FAILED"}); continue
         low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
         total_low += len(low_actors)
         saved = save_legitimacy_report(sb, report, analysis, run_id)
         if saved: saved_count += 1
-        results.append({"lens": report.get("lens_name"), "status": "OK", "actors_found": len(analysis.get("actors_assessed", [])), "low_legit": len(low_actors), "gap_signal": analysis.get("legitimacy_gap_signal", "none")})
+        results.append({"lens": report.get("domain_focus"), "status": "OK", "actors_found": len(analysis.get("actors_assessed", [])), "low_legit": len(low_actors), "gap_signal": analysis.get("legitimacy_gap_signal", "none")})
         if i < len(reports) - 1:
             log.info("Stagger 6s..."); time.sleep(6)
     elapsed = round(time.time() - start, 1)

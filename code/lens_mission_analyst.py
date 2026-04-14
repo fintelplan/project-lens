@@ -122,15 +122,15 @@ def fetch_s1_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         if cycle:
             result = sb.table("lens_reports") \
-                .select("id, lens_name, report_text, cycle, created_at") \
+                .select("id, domain_focus, summary, cycle, generated_at") \
                 .eq("cycle", cycle) \
-                .order("created_at", desc=True) \
+                .order("generated_at", desc=True) \
                 .limit(8) \
                 .execute()
         else:
             result = sb.table("lens_reports") \
-                .select("id, lens_name, report_text, cycle, created_at") \
-                .order("created_at", desc=True) \
+                .select("id, domain_focus, summary, cycle, generated_at") \
+                .order("generated_at", desc=True) \
                 .limit(4) \
                 .execute()
         reports = result.data or []
@@ -146,15 +146,15 @@ def fetch_s2_reports(sb: Client, run_id: Optional[str] = None) -> list[dict]:
     try:
         if run_id:
             result = sb.table("injection_reports") \
-                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, created_at") \
+                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, generated_at") \
                 .eq("run_id", run_id) \
-                .order("created_at", desc=True) \
+                .order("generated_at", desc=True) \
                 .limit(30) \
                 .execute()
         else:
             result = sb.table("injection_reports") \
-                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, created_at") \
-                .order("created_at", desc=True) \
+                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, generated_at") \
+                .order("generated_at", desc=True) \
                 .limit(20) \
                 .execute()
         reports = result.data or []
@@ -190,8 +190,8 @@ def build_synthesis_prompt(
     # ── S1 Reports ────────────────────────────────────────────────────────────
     sections.append("=== SYSTEM 1 REPORTS (Analytical Lenses) ===\n")
     for r in s1_reports:
-        text = truncate(r.get("report_text", ""), MAX_S1_CHARS)
-        entry = f"--- {r.get('lens_name', 'Unknown Lens')} ---\n{text}\n"
+        text = truncate(r.get("summary", ""), MAX_S1_CHARS)
+        entry = f"--- {r.get('domain_focus', 'Unknown Lens')} ---\n{text}\n"
         if total_chars + len(entry) > MAX_TOTAL_CHARS * 0.6:
             break
         sections.append(entry)
@@ -305,7 +305,7 @@ def save_macro_report(
         "s1_report_ids":  s1_report_ids,
         "s2_report_ids":  s2_report_ids,
         "quality_score":  float(analysis.get("quality_score", 0.0)),
-        "created_at":     datetime.now(timezone.utc).isoformat(),
+        "generated_at":     datetime.now(timezone.utc).isoformat(),
     }
 
     try:
