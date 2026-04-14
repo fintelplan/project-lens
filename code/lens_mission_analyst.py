@@ -124,13 +124,13 @@ def fetch_s1_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
             result = sb.table("lens_reports") \
                 .select("id, domain_focus, summary, cycle, generated_at") \
                 .eq("cycle", cycle) \
-                .order("created_at", desc=True) \
+                .order("generated_at", desc=True) \
                 .limit(8) \
                 .execute()
         else:
             result = sb.table("lens_reports") \
                 .select("id, domain_focus, summary, cycle, generated_at") \
-                .order("created_at", desc=True) \
+                .order("generated_at", desc=True) \
                 .limit(4) \
                 .execute()
         reports = result.data or []

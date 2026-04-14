@@ -11,13 +11,13 @@ import time
 import logging
 from datetime import datetime, timezone
 from typing import Optional
-from cerebras.cloud.sdk import Cerebras
+from groq import Groq
 from supabase import create_client, Client
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [S2-E] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s2e")
 
-MODEL            = "qwen-3-235b-a22b"
+MODEL            = "llama-3.1-8b-instant"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.15
 MAX_RETRIES      = 2
@@ -80,8 +80,8 @@ Format:
 def get_supabase() -> Client:
     return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
-def get_cerebras() -> Cerebras:
-    return Cerebras(api_key=os.environ["CEREBRAS_API_KEY"])
+def get_groq_s2() -> Groq:
+    return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
@@ -109,7 +109,7 @@ def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             log.info(f"S2-E calling Cerebras for {domain_focus} (attempt {attempt})")
-            response = client.chat.completions.create(model=MODEL, messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_message}], max_completion_tokens=MAX_TOKENS, temperature=TEMPERATURE)
+            response = client.chat.completions.create(model=MODEL, messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_message}], max_tokens=MAX_TOKENS, temperature=TEMPERATURE)
             raw = response.choices[0].message.content.strip()
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
@@ -126,7 +126,7 @@ def call_legitimacy_filter(client: Cerebras, report: dict) -> Optional[dict]:
         except Exception as e:
             err = str(e)
             if "429" in err:
-                log.warning(f"Rate limit attempt {attempt} — sleeping 120s"); time.sleep(120)
+                log.warning(f"Rate limit attempt {attempt} — sleeping 20s"); time.sleep(20)
             elif "503" in err:
                 log.warning(f"503 attempt {attempt} — sleeping 15s"); time.sleep(15)
             else:
@@ -139,7 +139,7 @@ def save_legitimacy_report(sb: Client, report: dict, analysis: dict, run_id: str
     low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
     gap_signal = analysis.get("legitimacy_gap_signal", "")
     injection_type = "LEGITIMACY_GAP" if low_actors else "NONE"
-    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Cerebras"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "generated_at": datetime.now(timezone.utc).isoformat()}
+    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Groq-S2"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "generated_at": datetime.now(timezone.utc).isoformat()}
     try:
         result = sb.table("injection_reports").insert(row).execute()
         saved = len(result.data) if result.data else 0
@@ -152,7 +152,7 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     if not run_id: run_id = f"s2e_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
     log.info(f"=== S2-E Legitimacy Filter START | run_id={run_id} | cycle={cycle} ===")
     try:
-        sb = get_supabase(); client = get_cerebras()
+        sb = get_supabase(); client = get_groq_s2()
     except Exception as e:
         log.error(f"Client init failed: {e}"); return {"status": "ERROR", "error": str(e)}
     reports = fetch_latest_reports(sb, cycle)
