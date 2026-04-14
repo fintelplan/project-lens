@@ -232,6 +232,50 @@ def call_emotion_decoder(client: Mistral, report: dict, guard: "TPMGuard") -> Op
     return None
 
 
+
+def build_correction_to_ma(analysis: dict) -> dict:
+    """
+    Hard correction channel output for S2-C Emotion Decoder.
+    When emotional architecture is complete, reader's analytical state was pre-configured
+    before they reached the facts. MA must treat affected signals with reduced confidence.
+    """
+    manip = analysis.get("manipulation_score", 0.0)
+    steps = analysis.get("steps_found", 0)
+    emotion = analysis.get("emotion_target", "neutral")
+
+    if manip < 0.4 or steps < 2:
+        return {"action": "NONE", "mandatory": False}
+
+    if manip >= 0.7 or steps >= 4:
+        action = "DOWNGRADE"
+        adj    = -0.35
+        mandatory = True
+        depth  = "MODERATE"
+    else:
+        action = "FLAG"
+        adj    = -0.15
+        mandatory = False
+        depth  = "SURFACE"
+
+    return {
+        "action":                action,
+        "source_analyst":        "S2-C",
+        "contamination_depth":   depth,
+        "injection_score":       manip,
+        "confidence_adjustment": adj,
+        "reason": (
+            f"Emotional architecture detected: {steps}/5 steps present, "
+            f"primary emotion='{emotion}', manipulation_score={manip:.2f}. "
+            "Reader's analytical state was pre-configured before factual content arrived. "
+            "S1 conclusions may reflect emotional priming, not independent analysis."
+        ),
+        "injection_goal": (
+            f"Pre-configure reader emotional state ('{emotion}') before delivering factual payload, "
+            "bypassing rational evaluation."
+        ),
+        "mandatory": mandatory,
+    }
+
 def save_emotion_report(
     sb: Client,
     report: dict,
@@ -266,6 +310,7 @@ def save_emotion_report(
             "emotion_target":        analysis.get("emotion_target", "neutral"),
             "audience_posture":      analysis.get("intended_audience_posture", ""),
             "analyst_note":          analysis.get("analyst_note", ""),
+            "correction_to_ma":      build_correction_to_ma(analysis),
         },
         "confidence_score": manipulation_score,
         "flagged_phrases":  flagged,

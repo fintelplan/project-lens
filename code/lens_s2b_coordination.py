@@ -244,6 +244,51 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
 
 
 # ── Save ──────────────────────────────────────────────────────────────────────
+
+def build_correction_to_ma(analysis: dict) -> dict:
+    """
+    Hard correction channel output for S2-B Coordination Analyzer.
+    When coordination is detected, MA must downgrade signals from coordinated sources.
+    Pattern 2 (Manufactured Consensus) is the most dangerous cross-lens contaminator.
+    """
+    score    = analysis.get("overall_coordination_score", 0.0)
+    findings = analysis.get("findings", [])
+    dominant = analysis.get("dominant_coordinated_narrative", "none detected")
+
+    if score < 0.3 or not findings:
+        return {"action": "NONE", "mandatory": False}
+
+    types = list({f.get("coordination_type", "") for f in findings})
+
+    if score >= 0.65 or len(findings) >= 3:
+        action = "DOWNGRADE"
+        adj    = -0.40
+        mandatory = True
+        depth  = "MODERATE"
+    else:
+        action = "FLAG"
+        adj    = -0.15
+        mandatory = False
+        depth  = "SURFACE"
+
+    return {
+        "action":                action,
+        "source_analyst":        "S2-B",
+        "contamination_depth":   depth,
+        "injection_score":       score,
+        "confidence_adjustment": adj,
+        "reason": (
+            f"Coordination detected across {len(findings)} signal(s): {types}. "
+            f"Dominant coordinated narrative: '{dominant[:100]}'. "
+            "Signals from coordinated sources may reflect manufactured consensus, not independent verification."
+        ),
+        "injection_goal": (
+            f"Manufacture appearance of independent consensus around: '{dominant[:80]}'"
+            if dominant != "none detected" else "Coordination pattern without clear dominant narrative."
+        ),
+        "mandatory": mandatory,
+    }
+
 def save_coordination_report(
     sb: Client, reports: list, analysis: dict, run_id: str, cycle: Optional[str]
 ) -> bool:
@@ -261,6 +306,7 @@ def save_coordination_report(
                 "reports_analyzed":  len(reports),
                 "dominant_narrative": dominant,
                 "model": MODEL, "context": "1M",
+                "correction_to_ma": build_correction_to_ma(analysis),
             },
             "confidence_score": 0.0, "flagged_phrases": [],
             "created_at": datetime.now(timezone.utc).isoformat(),
@@ -282,6 +328,7 @@ def save_coordination_report(
                     "dominant_narrative":  dominant,
                     "model": MODEL, "context": "1M",
                     "analyst_note": analysis.get("analyst_note", ""),
+                    "correction_to_ma": build_correction_to_ma(analysis),
                 },
                 "confidence_score": float(finding.get("confidence", 0.0)),
                 "flagged_phrases":  [ev.get("source_1_quote", ""), ev.get("source_2_quote", "")],

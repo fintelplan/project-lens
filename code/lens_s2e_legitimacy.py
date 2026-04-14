@@ -263,6 +263,51 @@ def call_legitimacy_filter(client: Groq, report: dict, guard: "TPMGuard") -> Opt
     return None
 
 
+
+def build_correction_to_ma(analysis: dict) -> dict:
+    """
+    Hard correction channel output for S2-E Legitimacy Filter.
+    When LOW legitimacy actors dominate the narrative, their framing should not be
+    treated as independent verification. MA must flag signals attributed to these actors.
+    """
+    actors     = analysis.get("actors_assessed", [])
+    low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
+    gap_signal = analysis.get("legitimacy_gap_signal", "")
+
+    if not low_actors:
+        return {"action": "NONE", "mandatory": False}
+
+    total     = max(len(actors), 1)
+    low_ratio = len(low_actors) / total
+
+    if len(low_actors) >= 2 or low_ratio >= 0.5:
+        action = "FLAG"
+        adj    = -0.20
+        mandatory = True
+        depth  = "MODERATE"
+    else:
+        action = "FLAG"
+        adj    = -0.10
+        mandatory = False
+        depth  = "SURFACE"
+
+    return {
+        "action":                action,
+        "source_analyst":        "S2-E",
+        "contamination_depth":   depth,
+        "injection_score":       low_ratio,
+        "confidence_adjustment": adj,
+        "reason": (
+            f"LOW legitimacy actors pushing narrative: {low_actors}. "
+            + (gap_signal[:150] if gap_signal else "Actors without democratic legitimacy are dominant in report framing.")
+        ),
+        "injection_goal": (
+            f"Actors with LOW democratic legitimacy ({low_actors}) are shaping the narrative — "
+            "their framing may systematically misrepresent the situation to serve their interests."
+        ),
+        "mandatory": mandatory,
+    }
+
 def save_legitimacy_report(
     sb: Client,
     report: dict,
@@ -293,6 +338,7 @@ def save_legitimacy_report(
             "legitimacy_gap_signal": gap_signal,
             "analyst_note":       analysis.get("analyst_note", ""),
             "total_actors":       len(actors),
+            "correction_to_ma":   build_correction_to_ma(analysis),
         },
         "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0),
         "flagged_phrases":  flagged,
