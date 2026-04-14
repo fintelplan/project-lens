@@ -139,7 +139,7 @@ def save_legitimacy_report(sb: Client, report: dict, analysis: dict, run_id: str
     low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
     gap_signal = analysis.get("legitimacy_gap_signal", "")
     injection_type = "LEGITIMACY_GAP" if low_actors else "NONE"
-    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Groq-S2"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "generated_at": datetime.now(timezone.utc).isoformat()}
+    row = {"run_id": run_id, "cycle": report.get("cycle"), "lens_report_id": report.get("id"), "analyst": "S2-E", "source_id": None, "injection_type": injection_type, "evidence": {"actors_assessed": actors, "low_legitimacy_actors": low_actors, "legitimacy_gap_signal": gap_signal, "analyst_note": analysis.get("analyst_note", ""), "total_actors": len(actors), "provider": "Groq-S2"}, "confidence_score": min(len(low_actors) / max(len(actors), 1), 1.0), "flagged_phrases": low_actors[:10], "created_at": datetime.now(timezone.utc).isoformat()}
     try:
         result = sb.table("injection_reports").insert(row).execute()
         saved = len(result.data) if result.data else 0
@@ -170,7 +170,7 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         if saved: saved_count += 1
         results.append({"lens": report.get("domain_focus"), "status": "OK", "actors_found": len(analysis.get("actors_assessed", [])), "low_legit": len(low_actors), "gap_signal": analysis.get("legitimacy_gap_signal", "none")})
         if i < len(reports) - 1:
-            log.info("Stagger 6s..."); time.sleep(6)
+            log.info("Stagger 12s..."); time.sleep(12)
     elapsed = round(time.time() - start, 1)
     summary = {"status": "COMPLETE", "run_id": run_id, "cycle": cycle, "reports_analyzed": len(reports), "reports_saved": saved_count, "total_low_legitimacy_actors": total_low, "elapsed_seconds": elapsed, "results": results}
     log.info(f"=== S2-E COMPLETE | {len(reports)} reports | {total_low} LOW legitimacy actors | {elapsed}s ===")
