@@ -17,7 +17,7 @@ from supabase import create_client, Client
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [S2-E] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s2e")
 
-MODEL            = "llama-3.3-70b"
+MODEL            = "qwen-3-235b-a22b"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.15
 MAX_RETRIES      = 2

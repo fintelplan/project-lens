@@ -32,7 +32,7 @@ logging.basicConfig(
 log = logging.getLogger("s2_orchestrator")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-STAGGER_BETWEEN_POSITIONS = 8   # seconds between S2 positions — avoid provider hammering
+STAGGER_BETWEEN_POSITIONS = 12   # seconds between S2 positions — avoid provider hammering
 
 
 def get_latest_cycle() -> Optional[str]:
@@ -45,7 +45,7 @@ def get_latest_cycle() -> Optional[str]:
         )
         result = sb.table("lens_reports") \
             .select("cycle") \
-            .order("created_at", desc=True) \
+            .order("generated_at", desc=True) \
             .limit(1) \
             .execute()
         if result.data:

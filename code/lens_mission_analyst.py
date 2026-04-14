@@ -124,13 +124,13 @@ def fetch_s1_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
             result = sb.table("lens_reports") \
                 .select("id, domain_focus, summary, cycle, generated_at") \
                 .eq("cycle", cycle) \
-                .order("generated_at", desc=True) \
+                .order("created_at", desc=True) \
                 .limit(8) \
                 .execute()
         else:
             result = sb.table("lens_reports") \
                 .select("id, domain_focus, summary, cycle, generated_at") \
-                .order("generated_at", desc=True) \
+                .order("created_at", desc=True) \
                 .limit(4) \
                 .execute()
         reports = result.data or []
@@ -146,15 +146,15 @@ def fetch_s2_reports(sb: Client, run_id: Optional[str] = None) -> list[dict]:
     try:
         if run_id:
             result = sb.table("injection_reports") \
-                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, generated_at") \
+                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, created_at") \
                 .eq("run_id", run_id) \
-                .order("generated_at", desc=True) \
+                .order("created_at", desc=True) \
                 .limit(30) \
                 .execute()
         else:
             result = sb.table("injection_reports") \
-                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, generated_at") \
-                .order("generated_at", desc=True) \
+                .select("id, analyst, injection_type, evidence, confidence_score, flagged_phrases, cycle, created_at") \
+                .order("created_at", desc=True) \
                 .limit(20) \
                 .execute()
         reports = result.data or []
@@ -305,7 +305,7 @@ def save_macro_report(
         "s1_report_ids":  s1_report_ids,
         "s2_report_ids":  s2_report_ids,
         "quality_score":  float(analysis.get("quality_score", 0.0)),
-        "generated_at":     datetime.now(timezone.utc).isoformat(),
+        "created_at":       datetime.now(timezone.utc).isoformat(),
     }
 
     try:
