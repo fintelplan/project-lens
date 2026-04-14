@@ -29,12 +29,36 @@ def run_s2a():
     """S2-A: Injection Tracer — traces how System 1 was manipulated."""
     print("\n[S2-ORC] Starting S2-A: Injection Tracer...")
     try:
-        from lens_system2 import main as s2a_main
-        s2a_main()
-        print("[S2-ORC] S2-A complete ✅")
-        return True
+        from lens_system2 import main as s2a_main, \
+                                  fetch_recent_s1_reports, \
+                                  build_user_prompt, \
+                                  call_s2a, \
+                                  save_injection_report, \
+                                  print_summary
+
+        reports = fetch_recent_s1_reports()
+        if not reports:
+            print("[S2-ORC] S2-A: No S1 reports found — skipping.")
+            return True  # not a failure — nothing to analyze
+
+        user_prompt = build_user_prompt(reports)
+        result, elapsed = call_s2a(user_prompt)
+
+        if result is None:
+            print("[S2-ORC] S2-A: Analysis failed (API error or parse error).")
+            return False  # real failure — escalate
+
+        saved = save_injection_report(result, reports, elapsed)
+        if saved:
+            print_summary(result)
+            print("[S2-ORC] S2-A complete ✅")
+            return True
+        else:
+            print("[S2-ORC] S2-A: Save failed.")
+            return False
+
     except Exception as e:
-        print(f"[S2-ORC] S2-A failed: {e}")
+        print(f"[S2-ORC] S2-A exception: {e}")
         traceback.print_exc()
         return False
 
