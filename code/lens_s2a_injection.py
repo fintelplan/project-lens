@@ -85,6 +85,41 @@ Format:
 }"""
 
 
+
+# ── TPMGuard ──────────────────────────────────────────────────────────────────
+class TPMGuard:
+    """
+    Rolling 60-second token window guard. Prevents 429 cascades.
+    Waits intelligently before each API call. Never crashes — just waits.
+    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    """
+    def __init__(self, tpm_limit: int = 6000):
+        self.tpm_limit = tpm_limit
+        self.usage_log = []  # list of (timestamp, tokens)
+
+    def estimate_tokens(self, text: str) -> int:
+        return max(1, len(text) // 4)
+
+    def tokens_in_last_60s(self) -> int:
+        now = time.time()
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > now - 60.0]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        self.usage_log.append((time.time(), tokens))
+
+    def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        while True:
+            used = self.tokens_in_last_60s()
+            if used + tokens_needed <= self.tpm_limit:
+                return
+            wait = 10
+            log.info(f"[TPMGuard{' '+label if label else ''}] "
+                     f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
+            time.sleep(wait)
+
+
 def get_supabase() -> Client:
     url = os.environ["SUPABASE_URL"]
     key = os.environ["SUPABASE_SERVICE_KEY"]
@@ -128,7 +163,7 @@ def truncate_report(text: str) -> str:
     return text
 
 
-def call_injection_tracer(client: Groq, report: dict) -> Optional[dict]:
+def call_injection_tracer(client: Groq, report: dict, guard: "TPMGuard") -> Optional[dict]:
     """Call llama-3.3-70b to trace injection patterns in one lens report."""
     report_id = report.get("id", "unknown")
     lens_name = report.get("domain_focus", "unknown")
@@ -177,6 +212,7 @@ Return JSON only."""
                 f"{len(parsed.get('findings', []))} findings, "
                 f"score={parsed.get('overall_injection_score', 0)}"
             )
+            guard.log_usage(2000)
             return parsed
 
         except json.JSONDecodeError as e:
@@ -279,15 +315,16 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     results = []
     total_findings = 0
     saved_count = 0
+    guard = TPMGuard(tpm_limit=6000)  # GROQ_S2_API_KEY
 
     for i, report in enumerate(reports):
-        log.info(f"Processing report {i+1}/{len(reports)}: {report.get('lens_name')}")
+        log.info(f"Processing report {i+1}/{len(reports)}: {report.get('domain_focus')}")
 
-        analysis = call_injection_tracer(groq_client, report)
+        analysis = call_injection_tracer(groq_client, report, guard)
 
         if analysis is None:
-            log.warning(f"Skipping save — analysis failed for {report.get('lens_name')}")
-            results.append({"lens": report.get("lens_name"), "status": "FAILED"})
+            log.warning(f"Skipping save — analysis failed for {report.get('domain_focus')}")
+            results.append({"lens": report.get("domain_focus"), "status": "FAILED"})
             continue
 
         findings_count = len(analysis.get("findings", []))
@@ -298,7 +335,7 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             saved_count += 1
 
         results.append({
-            "lens": report.get("lens_name"),
+            "lens": report.get("domain_focus"),
             "status": "OK",
             "findings": findings_count,
             "score": analysis.get("overall_injection_score", 0),
@@ -306,7 +343,7 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
         # Stagger between API calls — avoid 429
         if i < len(reports) - 1:
-            log.info("Stagger 6s between reports...")
+            log.info("Stagger 6s minimum...")
             time.sleep(6)
 
     elapsed = round(time.time() - start, 1)

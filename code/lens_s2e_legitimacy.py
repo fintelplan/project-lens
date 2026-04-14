@@ -114,6 +114,41 @@ Format:
 }"""
 
 
+
+# ── TPMGuard ──────────────────────────────────────────────────────────────────
+class TPMGuard:
+    """
+    Rolling 60-second token window guard. Prevents 429 cascades.
+    Waits intelligently before each API call. Never crashes — just waits.
+    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    """
+    def __init__(self, tpm_limit: int = 6000):
+        self.tpm_limit = tpm_limit
+        self.usage_log = []  # list of (timestamp, tokens)
+
+    def estimate_tokens(self, text: str) -> int:
+        return max(1, len(text) // 4)
+
+    def tokens_in_last_60s(self) -> int:
+        now = time.time()
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > now - 60.0]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        self.usage_log.append((time.time(), tokens))
+
+    def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        while True:
+            used = self.tokens_in_last_60s()
+            if used + tokens_needed <= self.tpm_limit:
+                return
+            wait = 10
+            log.info(f"[TPMGuard{' '+label if label else ''}] "
+                     f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
+            time.sleep(wait)
+
+
 def get_supabase() -> Client:
     url = os.environ["SUPABASE_URL"]
     key = os.environ["SUPABASE_SERVICE_KEY"]
@@ -157,7 +192,7 @@ def truncate_report(text: str) -> str:
     return text
 
 
-def call_legitimacy_filter(client: Groq, report: dict) -> Optional[dict]:
+def call_legitimacy_filter(client: Groq, report: dict, guard: "TPMGuard") -> Optional[dict]:
     """Call llama-3.3-70b to assess actor legitimacy in one lens report."""
     report_id   = report.get("id", "unknown")
     lens_name   = report.get("lens_name", "unknown")
@@ -177,6 +212,7 @@ def call_legitimacy_filter(client: Groq, report: dict) -> Optional[dict]:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            guard.wait_if_needed(2000, label="S2-E")
             log.info(f"S2-E calling llama-3.3-70b for {lens_name} (attempt {attempt})")
             response = client.chat.completions.create(
                 model=MODEL,
@@ -296,13 +332,14 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     results     = []
     saved_count = 0
     total_low   = 0
+    guard = TPMGuard(tpm_limit=6000)  # GROQ_S2E_API_KEY
 
     for i, report in enumerate(reports):
-        log.info(f"Processing {i+1}/{len(reports)}: {report.get('lens_name')}")
+        log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
 
-        analysis = call_legitimacy_filter(client, report)
+        analysis = call_legitimacy_filter(client, report, guard)
         if analysis is None:
-            results.append({"lens": report.get("lens_name"), "status": "FAILED"})
+            results.append({"lens": report.get("domain_focus"), "status": "FAILED"})
             continue
 
         low_actors = analysis.get("low_legitimacy_actors_pushing_narrative", [])
@@ -313,7 +350,7 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             saved_count += 1
 
         results.append({
-            "lens":          report.get("lens_name"),
+            "lens":          report.get("domain_focus"),
             "status":        "OK",
             "actors_found":  len(analysis.get("actors_assessed", [])),
             "low_legit":     len(low_actors),
@@ -322,7 +359,7 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
         if i < len(reports) - 1:
             log.info("Stagger 6s...")
-            time.sleep(6)
+            time.sleep(6)  # guard.wait_if_needed() handles TPM above
 
     elapsed = round(time.time() - start, 1)
 

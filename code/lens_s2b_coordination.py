@@ -72,6 +72,41 @@ Format:
 }"""
 
 
+
+# ── TPMGuard ──────────────────────────────────────────────────────────────────
+class TPMGuard:
+    """
+    Rolling 60-second token window guard. Prevents 429 cascades.
+    Waits intelligently before each API call. Never crashes — just waits.
+    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    """
+    def __init__(self, tpm_limit: int = 6000):
+        self.tpm_limit = tpm_limit
+        self.usage_log = []  # list of (timestamp, tokens)
+
+    def estimate_tokens(self, text: str) -> int:
+        return max(1, len(text) // 4)
+
+    def tokens_in_last_60s(self) -> int:
+        now = time.time()
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > now - 60.0]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        self.usage_log.append((time.time(), tokens))
+
+    def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        while True:
+            used = self.tokens_in_last_60s()
+            if used + tokens_needed <= self.tpm_limit:
+                return
+            wait = 10
+            log.info(f"[TPMGuard{' '+label if label else ''}] "
+                     f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
+            time.sleep(wait)
+
+
 def get_supabase() -> Client:
     return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
@@ -117,7 +152,7 @@ def build_multi_report_prompt(reports: list[dict]) -> str:
     combined = "\n".join(sections)
     return f"Analyze {len(reports)} intelligence reports for cross-source coordination patterns.\n\n{combined}\n\nReturn JSON only."
 
-def call_coordination_analyzer(client: Groq, reports: list[dict]) -> Optional[dict]:
+def call_coordination_analyzer(client: Groq, reports: list[dict], guard: "TPMGuard") -> Optional[dict]:
     if len(reports) < 2:
         log.warning("Need at least 2 reports for coordination analysis")
         return None
@@ -190,7 +225,8 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No lens_reports found — S2-B cannot run"); return {"status": "NO_REPORTS", "reports_analyzed": 0}
     if len(reports) < 2:
         log.warning(f"Only {len(reports)} report — need 2+ for coordination analysis"); return {"status": "INSUFFICIENT_REPORTS", "reports_analyzed": len(reports)}
-    analysis = call_coordination_analyzer(client, reports)
+    guard = TPMGuard(tpm_limit=6000)  # GROQ_S2_API_KEY
+    analysis = call_coordination_analyzer(client, reports, guard)
     if analysis is None:
         return {"status": "ANALYSIS_FAILED", "reports_analyzed": len(reports)}
     saved = save_coordination_report(sb, reports, analysis, run_id, cycle)

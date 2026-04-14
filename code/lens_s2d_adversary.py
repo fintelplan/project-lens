@@ -96,6 +96,41 @@ Format:
 }"""
 
 
+
+# ── TPMGuard ──────────────────────────────────────────────────────────────────
+class TPMGuard:
+    """
+    Rolling 60-second token window guard. Prevents 429 cascades.
+    Waits intelligently before each API call. Never crashes — just waits.
+    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    """
+    def __init__(self, tpm_limit: int = 6000):
+        self.tpm_limit = tpm_limit
+        self.usage_log = []  # list of (timestamp, tokens)
+
+    def estimate_tokens(self, text: str) -> int:
+        return max(1, len(text) // 4)
+
+    def tokens_in_last_60s(self) -> int:
+        now = time.time()
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > now - 60.0]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        self.usage_log.append((time.time(), tokens))
+
+    def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        while True:
+            used = self.tokens_in_last_60s()
+            if used + tokens_needed <= self.tpm_limit:
+                return
+            wait = 10
+            log.info(f"[TPMGuard{' '+label if label else ''}] "
+                     f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
+            time.sleep(wait)
+
+
 def get_supabase() -> Client:
     url = os.environ["SUPABASE_URL"]
     key = os.environ["SUPABASE_SERVICE_KEY"]
@@ -103,7 +138,7 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
+    return Groq(api_key=os.environ["GROQ_API_KEY"])
 
 
 def fetch_adversarial_articles(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -158,7 +193,7 @@ def build_articles_prompt(articles: list[dict]) -> str:
     return "\n---\n".join(sections)
 
 
-def call_adversary_analyst(client: Groq, articles: list[dict]) -> Optional[dict]:
+def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard") -> Optional[dict]:
     """Call qwen3-32b to analyze adversarial narrative."""
     if not articles:
         log.warning("No articles to analyze")
@@ -301,7 +336,8 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No adversarial articles found — S2-D cannot run")
         return {"status": "NO_ARTICLES", "articles_analyzed": 0}
 
-    analysis = call_adversary_analyst(client, articles)
+    guard = TPMGuard(tpm_limit=6000)  # GROQ_S2_API_KEY
+    analysis = call_adversary_analyst(client, articles, guard)
     if analysis is None:
         return {"status": "ANALYSIS_FAILED", "articles_analyzed": len(articles)}
 

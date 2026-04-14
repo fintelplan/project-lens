@@ -84,6 +84,41 @@ Format:
 }"""
 
 
+
+# ── TPMGuard ──────────────────────────────────────────────────────────────────
+class TPMGuard:
+    """
+    Rolling 60-second token window guard. Prevents 429 cascades.
+    Waits intelligently before each API call. Never crashes — just waits.
+    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    """
+    def __init__(self, tpm_limit: int = 6000):
+        self.tpm_limit = tpm_limit
+        self.usage_log = []  # list of (timestamp, tokens)
+
+    def estimate_tokens(self, text: str) -> int:
+        return max(1, len(text) // 4)
+
+    def tokens_in_last_60s(self) -> int:
+        now = time.time()
+        self.usage_log = [(t, tok) for t, tok in self.usage_log if t > now - 60.0]
+        return sum(tok for _, tok in self.usage_log)
+
+    def log_usage(self, tokens: int):
+        self.usage_log.append((time.time(), tokens))
+
+    def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        while True:
+            used = self.tokens_in_last_60s()
+            if used + tokens_needed <= self.tpm_limit:
+                return
+            wait = 10
+            log.info(f"[TPMGuard{' '+label if label else ''}] "
+                     f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
+            time.sleep(wait)
+
+
 def get_supabase() -> Client:
     url = os.environ["SUPABASE_URL"]
     key = os.environ["SUPABASE_SERVICE_KEY"]
@@ -126,7 +161,7 @@ def truncate_report(text: str) -> str:
     return text
 
 
-def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
+def call_emotion_decoder(client: Mistral, report: dict, guard: "TPMGuard") -> Optional[dict]:
     """Call mistral-small to decode emotional sequence in one lens report."""
     report_id  = report.get("id", "unknown")
     lens_name  = report.get("domain_focus", "unknown")
@@ -146,6 +181,7 @@ def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            guard.wait_if_needed(1500, label="S2-C")
             log.info(f"S2-C calling mistral for {lens_name} (attempt {attempt})")
             response = client.chat.complete(
                 model=MODEL,
@@ -172,6 +208,7 @@ def call_emotion_decoder(client: Mistral, report: dict) -> Optional[dict]:
                 f"emotion={parsed.get('emotion_target', '?')}, "
                 f"manipulation={parsed.get('manipulation_score', 0)}"
             )
+            guard.log_usage(1500)
             return parsed
 
         except json.JSONDecodeError as e:
@@ -268,11 +305,12 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     results      = []
     saved_count  = 0
     total_steps  = 0
+    guard = TPMGuard(tpm_limit=30000)  # MISTRAL_API_KEY — generous free tier
 
     for i, report in enumerate(reports):
         log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
 
-        analysis = call_emotion_decoder(client, report)
+        analysis = call_emotion_decoder(client, report, guard)
         if analysis is None:
             results.append({"lens": report.get("domain_focus"), "status": "FAILED"})
             continue
