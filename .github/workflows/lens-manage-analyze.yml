@@ -1,10 +1,8 @@
 name: Lens Manager + Analyze
-
 on:
   schedule:
-    # Manager runs 2 min before analyze
-    # Analyze cron: 13:30 17:30 21:30 04:30 UTC
-    # Manager cron: 13:28 17:28 21:28 04:28 UTC
+    # Orchestrator runs pre-flight + sequential lens execution in one job
+    # Crons: 13:28 17:28 21:28 04:28 UTC (unchanged)
     - cron: '28 13 * * *'
     - cron: '28 17 * * *'
     - cron: '28 21 * * *'
@@ -15,12 +13,15 @@ on:
         description: 'Force run even if budget exhausted (LENS_FORCE=1)'
         required: false
         default: 'false'
+      dry_run:
+        description: 'Dry run — pre-flight only, no lenses fire (LENS_DRY_RUN=1)'
+        required: false
+        default: 'false'
 
 jobs:
   manage-and-analyze:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +35,7 @@ jobs:
         run: |
           pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx
 
-      - name: Run AI 5 Manager (pre-flight)
+      - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -42,18 +43,9 @@ jobs:
           GROQ_MANAGER_API_KEY: ${{ secrets.GROQ_MANAGER_API_KEY }}
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          LENS_FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
-        run: |
-          python code/lens_manager.py
-          echo "Manager passed — proceeding to analyze"
-
-      - name: Run 4-Lens Analysis
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
           SAMBANOVA_API_KEY: ${{ secrets.SAMBANOVA_API_KEY }}
+          LENS_FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
+          LENS_DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
         run: |
-          python code/analyze_lens_multi.py
+          python code/lens_orchestrator.py
+          echo "Manager passed — proceeding to analyze"
