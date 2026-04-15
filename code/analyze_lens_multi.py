@@ -1210,7 +1210,10 @@ def save_lens_report(supabase, lens, summary, food_for_thought,
         "articles_used":    json.dumps(article_ids),
         "ai_model":         lens["model"],
         "prompt_version":   f"v2.0-LENS004-{lens['lens_name'].replace(' ', '')}",
-        "status":           "pending"
+        "status":           "pending",
+        "system":            "S1",
+        "protected":         False,
+        "injection_assumed": True,
     }
     response  = supabase.table("lens_reports").insert(record).execute()
     report_id = response.data[0]["id"] if response.data else "unknown"
