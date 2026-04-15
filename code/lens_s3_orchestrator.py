@@ -2,18 +2,17 @@
 lens_s3_orchestrator.py
 Project Lens — System 3 Orchestrator
 
-Runs all System 3 positions after System 2 completes.
+S3-A  lens_s3a_patterns.py     daily      llama-3.3-70b   Groq/GROQ_S3_API_KEY
+S3-B  lens_s3b_truehistory.py  daily      gemini-2.0-flash Google/GEMINI_API_KEY
+S3-C  NOT BUILT                weekly     command-r-plus  Cohere — needs account
+S3-D  lens_s3d_longterm.py     Mon+Thu    qwen-3-235b     Cerebras/CEREBRAS_API_KEY
+S3-E  lens_s3e_selfcheck.py    daily      llama-3.3-70b   SambaNova/SAMBANOVA_API_KEY
 
-Positions:
-  S3-A  lens_s3a_patterns.py    run_s3a()  llama-3.3-70b   Groq       DAILY
-  S3-B  lens_s3b_truehistory.py run_s3b()  gemini-2.0-flash Google     DAILY
-  S3-D  lens_s3d_longterm.py    run_s3d()  qwen-3-235b     Cerebras   2x/WEEK
+S3-E replaces original Ollama LOCAL design.
+SambaNova = RDU hardware (3rd type: Groq=LPU, Cerebras=WSE, SambaNova=RDU)
+Defends Pattern 5: Recursive Self-Injection — the only pattern with no prior defense.
 
-Deferred (need accounts):
-  S3-C  Bias Drift Monitor — command-r-plus (Cohere) — needs Cohere account
-  S3-E  Self-Check LOCAL   — llama-3.1-70b (Ollama)  — needs 16GB RAM local
-
-Session: LENS-010
+Session: LENS-010 (S3-E added)
 """
 
 import sys, traceback
@@ -29,8 +28,7 @@ def _run(position, fn, **kwargs):
         if isinstance(result, dict):
             status = result.get("status", "UNKNOWN")
             ok = status not in ("SAVE_FAILED", "ERROR", "ANALYSIS_FAILED")
-            symbol = "✅" if ok else "⚠️ "
-            print(f"[S3-ORC] {position} {symbol}  status={status}")
+            print(f"[S3-ORC] {position} {'✅' if ok else '⚠️ '}  status={status}")
             return ok, result
         return bool(result), {}
     except Exception as e:
@@ -44,14 +42,15 @@ def main():
     print("Project Lens — System 3 Orchestrator")
     print(f"  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"  run_id: {RUN_ID}")
-    print("  Positions: S3-A · S3-B · S3-D  |  S3-C/E deferred")
+    print("  S3-A · S3-B · S3-D · S3-E  |  S3-C deferred")
     print("=" * 60)
 
     results = {}
 
-    from lens_s3a_patterns   import run_s3a
+    from lens_s3a_patterns    import run_s3a
     from lens_s3b_truehistory import run_s3b
-    from lens_s3d_longterm   import run_s3d
+    from lens_s3d_longterm    import run_s3d
+    from lens_s3e_selfcheck   import run_s3e
 
     ok_a, _ = _run("S3-A Pattern Intelligence",  run_s3a, run_id=RUN_ID)
     results["S3-A"] = ok_a
@@ -60,16 +59,16 @@ def main():
     results["S3-B"] = ok_b
 
     print("\n[S3-ORC] S3-C: Bias Drift Monitor — deferred (needs Cohere account)")
-    results["S3-C"] = True  # skip cleanly
+    results["S3-C"] = True
 
     ok_d, _ = _run("S3-D Long-term Researcher",  run_s3d, run_id=RUN_ID)
     results["S3-D"] = ok_d
 
-    print("\n[S3-ORC] S3-E: Self-Check LOCAL — deferred (needs Ollama local setup)")
-    results["S3-E"] = True  # skip cleanly
+    ok_e, _ = _run("S3-E Self-Check (SambaNova)", run_s3e, run_id=RUN_ID)
+    results["S3-E"] = ok_e
 
     print("\n" + "=" * 60)
-    print("System 3 Orchestrator — Run Summary")
+    print("System 3 — Run Summary")
     print("=" * 60)
     for pos, ok in results.items():
         print(f"  {'✅' if ok else '❌'} {pos}")
@@ -77,6 +76,9 @@ def main():
     failed = [k for k, v in results.items() if not v]
     if failed:
         print(f"\n[S3-ORC] {len(failed)} failed: {failed}")
+        # S3-E failure is a WARNING — Pattern 5 defense unavailable this cycle
+        if "S3-E" in failed:
+            print("[S3-ORC] WARNING: S3-E failed — Pattern 5 defense unavailable this cycle.")
     else:
         print("\n[S3-ORC] All positions complete.")
     print("=" * 60 + "\n")
