@@ -2,127 +2,113 @@
 lens_s2_orchestrator.py
 Project Lens — System 2 Orchestrator
 
-Runs all System 2 positions in sequence after System 1 completes.
+Calls all System 2 positions in sequence after System 1 completes.
 Called by GitHub Actions lens-manage-analyze.yml.
 
-Current positions:
-  S2-A  Injection Tracer       ✅ BUILT — llama-3.3-70b via Groq
-  S2-B  Coordination Analyzer  ⏳ LENS-010 next
-  S2-C  Emotion Decoder        ⏳ LENS-010 (needs MISTRAL_API_KEY secret)
-  S2-D  Adversary Narrative    ⏳ LENS-010
-  S2-E  Legitimacy Filter      ⏳ LENS-010
+All positions built in LENS-009. Orchestrator updated in LENS-010.
 
-Architecture rules (LR-058 through LR-064):
-  - Reads System 1 outputs only. Never modifies System 1 scripts.
-  - One-way flow: lens_reports (in) → lens_injection_reports (out)
-  - System 1 stays unprotected. System 2 studies what System 1 absorbed.
+Positions:
+  S2-A  lens_s2a_injection.py    run_s2a()           llama-3.3-70b  GROQ_S2_API_KEY
+  S2-B  lens_s2b_coordination.py run_s2b()           gemini-1.5-flash GEMINI_API_KEY
+  S2-C  lens_s2c_emotion.py      run_s2c()           mistral-small  MISTRAL_API_KEY
+  S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_S2_API_KEY
+  S2-E  lens_s2e_legitimacy.py   run_s2e()           llama-3.3-70b  GROQ_S2E_API_KEY
+  MA    lens_mission_analyst.py  run_mission_analyst() llama-3.3-70b GROQ_MANAGER_API_KEY
 
-Session: LENS-010
+Architecture: LR-058 to LR-064.
+  One-way flow. System 1 scripts FROZEN.
+  S2 reads lens_reports → writes lens_injection_reports.
+  MA reads lens_reports + lens_injection_reports → writes lens_macro_reports.
+
+Session: LENS-010 (orchestrator fix)
 """
 
 import sys
 import traceback
 from datetime import datetime, timezone
 
+# ── Shared run identity ───────────────────────────────────────────────────────
+RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
 
-def run_s2a():
-    """S2-A: Injection Tracer — traces how System 1 was manipulated."""
-    print("\n[S2-ORC] Starting S2-A: Injection Tracer...")
+
+def _run(position, fn, **kwargs):
+    """Run a single position. Returns (ok, summary_dict)."""
+    print(f"\n[S2-ORC] ── {position} ──────────────────────────────")
     try:
-        from lens_system2 import main as s2a_main, \
-                                  fetch_recent_s1_reports, \
-                                  build_user_prompt, \
-                                  call_s2a, \
-                                  save_injection_report, \
-                                  print_summary
-
-        reports = fetch_recent_s1_reports()
-        if not reports:
-            print("[S2-ORC] S2-A: No S1 reports found — skipping.")
-            return True  # not a failure — nothing to analyze
-
-        user_prompt = build_user_prompt(reports)
-        result, elapsed = call_s2a(user_prompt)
-
-        if result is None:
-            print("[S2-ORC] S2-A: Analysis failed (API error or parse error).")
-            return False  # real failure — escalate
-
-        saved = save_injection_report(result, reports, elapsed)
-        if saved:
-            print_summary(result)
-            print("[S2-ORC] S2-A complete ✅")
-            return True
-        else:
-            print("[S2-ORC] S2-A: Save failed.")
-            return False
-
+        result = fn(**kwargs)
+        # All position functions return a dict with at least 'status'
+        if isinstance(result, dict):
+            status = result.get("status", "UNKNOWN")
+            ok = status not in ("SAVE_FAILED", "ERROR", "NO_REPORTS")
+            if ok:
+                print(f"[S2-ORC] {position} ✅  status={status}")
+            else:
+                print(f"[S2-ORC] {position} ⚠️   status={status}")
+            return ok, result
+        # Legacy: bool return
+        return bool(result), {}
     except Exception as e:
-        print(f"[S2-ORC] S2-A exception: {e}")
+        print(f"[S2-ORC] {position} ❌  exception: {e}")
         traceback.print_exc()
-        return False
-
-
-def run_s2b():
-    """S2-B: Coordination Analyzer — NOT YET BUILT (LENS-010)."""
-    print("\n[S2-ORC] S2-B: Coordination Analyzer — not yet built, skipping.")
-    return True
-
-
-def run_s2c():
-    """S2-C: Emotion Decoder — NOT YET BUILT (needs MISTRAL_API_KEY)."""
-    print("\n[S2-ORC] S2-C: Emotion Decoder — not yet built, skipping.")
-    return True
-
-
-def run_s2d():
-    """S2-D: Adversary Narrative — NOT YET BUILT (LENS-010)."""
-    print("\n[S2-ORC] S2-D: Adversary Narrative — not yet built, skipping.")
-    return True
-
-
-def run_s2e():
-    """S2-E: Legitimacy Filter — NOT YET BUILT (LENS-010)."""
-    print("\n[S2-ORC] S2-E: Legitimacy Filter — not yet built, skipping.")
-    return True
+        return False, {"status": "EXCEPTION", "error": str(e)}
 
 
 def main():
     print("\n" + "=" * 60)
     print("Project Lens — System 2 Orchestrator")
     print(f"  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    print("  Positions: S2-A ✅  S2-B/C/D/E ⏳")
+    print(f"  run_id: {RUN_ID}")
+    print("  Positions: S2-A · S2-B · S2-C · S2-D · S2-E · MA")
     print("=" * 60)
 
     results = {}
 
-    # S2-A — Injection Tracer (live)
-    results['S2-A'] = run_s2a()
+    # ── S2-A: Injection Tracer ────────────────────────────────────────────────
+    from lens_s2a_injection import run_s2a
+    ok_a, _ = _run("S2-A", run_s2a, run_id=RUN_ID)
+    results["S2-A"] = ok_a
 
-    # S2-B through S2-E — stubs, skip cleanly
-    results['S2-B'] = run_s2b()
-    results['S2-C'] = run_s2c()
-    results['S2-D'] = run_s2d()
-    results['S2-E'] = run_s2e()
+    # ── S2-B: Coordination Analyzer ──────────────────────────────────────────
+    from lens_s2b_coordination import run_s2b
+    ok_b, _ = _run("S2-B", run_s2b, run_id=RUN_ID)
+    results["S2-B"] = ok_b
 
-    # Summary
+    # ── S2-C: Emotion Decoder ─────────────────────────────────────────────────
+    from lens_s2c_emotion import run_s2c
+    ok_c, _ = _run("S2-C", run_s2c, run_id=RUN_ID)
+    results["S2-C"] = ok_c
+
+    # ── S2-D: Adversary Narrative ─────────────────────────────────────────────
+    from lens_s2d_adversary import run_s2d
+    ok_d, _ = _run("S2-D", run_s2d, run_id=RUN_ID)
+    results["S2-D"] = ok_d
+
+    # ── S2-E: Legitimacy Filter ───────────────────────────────────────────────
+    from lens_s2e_legitimacy import run_s2e
+    ok_e, _ = _run("S2-E", run_s2e, run_id=RUN_ID)
+    results["S2-E"] = ok_e
+
+    # ── Mission Analyst: S1 + S2 synthesis ───────────────────────────────────
+    from lens_mission_analyst import run_mission_analyst
+    ok_ma, _ = _run("Mission Analyst", run_mission_analyst, run_id=RUN_ID)
+    results["Mission Analyst"] = ok_ma
+
+    # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("System 2 Orchestrator — Run Summary")
     print("=" * 60)
     for pos, ok in results.items():
-        status = "✅" if ok else "❌"
-        print(f"  {status} {pos}")
+        print(f"  {'✅' if ok else '❌'} {pos}")
 
     failed = [k for k, v in results.items() if not v]
     if failed:
-        print(f"\n[S2-ORC] {len(failed)} position(s) failed: {failed}")
-        # Don't exit 1 — partial success is acceptable.
-        # S2-A failure is the only critical one.
-        if 'S2-A' in failed:
-            print("[S2-ORC] S2-A failed — injection trace unavailable this cycle.")
+        print(f"\n[S2-ORC] {len(failed)} position(s) did not complete: {failed}")
+        # S2-A is the critical position — without injection trace, MA has no corrections
+        if "S2-A" in failed:
+            print("[S2-ORC] WARNING: S2-A failed — Mission Analyst ran without injection corrections.")
             sys.exit(1)
     else:
-        print("\n[S2-ORC] All positions completed.")
+        print("\n[S2-ORC] All positions complete.")
 
     print("=" * 60 + "\n")
 
