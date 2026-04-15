@@ -24,7 +24,7 @@ log = logging.getLogger("S3-A")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-GROQ_KEY     = os.environ.get("GROQ_S2_API_KEY") or os.environ.get("GROQ_API_KEY")
+GROQ_KEY     = os.environ.get("GROQ_S3_API_KEY") or os.environ.get("GROQ_API_KEY")
 MODEL        = "llama-3.3-70b-versatile"
 LOOKBACK_DAYS = 7
 MAX_S1_REPORTS = 20
