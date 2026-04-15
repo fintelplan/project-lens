@@ -918,6 +918,66 @@
       "tier": "TIER_B",
       "max_articles": 6,
       "note": "Qatar-funded. Global South and Muslim-majority world framing. Covers stories Western MSM ignores."
+    },
+    {
+      "id": "SRC-071",
+      "name": "CGTN (China Global Television Network)",
+      "url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 5,
+      "note": "Chinese state international broadcaster. Reveals Beijing's desired global narrative. What China wants the world to believe = strategic signal."
+    },
+    {
+      "id": "SRC-072",
+      "name": "Global Times",
+      "url": "https://www.globaltimes.cn/rss/outbrain.xml",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 5,
+      "note": "CCP-aligned English outlet. Nationalistic framing. Reveals domestic Chinese political pressures projected internationally."
+    },
+    {
+      "id": "SRC-073",
+      "name": "Press TV",
+      "url": "https://www.presstv.ir/rss.xml",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 5,
+      "note": "Iranian state international broadcaster. Reveals Tehran's desired global framing. Anti-Western, pro-resistance axis narrative."
+    },
+    {
+      "id": "SRC-074",
+      "name": "RT (Russia Today) English",
+      "url": "https://www.rt.com/rss/",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 5,
+      "note": "Russian state international broadcaster. Reveals Moscow's narrative strategy. Anti-NATO, multipolar world framing."
+    },
+    {
+      "id": "SRC-075",
+      "name": "Al-Mayadeen",
+      "url": "https://english.almayadeen.net/rss.xml",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 4,
+      "note": "Lebanon-based, Iran/Hezbollah-aligned. Resistance axis perspective. Covers Gaza, Lebanon, Yemen from inside the axis."
+    },
+    {
+      "id": "SRC-076",
+      "name": "TeleSUR English",
+      "url": "https://telesurenglish.net/rss/",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 4,
+      "note": "Venezuelan state-backed Latin American broadcaster. Anti-US imperialism framing. Covers Global South from socialist perspective."
     }
   ]
 }
