@@ -71,6 +71,14 @@ Rules: Ground EVERY claim in specific events from the reports provided.
 Never predict. Identify what is already in motion."""
 
 
+def already_ran_today(sb: Client) -> bool:
+    """Skip if S3-A already ran in last 20 hours — daily cadence."""
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=20)).isoformat()
+    r = sb.table("lens_system3_reports")         .select("id")         .eq("position", "S3-A")         .gte("generated_at", cutoff)         .limit(1).execute()
+    return bool(r.data)
+
+
 def fetch_s1_reports(sb: Client, days: int) -> list:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     r = sb.table("lens_reports") \
@@ -121,6 +129,9 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
     client = Groq(api_key=GROQ_KEY)
 
+    if already_ran_today(sb):
+        log.info("S3-A already ran in last 20h — skipping (daily cadence)")
+        return {"status": "SKIPPED", "run_id": run_id}
     s1 = fetch_s1_reports(sb, LOOKBACK_DAYS)
     s2 = fetch_s2_reports(sb, LOOKBACK_DAYS)
     log.info(f"Fetched {len(s1)} S1 reports + {len(s2)} S2 reports")

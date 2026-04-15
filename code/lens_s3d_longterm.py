@@ -92,6 +92,11 @@ Single events are noise. Patterns across 30 days are signal.
 If you can only see 7 days of data, report what you can see and note the limitation."""
 
 
+def should_run_today() -> bool:
+    """S3-D runs 2x per week: Monday (0) and Thursday (3) only."""
+    return datetime.now(timezone.utc).weekday() in (0, 3)
+
+
 def fetch_s1_reports(sb: Client) -> list:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)).isoformat()
     r = sb.table("lens_reports") \
@@ -116,6 +121,9 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         run_id = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
     log.info(f"=== S3-D Long-term Researcher START | run_id={run_id} ===")
 
+    if not should_run_today():
+        log.info(f"S3-D skipping — not Monday or Thursday (today={datetime.now(timezone.utc).strftime(chr(37)+chr(65))})")
+        return {"status": "SKIPPED", "run_id": run_id}
     if not CEREBRAS_KEY:
         log.error("CEREBRAS_API_KEY not set")
         return {"status": "ERROR", "run_id": run_id}
