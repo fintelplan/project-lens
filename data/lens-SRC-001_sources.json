@@ -1,983 +1,1073 @@
-{
-  "meta": {
-    "file": "lens-SRC-001_sources.json",
-    "project": "Project Lens",
-    "version": "2.0",
-    "created": "LENS-003",
-    "total_sources": 60,
-    "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each.",
-    "updated": "LENS-009",
-    "audit_note": "Full source audit â€” 12 fixes applied (A/B/C)"
+[
+  {
+    "id": "SRC-001",
+    "name": "US State Dept via Google News",
+    "domain": "POWER",
+    "actor": "US",
+    "rss_url": "https://news.google.com/rss/search?q=when:24h+%22US+State+Department%22+foreign+policy&ceid=US:en&hl=en-US&gl=US",
+    "web_url": "https://www.state.gov",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "US State Dept press releases via Google News RSS â€” state.gov direct RSS returns 0 articles. Google News indexes state.gov and provides public RSS. LR-014(E) compliant.",
+    "tier": "STATE"
   },
-  "sources": [
-    {
-      "id": "SRC-001",
-      "name": "US State Dept via Google News",
-      "domain": "POWER",
-      "actor": "US",
-      "rss_url": "https://news.google.com/rss/search?q=when:24h+%22US+State+Department%22+foreign+policy&ceid=US:en&hl=en-US&gl=US",
-      "web_url": "https://www.state.gov",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "US State Dept press releases via Google News RSS â€” state.gov direct RSS returns 0 articles. Google News indexes state.gov and provides public RSS. LR-014(E) compliant.",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-002",
-      "name": "White House News",
-      "domain": "POWER",
-      "actor": "US",
-      "rss_url": "https://www.whitehouse.gov/news/feed/",
-      "web_url": "https://www.whitehouse.gov",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Official White House releases and statements",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-003",
-      "name": "Xinhua World News",
-      "domain": "POWER",
-      "actor": "China",
-      "rss_url": "https://www.xinhuanet.com/english/rss/worldrss.xml",
-      "web_url": "https://www.fmprc.gov.cn/eng",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Xinhua official Chinese state news â€” Fix C: replaced broken China MFA RSS",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-004",
-      "name": "Kremlin News",
-      "domain": "POWER",
-      "actor": "Russia",
-      "rss_url": "http://kremlin.ru/events/president/news/feed",
-      "web_url": "https://kremlin.ru/eng",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Official Kremlin presidential statements",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-005",
-      "name": "UN News",
-      "domain": "POWER",
-      "actor": "UN",
-      "rss_url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
-      "web_url": "https://www.nato.int",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "UN official global news â€” Fix B: relabeled from NATO (URL was already UN News)",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-006",
-      "name": "Reuters via Google News",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com&ceid=US:en&hl=en-US&gl=US",
-      "web_url": "https://www.reuters.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Reuters articles via Google News RSS â€” Reuters killed direct RSS June 2020. Google News indexes reuters.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
-      "tier": "TIER1"
-    },
-    {
-      "id": "SRC-007",
-      "name": "AP News via Google News",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&ceid=US:en&hl=en-US&gl=US",
-      "web_url": "https://apnews.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "AP News articles via Google News RSS â€” AP blocked RSSHub 403. Google News indexes apnews.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-008",
-      "name": "US Department of Defense",
-      "domain": "MILITARY",
-      "actor": "US",
-      "rss_url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?max=10&ContentType=1&Site=945",
-      "web_url": "https://www.defense.gov",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Official US military news and policy",
-      "tier": "STATE"
-    },
-    {
-      "id": "SRC-009",
-      "name": "RAND Corporation",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://www.rand.org/news/press.xml",
-      "web_url": "https://www.rand.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "RAND think tank press releases â€” Fix A: correct RAND RSS URL",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-010",
-      "name": "CSIS â€” Center for Strategic Studies",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://www.csis.org/rss.xml",
-      "web_url": "https://www.csis.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Top US foreign policy think tank",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-011",
-      "name": "War on the Rocks",
-      "domain": "MILITARY",
-      "actor": "Think Tank",
-      "rss_url": "https://warontherocks.com/feed/",
-      "web_url": "https://ofac.treas.gov",
-      "frequency": "daily",
-      "tier_coverage": [
-        1
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Military strategy analysis â€” Fix B: relabeled from OFAC (URL was already War on the Rocks)",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-012",
-      "name": "Foreign Policy Magazine",
-      "domain": "NARRATIVE",
-      "actor": "Global",
-      "rss_url": "https://foreignpolicy.com/feed/",
-      "web_url": "https://www.imf.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Foreign Policy analysis â€” Fix B: relabeled from IMF (URL was already Foreign Policy)",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-013",
-      "name": "The Diplomat",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "https://thediplomat.com/feed/",
-      "web_url": "https://www.bis.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Asia-Pacific geopolitics â€” Fix B: relabeled from BIS (URL was already The Diplomat)",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-014",
-      "name": "arXiv AI Papers",
-      "domain": "TECH",
-      "actor": "Global",
-      "rss_url": "https://rss.arxiv.org/rss/cs.AI",
-      "web_url": "https://arxiv.org",
-      "frequency": "daily",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "arXiv AI preprints â€” correct URL: rss.arxiv.org/rss/cs.AI. Returns 0 articles on Saturday+Sunday by design (arXiv policy). Works Mon-Fri automatically. No fix needed for weekends â€” this is expected behavior. Do not change URL.",
-      "tier": "TIER3",
-      "reserve_id": "SRC-015"
-    },
-    {
-      "id": "SRC-015",
-      "name": "MIT Technology Review",
-      "domain": "TECH",
-      "actor": "Global",
-      "rss_url": "https://www.technologyreview.com/feed/",
-      "web_url": "https://www.technologyreview.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Leading tech journalism â€” AI, quantum, semiconductor coverage",
-      "tier": "TIER2"
-    },
-    {
-      "id": "SRC-016",
-      "name": "Bellingcat",
-      "domain": "NARRATIVE",
-      "actor": "OSINT",
-      "rss_url": "https://www.bellingcat.com/feed/",
-      "web_url": "https://www.bellingcat.com",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Open source investigation â€” conflict verification and network analysis",
-      "tier": "TIER1"
-    },
-    {
-      "id": "SRC-017",
-      "name": "DFRLab â€” Digital Forensic Research Lab",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://medium.com/feed/dfrlab",
-      "web_url": "https://www.dfrlab.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Influence operations and disinformation detection",
-      "tier": "TIER1"
-    },
-    {
-      "id": "SRC-018",
-      "name": "Al Jazeera World",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "https://www.aljazeera.com/xml/rss/all.xml",
-      "web_url": "https://www.sipri.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Al Jazeera global news â€” Fix B: relabeled from SIPRI (URL was already Al Jazeera)",
-      "tier": "TIER1"
-    },
-    {
-      "id": "SRC-019",
-      "name": "BBC World News",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "http://feeds.bbci.co.uk/news/world/rss.xml",
-      "web_url": "https://www.iea.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "BBC global news â€” Fix B: relabeled from IEA (URL was already BBC World)",
-      "tier": "TIER1",
-      "reserve_id": "SRC-033"
-    },
-    {
-      "id": "SRC-020",
-      "name": "ICIJ â€” International Consortium of Investigative Journalists",
-      "domain": "NETWORK",
-      "actor": "Global",
-      "rss_url": "https://www.icij.org/feed/",
-      "web_url": "https://www.icij.org",
-      "frequency": "weekly",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Hidden financial networks and non-state actor investigations",
-      "tier": "TIER1",
-      "reserve_id": "SRC-034"
-    },
-    {
-      "id": "SRC-021",
-      "name": "Google News: Corruption Dark Money",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22corruption%22+OR+%22dark+money%22+OR+%22money+laundering%22",
-      "domain": "NETWORK",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — corruption, dark money, money laundering. Layer 2 topic-filtered. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-022",
-      "name": "Google News: Sanctions Evasion",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions+evasion%22+OR+%22shell+company%22+OR+%22oligarch%22",
-      "domain": "NETWORK",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — sanctions evasion, shell companies, oligarch assets. Cui Bono intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-023",
-      "name": "Google News: Energy Security",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22energy+security%22+OR+%22oil+price%22+OR+%22gas+supply%22",
-      "domain": "RESOURCE",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — energy security, oil price, gas supply. Physical reality intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-024",
-      "name": "Google News: Financial Stability",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions%22+OR+%22financial+stability%22+OR+%22debt+crisis%22",
-      "domain": "FINANCE",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — sanctions, financial stability, debt crisis. Cui Bono financial intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-025",
-      "name": "Yahoo News RSS",
-      "rss_url": "https://news.yahoo.com/rss/",
-      "domain": "POWER",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 4,
-      "notes": "Yahoo News general RSS — 50 articles of broad world news. Layer 4 wide-angle backup. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-026",
-      "name": "EFF Digital Rights",
-      "rss_url": "https://www.eff.org/rss/updates.xml",
-      "domain": "TECH",
-      "actor": "Global",
-      "tier": "TIER1",
-      "layer": 1,
-      "notes": "Electronic Frontier Foundation — digital rights, AI surveillance, privacy, cyber law. TIER1: original reporting and legal analysis. Best source for rights-contracting tech deployments. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-027",
-      "name": "Wired Magazine",
-      "rss_url": "https://www.wired.com/feed/rss",
-      "domain": "TECH",
-      "actor": "Global",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "Wired — geopolitical tech coverage: AI chips, semiconductor wars, surveillance, cyber warfare, export controls. TIER2: analytical depth. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-028",
-      "name": "Ars Technica",
-      "rss_url": "https://feeds.arstechnica.com/arstechnica/index",
-      "domain": "TECH",
-      "actor": "Global",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "Ars Technica — deep tech analysis, AI, security, infrastructure. TIER2: specialist depth. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-029",
-      "name": "IEEE Spectrum",
-      "rss_url": "https://spectrum.ieee.org/feeds/feed.rss",
-      "domain": "TECH",
-      "actor": "Global",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "IEEE Spectrum — semiconductor engineering, AI hardware, critical infrastructure tech. TIER2: engineering specialist. Only source for semiconductor/chip-level intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-030",
-      "name": "Google News: IMF World Bank Economy",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22World+Bank%22+OR+%22debt+restructuring%22+OR+%22sovereign+debt%22",
-      "domain": "FINANCE",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — IMF, World Bank, debt restructuring, sovereign debt. Debt Trap intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-031",
-      "name": "Google News: Critical Minerals",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22critical+minerals%22+OR+%22rare+earth%22+OR+%22food+security%22+OR+%22water+scarcity%22",
-      "domain": "RESOURCE",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — critical minerals, rare earth, food security, water scarcity. Physical reality intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-032",
-      "name": "Google News: IEA Energy Transition",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IEA%22+OR+%22energy+transition%22+OR+%22renewable+energy%22+OR+%22energy+poverty%22",
-      "domain": "RESOURCE",
-      "actor": "Global",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — IEA, energy transition, renewable energy, energy poverty. GCSP physical foundation intelligence. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-033",
-      "name": "Financial Times World",
-      "rss_url": "https://www.ft.com/rss/home/uk",
-      "domain": "FINANCE",
-      "actor": "Global",
-      "tier": "TIER1",
-      "layer": 1,
-      "notes": "Financial Times — gold standard for financial intelligence. Primary source for sanctions, central bank signals, sovereign debt. TIER1: original reporting with institutional credibility. Reserve for BBC when BBC fails."
-    },
-    {
-      "id": "SRC-034",
-      "name": "OCCRP — Organized Crime and Corruption",
-      "rss_url": "https://occrp.org/en/feed",
-      "domain": "NETWORK",
-      "actor": "Global",
-      "tier": "TIER1",
-      "layer": 1,
-      "notes": "Organized Crime and Corruption Reporting Project. Investigative journalism exposing money laundering networks, oligarch assets, state-crime nexus. TIER1: 430 official investigations triggered. Reserve for ICIJ when ICIJ fails."
-    },
-    {
-      "id": "SRC-035",
-      "name": "Relief Web",
-      "rss_url": "https://reliefweb.int/updates/rss.xml",
-      "domain": "MILITARY",
-      "actor": "Global",
-      "tier": "TIER2",
-      "layer": 2,
-      "notes": "UN OCHA-managed humanitarian intelligence platform. Covers conflicts, disasters, displacement, humanitarian crises. TIER2: authoritative on human impact of military conflicts — fills ACLED gap."
-    },
-    {
-      "id": "SRC-036",
-      "name": "Crisis Group",
-      "rss_url": "https://www.crisisgroup.org/rss.xml",
-      "domain": "MILITARY",
-      "actor": "Global",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again.",
-      "reserve_id": "SRC-042"
-    },
-    {
-      "id": "SRC-037",
-      "name": "Google News: IMF",
-      "domain": "FINANCE",
-      "actor": "IMF",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
-      "web_url": "https://www.imf.org",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "tier": "TIER3",
-      "layer": 1,
-      "notes": "Google News IMF topic RSS — replaces broken imf.org direct feed. Covers IMF statements, programs, country reviews. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-038",
-      "name": "Google News: World Bank",
-      "domain": "FINANCE",
-      "actor": "World Bank",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
-      "web_url": "https://www.worldbank.org",
-      "frequency": "daily",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "tier": "TIER3",
-      "layer": 1,
-      "notes": "Google News World Bank topic RSS — replaces broken blogs.worldbank.org direct feed. Covers WB lending, development finance, country programs. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-039",
-      "name": "Google News: Central Banks",
-      "domain": "FINANCE",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22central+bank%22+OR+%22Federal+Reserve%22+OR+%22interest+rates%22+OR+%22inflation%22",
-      "web_url": "https://news.google.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        2,
-        3
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "tier": "TIER3",
-      "layer": 2,
-      "notes": "Google News topic RSS — central bank decisions, Federal Reserve, interest rates, inflation signals. Monetary policy intelligence layer. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-040",
-      "name": "Military Times",
-      "domain": "MILITARY",
-      "actor": "Global",
-      "rss_url": "https://www.militarytimes.com/arc/outboundfeeds/rss/",
-      "web_url": "https://www.defensenews.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant.",
-      "reserve_id": "SRC-043"
-    },
-    {
-      "id": "SRC-041",
-      "name": "Breaking Defense",
-      "domain": "MILITARY",
-      "actor": "Global",
-      "rss_url": "https://breakingdefense.com/feed/",
-      "web_url": "https://breakingdefense.com",
-      "frequency": "daily",
-      "tier_coverage": [
-        1,
-        2
-      ],
-      "ethics_verified": true,
-      "language": "en",
-      "tier": "TIER2",
-      "layer": 1,
-      "notes": "Breaking Defense — deep defense policy analysis, Pentagon, NATO, Indo-Pacific strategy. TIER2: read by defense officials and analysts. Strongest source for early military posture signals."
-    },
-    {
-      "id": "SRC-042",
-      "name": "Google News: Crisis Group",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22Crisis+Group%22+OR+%22conflict+prevention%22+%22ceasefire%22+OR+%22peace+talks%22",
-      "domain": "MILITARY",
-      "tier": "TIER2",
-      "actor": "Crisis Group",
-      "language": "en",
-      "tier_coverage": [
-        "MILITARY",
-        "POWER"
-      ]
-    },
-    {
-      "id": "SRC-043",
-      "name": "Google News: Defense Military",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22military%22+%22defense%22+%22pentagon%22+OR+%22armed+forces%22+OR+%22deployment%22",
-      "domain": "MILITARY",
-      "tier": "TIER2",
-      "actor": "Military News",
-      "language": "en",
-      "tier_coverage": [
-        "MILITARY"
-      ]
-    },
-    {
-      "id": "SRC-044",
-      "name": "CGTN — China Global Television Network",
-      "domain": "POWER",
-      "actor": "China",
-      "rss_url": "https://www.cgtn.com/subscribe/rss/section/world.do",
-      "web_url": "https://www.cgtn.com",
-      "frequency": "daily",
-      "tier": "STATE",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Chinese state international broadcaster. Required for S2-D Adversary Narrative. Official Chinese narrative to global audiences. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-045",
-      "name": "TASS — Russian News Agency",
-      "domain": "POWER",
-      "actor": "Russia",
-      "rss_url": "https://tass.com/rss/v2.xml",
-      "web_url": "https://tass.com",
-      "frequency": "daily",
-      "tier": "STATE",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Russian state news agency. Required for S2-D Adversary Narrative. Primary Kremlin narrative amplifier. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-046",
-      "name": "Global Times",
-      "domain": "POWER",
-      "actor": "China",
-      "rss_url": "https://www.globaltimes.cn/rss/outbrain.xml",
-      "web_url": "https://www.globaltimes.cn",
-      "frequency": "daily",
-      "tier": "STATE",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "CCP hawkish nationalist outlet. Required for S2-D. More aggressive than Xinhua — used to test public reaction and signal redlines. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-047",
-      "name": "Press TV — Iran State Media",
-      "domain": "POWER",
-      "actor": "Iran",
-      "rss_url": "https://www.presstv.ir/homepageRss.xml",
-      "web_url": "https://www.presstv.ir",
-      "frequency": "daily",
-      "tier": "STATE",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Iranian state English broadcaster. Required for S2-D. Key adversarial narrative source for Middle East and anti-Western framing. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-048",
-      "name": "TRT World — Turkey State Media",
-      "domain": "POWER",
-      "actor": "Turkey",
-      "rss_url": "https://www.trtworld.com/rss",
-      "web_url": "https://www.trtworld.com",
-      "frequency": "daily",
-      "tier": "STATE",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Turkish state international broadcaster. NATO member with independent strategic narrative. Key for S2-D — bridges Western and adversarial framing. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-049",
-      "name": "Chatham House",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://www.chathamhouse.org/rss.xml",
-      "web_url": "https://www.chathamhouse.org",
-      "frequency": "weekly",
-      "tier": "TIER1",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Royal Institute of International Affairs — UK gold standard foreign policy analysis. Read by UK Cabinet, FCO, NATO. TIER1: primary source for European strategic perspective. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-050",
-      "name": "Carnegie Endowment for International Peace",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://carnegieendowment.org/rss/solr/articles",
-      "web_url": "https://carnegieendowment.org",
-      "frequency": "weekly",
-      "tier": "TIER1",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Carnegie Endowment — nuclear policy, democracy erosion, US-China-Russia triangulation. TIER1: read by State Dept, NSC. Strongest source for long-cycle strategic shifts. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-051",
-      "name": "Brookings Institution",
-      "domain": "NARRATIVE",
-      "actor": "Think Tank",
-      "rss_url": "https://www.brookings.edu/feed/",
-      "web_url": "https://www.brookings.edu",
-      "frequency": "weekly",
-      "tier": "TIER2",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Brookings — center-left US policy analysis. Economic policy, governance, democracy. TIER2: strong on domestic-to-foreign policy linkage. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-052",
-      "name": "IISS — International Institute for Strategic Studies",
-      "domain": "MILITARY",
-      "actor": "Think Tank",
-      "rss_url": "https://www.iiss.org/rss",
-      "web_url": "https://www.iiss.org",
-      "frequency": "weekly",
-      "tier": "TIER1",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "IISS — Military Balance authors. Gold standard for global military capability assessments. TIER1: used by every major defense ministry. Best source for hard military capability signals. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-053",
-      "name": "Access Now — Digital Rights",
-      "domain": "TECH",
-      "actor": "Global",
-      "rss_url": "https://www.accessnow.org/feed/",
-      "web_url": "https://www.accessnow.org",
-      "frequency": "weekly",
-      "tier": "TIER1",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Access Now — internet shutdowns, surveillance tech exports, authoritarian tech deployments. TIER1: documents real-world rights contractions with evidence. Complements EFF for global non-US cases. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-054",
-      "name": "Freedom House",
-      "domain": "NARRATIVE",
-      "actor": "Global",
-      "rss_url": "https://freedomhouse.org/rss.xml",
-      "web_url": "https://freedomhouse.org",
-      "frequency": "weekly",
-      "tier": "TIER2",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Freedom House — democracy erosion, authoritarian expansion, press freedom. TIER2: cited in UN and US Congress. Key for S2-E Legitimacy Filter. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-055",
-      "name": "Global Financial Integrity",
-      "domain": "NETWORK",
-      "actor": "Global",
-      "rss_url": "https://gfintegrity.org/feed/",
-      "web_url": "https://gfintegrity.org",
-      "frequency": "weekly",
-      "tier": "TIER2",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "GFI — illicit financial flows, trade misinvoicing, dark money corridors. TIER2: quantitative analysis of hidden capital flows. Unique intelligence not covered by ICIJ/OCCRP. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-056",
-      "name": "South China Morning Post",
-      "domain": "POWER",
-      "actor": "Asia",
-      "rss_url": "https://www.scmp.com/rss/91/feed",
-      "web_url": "https://www.scmp.com",
-      "frequency": "daily",
-      "tier": "TIER2",
-      "layer": 1,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "SCMP — Hong Kong-based. Covers China with Western-style journalism standards. Key for reading Beijing signals that Xinhua/CGTN soft-pedal. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-057",
-      "name": "Google News: Influence Operations Disinformation",
-      "domain": "NARRATIVE",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22influence+operation%22+OR+%22disinformation+campaign%22+OR+%22information+warfare%22+OR+%22narrative+injection%22",
-      "web_url": "https://news.google.com",
-      "frequency": "daily",
-      "tier": "TIER3",
-      "layer": 2,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Google News topic RSS — influence operations, disinformation campaigns, information warfare. Direct support for S2-A Injection Tracer and S2-B Coordination Analyzer. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-058",
-      "name": "Google News: Cognitive Warfare Propaganda",
-      "domain": "NARRATIVE",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22propaganda%22+OR+%22cognitive+warfare%22+OR+%22psychological+operation%22+OR+%22state+media%22",
-      "web_url": "https://news.google.com",
-      "frequency": "daily",
-      "tier": "TIER3",
-      "layer": 2,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Google News topic RSS — propaganda, cognitive warfare, psychological operations. Direct System 2 support for injection detection and adversary narrative tracking. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-059",
-      "name": "Google News: Geopolitical Competition Indo-Pacific",
-      "domain": "POWER",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22Indo-Pacific%22+OR+%22South+China+Sea%22+OR+%22Taiwan+Strait%22+OR+%22ASEAN%22",
-      "web_url": "https://news.google.com",
-      "frequency": "daily",
-      "tier": "TIER3",
-      "layer": 2,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Google News topic RSS — Indo-Pacific competition, South China Sea, Taiwan Strait, ASEAN. Fills significant geographic gap in current source coverage. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-060",
-      "name": "Google News: Election Interference Democratic Backsliding",
-      "domain": "NARRATIVE",
-      "actor": "Global",
-      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22election+interference%22+OR+%22democratic+backsliding%22+OR+%22authoritarian%22+OR+%22political+repression%22",
-      "web_url": "https://news.google.com",
-      "frequency": "daily",
-      "tier": "TIER3",
-      "layer": 2,
-      "ethics_verified": true,
-      "language": "en",
-      "notes": "Google News topic RSS — election interference, democratic backsliding, authoritarian expansion. Direct support for S2-E Legitimacy Filter. LR-014(E) compliant."
-    },
-    {
-      "id": "SRC-066",
-      "name": "Dawn (Pakistan)",
-      "url": "https://www.dawn.com/feeds/latest-news",
-      "feed_type": "rss",
-      "domain": "POWER",
-      "tier": "TIER_B",
-      "max_articles": 5,
-      "note": "Pakistan perspective on US-China-India triangle, South Asia, Iran. Non-Western analytical tradition."
-    },
-    {
-      "id": "SRC-067",
-      "name": "Asia Times",
-      "url": "https://asiatimes.com/feed/",
-      "feed_type": "rss",
-      "domain": "POWER",
-      "tier": "TIER_B",
-      "max_articles": 5,
-      "note": "Hong Kong-based. Indo-Pacific from Asian vantage. Strong on China, ASEAN, US-China decoupling."
-    },
-    {
-      "id": "SRC-068",
-      "name": "Middle East Eye",
-      "url": "https://www.middleeasteye.net/rss",
-      "feed_type": "rss",
-      "domain": "POWER",
-      "tier": "TIER_B",
-      "max_articles": 5,
-      "note": "MENA from regional perspective. Gulf, Palestine, Iran, Turkey. Diverges from Western MSM framing."
-    },
-    {
-      "id": "SRC-069",
-      "name": "The Hindu",
-      "url": "https://www.thehindu.com/news/feeder/default.rss",
-      "feed_type": "rss",
-      "domain": "POWER",
-      "tier": "TIER_B",
-      "max_articles": 5,
-      "note": "Indian strategic autonomy perspective. Refuses US-China binary. Critical for Global South signals."
-    },
-    {
-      "id": "SRC-070",
-      "name": "Al Jazeera English",
-      "url": "https://www.aljazeera.com/xml/rss/all.xml",
-      "feed_type": "rss",
-      "domain": "POWER",
-      "tier": "TIER_B",
-      "max_articles": 6,
-      "note": "Qatar-funded. Global South and Muslim-majority world framing. Covers stories Western MSM ignores."
-    },
-    {
-      "id": "SRC-071",
-      "name": "CGTN (China Global Television Network)",
-      "url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 5,
-      "note": "Chinese state international broadcaster. Reveals Beijing's desired global narrative. What China wants the world to believe = strategic signal."
-    },
-    {
-      "id": "SRC-072",
-      "name": "Global Times",
-      "url": "https://www.globaltimes.cn/rss/outbrain.xml",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 5,
-      "note": "CCP-aligned English outlet. Nationalistic framing. Reveals domestic Chinese political pressures projected internationally."
-    },
-    {
-      "id": "SRC-073",
-      "name": "Press TV",
-      "url": "https://www.presstv.ir/rss.xml",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 5,
-      "note": "Iranian state international broadcaster. Reveals Tehran's desired global framing. Anti-Western, pro-resistance axis narrative."
-    },
-    {
-      "id": "SRC-074",
-      "name": "RT (Russia Today) English",
-      "url": "https://www.rt.com/rss/",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 5,
-      "note": "Russian state international broadcaster. Reveals Moscow's narrative strategy. Anti-NATO, multipolar world framing."
-    },
-    {
-      "id": "SRC-075",
-      "name": "Al-Mayadeen",
-      "url": "https://english.almayadeen.net/rss.xml",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 4,
-      "note": "Lebanon-based, Iran/Hezbollah-aligned. Resistance axis perspective. Covers Gaza, Lebanon, Yemen from inside the axis."
-    },
-    {
-      "id": "SRC-076",
-      "name": "TeleSUR English",
-      "url": "https://telesurenglish.net/rss/",
-      "feed_type": "rss",
-      "domain": "NARRATIVE",
-      "tier": "TIER_A",
-      "max_articles": 4,
-      "note": "Venezuelan state-backed Latin American broadcaster. Anti-US imperialism framing. Covers Global South from socialist perspective."
-    }
-  ]
-}
+  {
+    "id": "SRC-002",
+    "name": "White House News",
+    "domain": "POWER",
+    "actor": "US",
+    "rss_url": "https://www.whitehouse.gov/news/feed/",
+    "web_url": "https://www.whitehouse.gov",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Official White House releases and statements",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-003",
+    "name": "Xinhua World News",
+    "domain": "POWER",
+    "actor": "China",
+    "rss_url": "https://www.xinhuanet.com/english/rss/worldrss.xml",
+    "web_url": "https://www.fmprc.gov.cn/eng",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Xinhua official Chinese state news â€” Fix C: replaced broken China MFA RSS",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-004",
+    "name": "Kremlin News",
+    "domain": "POWER",
+    "actor": "Russia",
+    "rss_url": "http://kremlin.ru/events/president/news/feed",
+    "web_url": "https://kremlin.ru/eng",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Official Kremlin presidential statements",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-005",
+    "name": "UN News",
+    "domain": "POWER",
+    "actor": "UN",
+    "rss_url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+    "web_url": "https://www.nato.int",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "UN official global news â€” Fix B: relabeled from NATO (URL was already UN News)",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-006",
+    "name": "Reuters via Google News",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com&ceid=US:en&hl=en-US&gl=US",
+    "web_url": "https://www.reuters.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Reuters articles via Google News RSS â€” Reuters killed direct RSS June 2020. Google News indexes reuters.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
+    "tier": "TIER1"
+  },
+  {
+    "id": "SRC-007",
+    "name": "AP News via Google News",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&ceid=US:en&hl=en-US&gl=US",
+    "web_url": "https://apnews.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "AP News articles via Google News RSS â€” AP blocked RSSHub 403. Google News indexes apnews.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-008",
+    "name": "US Department of Defense",
+    "domain": "MILITARY",
+    "actor": "US",
+    "rss_url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?max=10&ContentType=1&Site=945",
+    "web_url": "https://www.defense.gov",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Official US military news and policy",
+    "tier": "STATE"
+  },
+  {
+    "id": "SRC-009",
+    "name": "RAND Corporation",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://www.rand.org/news/press.xml",
+    "web_url": "https://www.rand.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "RAND think tank press releases â€” Fix A: correct RAND RSS URL",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-010",
+    "name": "CSIS â€” Center for Strategic Studies",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://www.csis.org/rss.xml",
+    "web_url": "https://www.csis.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Top US foreign policy think tank",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-011",
+    "name": "War on the Rocks",
+    "domain": "MILITARY",
+    "actor": "Think Tank",
+    "rss_url": "https://warontherocks.com/feed/",
+    "web_url": "https://ofac.treas.gov",
+    "frequency": "daily",
+    "tier_coverage": [
+      1
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Military strategy analysis â€” Fix B: relabeled from OFAC (URL was already War on the Rocks)",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-012",
+    "name": "Foreign Policy Magazine",
+    "domain": "NARRATIVE",
+    "actor": "Global",
+    "rss_url": "https://foreignpolicy.com/feed/",
+    "web_url": "https://www.imf.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Foreign Policy analysis â€” Fix B: relabeled from IMF (URL was already Foreign Policy)",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-013",
+    "name": "The Diplomat",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "https://thediplomat.com/feed/",
+    "web_url": "https://www.bis.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Asia-Pacific geopolitics â€” Fix B: relabeled from BIS (URL was already The Diplomat)",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-014",
+    "name": "arXiv AI Papers",
+    "domain": "TECH",
+    "actor": "Global",
+    "rss_url": "https://rss.arxiv.org/rss/cs.AI",
+    "web_url": "https://arxiv.org",
+    "frequency": "daily",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "arXiv AI preprints â€” correct URL: rss.arxiv.org/rss/cs.AI. Returns 0 articles on Saturday+Sunday by design (arXiv policy). Works Mon-Fri automatically. No fix needed for weekends â€” this is expected behavior. Do not change URL.",
+    "tier": "TIER3",
+    "reserve_id": "SRC-015"
+  },
+  {
+    "id": "SRC-015",
+    "name": "MIT Technology Review",
+    "domain": "TECH",
+    "actor": "Global",
+    "rss_url": "https://www.technologyreview.com/feed/",
+    "web_url": "https://www.technologyreview.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Leading tech journalism â€” AI, quantum, semiconductor coverage",
+    "tier": "TIER2"
+  },
+  {
+    "id": "SRC-016",
+    "name": "Bellingcat",
+    "domain": "NARRATIVE",
+    "actor": "OSINT",
+    "rss_url": "https://www.bellingcat.com/feed/",
+    "web_url": "https://www.bellingcat.com",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Open source investigation â€” conflict verification and network analysis",
+    "tier": "TIER1"
+  },
+  {
+    "id": "SRC-017",
+    "name": "DFRLab â€” Digital Forensic Research Lab",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://medium.com/feed/dfrlab",
+    "web_url": "https://www.dfrlab.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Influence operations and disinformation detection",
+    "tier": "TIER1"
+  },
+  {
+    "id": "SRC-018",
+    "name": "Al Jazeera World",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "web_url": "https://www.sipri.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Al Jazeera global news â€” Fix B: relabeled from SIPRI (URL was already Al Jazeera)",
+    "tier": "TIER1"
+  },
+  {
+    "id": "SRC-019",
+    "name": "BBC World News",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "web_url": "https://www.iea.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "BBC global news â€” Fix B: relabeled from IEA (URL was already BBC World)",
+    "tier": "TIER1",
+    "reserve_id": "SRC-033"
+  },
+  {
+    "id": "SRC-020",
+    "name": "ICIJ â€” International Consortium of Investigative Journalists",
+    "domain": "NETWORK",
+    "actor": "Global",
+    "rss_url": "https://www.icij.org/feed/",
+    "web_url": "https://www.icij.org",
+    "frequency": "weekly",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Hidden financial networks and non-state actor investigations",
+    "tier": "TIER1",
+    "reserve_id": "SRC-034"
+  },
+  {
+    "id": "SRC-021",
+    "name": "Google News: Corruption Dark Money",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22corruption%22+OR+%22dark+money%22+OR+%22money+laundering%22",
+    "domain": "NETWORK",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — corruption, dark money, money laundering. Layer 2 topic-filtered. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-022",
+    "name": "Google News: Sanctions Evasion",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions+evasion%22+OR+%22shell+company%22+OR+%22oligarch%22",
+    "domain": "NETWORK",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — sanctions evasion, shell companies, oligarch assets. Cui Bono intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-023",
+    "name": "Google News: Energy Security",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22energy+security%22+OR+%22oil+price%22+OR+%22gas+supply%22",
+    "domain": "RESOURCE",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — energy security, oil price, gas supply. Physical reality intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-024",
+    "name": "Google News: Financial Stability",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions%22+OR+%22financial+stability%22+OR+%22debt+crisis%22",
+    "domain": "FINANCE",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — sanctions, financial stability, debt crisis. Cui Bono financial intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-025",
+    "name": "Yahoo News RSS",
+    "rss_url": "https://news.yahoo.com/rss/",
+    "domain": "POWER",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 4,
+    "notes": "Yahoo News general RSS — 50 articles of broad world news. Layer 4 wide-angle backup. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-026",
+    "name": "EFF Digital Rights",
+    "rss_url": "https://www.eff.org/rss/updates.xml",
+    "domain": "TECH",
+    "actor": "Global",
+    "tier": "TIER1",
+    "layer": 1,
+    "notes": "Electronic Frontier Foundation — digital rights, AI surveillance, privacy, cyber law. TIER1: original reporting and legal analysis. Best source for rights-contracting tech deployments. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-027",
+    "name": "Wired Magazine",
+    "rss_url": "https://www.wired.com/feed/rss",
+    "domain": "TECH",
+    "actor": "Global",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "Wired — geopolitical tech coverage: AI chips, semiconductor wars, surveillance, cyber warfare, export controls. TIER2: analytical depth. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-028",
+    "name": "Ars Technica",
+    "rss_url": "https://feeds.arstechnica.com/arstechnica/index",
+    "domain": "TECH",
+    "actor": "Global",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "Ars Technica — deep tech analysis, AI, security, infrastructure. TIER2: specialist depth. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-029",
+    "name": "IEEE Spectrum",
+    "rss_url": "https://spectrum.ieee.org/feeds/feed.rss",
+    "domain": "TECH",
+    "actor": "Global",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "IEEE Spectrum — semiconductor engineering, AI hardware, critical infrastructure tech. TIER2: engineering specialist. Only source for semiconductor/chip-level intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-030",
+    "name": "Google News: IMF World Bank Economy",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22World+Bank%22+OR+%22debt+restructuring%22+OR+%22sovereign+debt%22",
+    "domain": "FINANCE",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — IMF, World Bank, debt restructuring, sovereign debt. Debt Trap intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-031",
+    "name": "Google News: Critical Minerals",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22critical+minerals%22+OR+%22rare+earth%22+OR+%22food+security%22+OR+%22water+scarcity%22",
+    "domain": "RESOURCE",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — critical minerals, rare earth, food security, water scarcity. Physical reality intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-032",
+    "name": "Google News: IEA Energy Transition",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IEA%22+OR+%22energy+transition%22+OR+%22renewable+energy%22+OR+%22energy+poverty%22",
+    "domain": "RESOURCE",
+    "actor": "Global",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — IEA, energy transition, renewable energy, energy poverty. GCSP physical foundation intelligence. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-033",
+    "name": "Financial Times World",
+    "rss_url": "https://www.ft.com/rss/home/uk",
+    "domain": "FINANCE",
+    "actor": "Global",
+    "tier": "TIER1",
+    "layer": 1,
+    "notes": "Financial Times — gold standard for financial intelligence. Primary source for sanctions, central bank signals, sovereign debt. TIER1: original reporting with institutional credibility. Reserve for BBC when BBC fails."
+  },
+  {
+    "id": "SRC-034",
+    "name": "OCCRP — Organized Crime and Corruption",
+    "rss_url": "https://occrp.org/en/feed",
+    "domain": "NETWORK",
+    "actor": "Global",
+    "tier": "TIER1",
+    "layer": 1,
+    "notes": "Organized Crime and Corruption Reporting Project. Investigative journalism exposing money laundering networks, oligarch assets, state-crime nexus. TIER1: 430 official investigations triggered. Reserve for ICIJ when ICIJ fails."
+  },
+  {
+    "id": "SRC-035",
+    "name": "Relief Web",
+    "rss_url": "https://reliefweb.int/updates/rss.xml",
+    "domain": "MILITARY",
+    "actor": "Global",
+    "tier": "TIER2",
+    "layer": 2,
+    "notes": "UN OCHA-managed humanitarian intelligence platform. Covers conflicts, disasters, displacement, humanitarian crises. TIER2: authoritative on human impact of military conflicts — fills ACLED gap."
+  },
+  {
+    "id": "SRC-036",
+    "name": "Crisis Group",
+    "rss_url": "https://www.crisisgroup.org/rss.xml",
+    "domain": "MILITARY",
+    "actor": "Global",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again.",
+    "reserve_id": "SRC-042"
+  },
+  {
+    "id": "SRC-037",
+    "name": "Google News: IMF",
+    "domain": "FINANCE",
+    "actor": "IMF",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
+    "web_url": "https://www.imf.org",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "tier": "TIER3",
+    "layer": 1,
+    "notes": "Google News IMF topic RSS — replaces broken imf.org direct feed. Covers IMF statements, programs, country reviews. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-038",
+    "name": "Google News: World Bank",
+    "domain": "FINANCE",
+    "actor": "World Bank",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
+    "web_url": "https://www.worldbank.org",
+    "frequency": "daily",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "tier": "TIER3",
+    "layer": 1,
+    "notes": "Google News World Bank topic RSS — replaces broken blogs.worldbank.org direct feed. Covers WB lending, development finance, country programs. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-039",
+    "name": "Google News: Central Banks",
+    "domain": "FINANCE",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22central+bank%22+OR+%22Federal+Reserve%22+OR+%22interest+rates%22+OR+%22inflation%22",
+    "web_url": "https://news.google.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      2,
+      3
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "tier": "TIER3",
+    "layer": 2,
+    "notes": "Google News topic RSS — central bank decisions, Federal Reserve, interest rates, inflation signals. Monetary policy intelligence layer. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-040",
+    "name": "Military Times",
+    "domain": "MILITARY",
+    "actor": "Global",
+    "rss_url": "https://www.militarytimes.com/arc/outboundfeeds/rss/",
+    "web_url": "https://www.defensenews.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant.",
+    "reserve_id": "SRC-043"
+  },
+  {
+    "id": "SRC-041",
+    "name": "Breaking Defense",
+    "domain": "MILITARY",
+    "actor": "Global",
+    "rss_url": "https://breakingdefense.com/feed/",
+    "web_url": "https://breakingdefense.com",
+    "frequency": "daily",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "language": "en",
+    "tier": "TIER2",
+    "layer": 1,
+    "notes": "Breaking Defense — deep defense policy analysis, Pentagon, NATO, Indo-Pacific strategy. TIER2: read by defense officials and analysts. Strongest source for early military posture signals."
+  },
+  {
+    "id": "SRC-042",
+    "name": "Google News: Crisis Group",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22Crisis+Group%22+OR+%22conflict+prevention%22+%22ceasefire%22+OR+%22peace+talks%22",
+    "domain": "MILITARY",
+    "tier": "TIER2",
+    "actor": "Crisis Group",
+    "language": "en",
+    "tier_coverage": [
+      "MILITARY",
+      "POWER"
+    ]
+  },
+  {
+    "id": "SRC-043",
+    "name": "Google News: Defense Military",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22military%22+%22defense%22+%22pentagon%22+OR+%22armed+forces%22+OR+%22deployment%22",
+    "domain": "MILITARY",
+    "tier": "TIER2",
+    "actor": "Military News",
+    "language": "en",
+    "tier_coverage": [
+      "MILITARY"
+    ]
+  },
+  {
+    "id": "SRC-044",
+    "name": "CGTN — China Global Television Network",
+    "domain": "POWER",
+    "actor": "China",
+    "rss_url": "https://www.cgtn.com/subscribe/rss/section/world.do",
+    "web_url": "https://www.cgtn.com",
+    "frequency": "daily",
+    "tier": "STATE",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Chinese state international broadcaster. Required for S2-D Adversary Narrative. Official Chinese narrative to global audiences. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-045",
+    "name": "TASS — Russian News Agency",
+    "domain": "POWER",
+    "actor": "Russia",
+    "rss_url": "https://tass.com/rss/v2.xml",
+    "web_url": "https://tass.com",
+    "frequency": "daily",
+    "tier": "STATE",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Russian state news agency. Required for S2-D Adversary Narrative. Primary Kremlin narrative amplifier. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-046",
+    "name": "Global Times",
+    "domain": "POWER",
+    "actor": "China",
+    "rss_url": "https://www.globaltimes.cn/rss/outbrain.xml",
+    "web_url": "https://www.globaltimes.cn",
+    "frequency": "daily",
+    "tier": "STATE",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "CCP hawkish nationalist outlet. Required for S2-D. More aggressive than Xinhua — used to test public reaction and signal redlines. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-047",
+    "name": "Press TV — Iran State Media",
+    "domain": "POWER",
+    "actor": "Iran",
+    "rss_url": "https://www.presstv.ir/homepageRss.xml",
+    "web_url": "https://www.presstv.ir",
+    "frequency": "daily",
+    "tier": "STATE",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Iranian state English broadcaster. Required for S2-D. Key adversarial narrative source for Middle East and anti-Western framing. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-048",
+    "name": "TRT World — Turkey State Media",
+    "domain": "POWER",
+    "actor": "Turkey",
+    "rss_url": "https://www.trtworld.com/rss",
+    "web_url": "https://www.trtworld.com",
+    "frequency": "daily",
+    "tier": "STATE",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Turkish state international broadcaster. NATO member with independent strategic narrative. Key for S2-D — bridges Western and adversarial framing. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-049",
+    "name": "Chatham House",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://www.chathamhouse.org/rss.xml",
+    "web_url": "https://www.chathamhouse.org",
+    "frequency": "weekly",
+    "tier": "TIER1",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Royal Institute of International Affairs — UK gold standard foreign policy analysis. Read by UK Cabinet, FCO, NATO. TIER1: primary source for European strategic perspective. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-050",
+    "name": "Carnegie Endowment for International Peace",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://carnegieendowment.org/rss/solr/articles",
+    "web_url": "https://carnegieendowment.org",
+    "frequency": "weekly",
+    "tier": "TIER1",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Carnegie Endowment — nuclear policy, democracy erosion, US-China-Russia triangulation. TIER1: read by State Dept, NSC. Strongest source for long-cycle strategic shifts. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-051",
+    "name": "Brookings Institution",
+    "domain": "NARRATIVE",
+    "actor": "Think Tank",
+    "rss_url": "https://www.brookings.edu/feed/",
+    "web_url": "https://www.brookings.edu",
+    "frequency": "weekly",
+    "tier": "TIER2",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Brookings — center-left US policy analysis. Economic policy, governance, democracy. TIER2: strong on domestic-to-foreign policy linkage. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-052",
+    "name": "IISS — International Institute for Strategic Studies",
+    "domain": "MILITARY",
+    "actor": "Think Tank",
+    "rss_url": "https://www.iiss.org/rss",
+    "web_url": "https://www.iiss.org",
+    "frequency": "weekly",
+    "tier": "TIER1",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "IISS — Military Balance authors. Gold standard for global military capability assessments. TIER1: used by every major defense ministry. Best source for hard military capability signals. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-053",
+    "name": "Access Now — Digital Rights",
+    "domain": "TECH",
+    "actor": "Global",
+    "rss_url": "https://www.accessnow.org/feed/",
+    "web_url": "https://www.accessnow.org",
+    "frequency": "weekly",
+    "tier": "TIER1",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Access Now — internet shutdowns, surveillance tech exports, authoritarian tech deployments. TIER1: documents real-world rights contractions with evidence. Complements EFF for global non-US cases. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-054",
+    "name": "Freedom House",
+    "domain": "NARRATIVE",
+    "actor": "Global",
+    "rss_url": "https://freedomhouse.org/rss.xml",
+    "web_url": "https://freedomhouse.org",
+    "frequency": "weekly",
+    "tier": "TIER2",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Freedom House — democracy erosion, authoritarian expansion, press freedom. TIER2: cited in UN and US Congress. Key for S2-E Legitimacy Filter. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-055",
+    "name": "Global Financial Integrity",
+    "domain": "NETWORK",
+    "actor": "Global",
+    "rss_url": "https://gfintegrity.org/feed/",
+    "web_url": "https://gfintegrity.org",
+    "frequency": "weekly",
+    "tier": "TIER2",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "GFI — illicit financial flows, trade misinvoicing, dark money corridors. TIER2: quantitative analysis of hidden capital flows. Unique intelligence not covered by ICIJ/OCCRP. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-056",
+    "name": "South China Morning Post",
+    "domain": "POWER",
+    "actor": "Asia",
+    "rss_url": "https://www.scmp.com/rss/91/feed",
+    "web_url": "https://www.scmp.com",
+    "frequency": "daily",
+    "tier": "TIER2",
+    "layer": 1,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "SCMP — Hong Kong-based. Covers China with Western-style journalism standards. Key for reading Beijing signals that Xinhua/CGTN soft-pedal. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-057",
+    "name": "Google News: Influence Operations Disinformation",
+    "domain": "NARRATIVE",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22influence+operation%22+OR+%22disinformation+campaign%22+OR+%22information+warfare%22+OR+%22narrative+injection%22",
+    "web_url": "https://news.google.com",
+    "frequency": "daily",
+    "tier": "TIER3",
+    "layer": 2,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Google News topic RSS — influence operations, disinformation campaigns, information warfare. Direct support for S2-A Injection Tracer and S2-B Coordination Analyzer. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-058",
+    "name": "Google News: Cognitive Warfare Propaganda",
+    "domain": "NARRATIVE",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22propaganda%22+OR+%22cognitive+warfare%22+OR+%22psychological+operation%22+OR+%22state+media%22",
+    "web_url": "https://news.google.com",
+    "frequency": "daily",
+    "tier": "TIER3",
+    "layer": 2,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Google News topic RSS — propaganda, cognitive warfare, psychological operations. Direct System 2 support for injection detection and adversary narrative tracking. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-059",
+    "name": "Google News: Geopolitical Competition Indo-Pacific",
+    "domain": "POWER",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22Indo-Pacific%22+OR+%22South+China+Sea%22+OR+%22Taiwan+Strait%22+OR+%22ASEAN%22",
+    "web_url": "https://news.google.com",
+    "frequency": "daily",
+    "tier": "TIER3",
+    "layer": 2,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Google News topic RSS — Indo-Pacific competition, South China Sea, Taiwan Strait, ASEAN. Fills significant geographic gap in current source coverage. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-060",
+    "name": "Google News: Election Interference Democratic Backsliding",
+    "domain": "NARRATIVE",
+    "actor": "Global",
+    "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22election+interference%22+OR+%22democratic+backsliding%22+OR+%22authoritarian%22+OR+%22political+repression%22",
+    "web_url": "https://news.google.com",
+    "frequency": "daily",
+    "tier": "TIER3",
+    "layer": 2,
+    "ethics_verified": true,
+    "language": "en",
+    "notes": "Google News topic RSS — election interference, democratic backsliding, authoritarian expansion. Direct support for S2-E Legitimacy Filter. LR-014(E) compliant."
+  },
+  {
+    "id": "SRC-066",
+    "name": "Dawn (Pakistan)",
+    "url": "https://www.dawn.com/feeds/latest-news",
+    "feed_type": "rss",
+    "domain": "POWER",
+    "tier": "TIER_B",
+    "max_articles": 5,
+    "note": "Pakistan perspective on US-China-India triangle, South Asia, Iran. Non-Western analytical tradition."
+  },
+  {
+    "id": "SRC-067",
+    "name": "Asia Times",
+    "url": "https://asiatimes.com/feed/",
+    "feed_type": "rss",
+    "domain": "POWER",
+    "tier": "TIER_B",
+    "max_articles": 5,
+    "note": "Hong Kong-based. Indo-Pacific from Asian vantage. Strong on China, ASEAN, US-China decoupling."
+  },
+  {
+    "id": "SRC-068",
+    "name": "Middle East Eye",
+    "url": "https://www.middleeasteye.net/rss",
+    "feed_type": "rss",
+    "domain": "POWER",
+    "tier": "TIER_B",
+    "max_articles": 5,
+    "note": "MENA from regional perspective. Gulf, Palestine, Iran, Turkey. Diverges from Western MSM framing."
+  },
+  {
+    "id": "SRC-069",
+    "name": "The Hindu",
+    "url": "https://www.thehindu.com/news/feeder/default.rss",
+    "feed_type": "rss",
+    "domain": "POWER",
+    "tier": "TIER_B",
+    "max_articles": 5,
+    "note": "Indian strategic autonomy perspective. Refuses US-China binary. Critical for Global South signals."
+  },
+  {
+    "id": "SRC-070",
+    "name": "Al Jazeera English",
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "feed_type": "rss",
+    "domain": "POWER",
+    "tier": "TIER_B",
+    "max_articles": 6,
+    "note": "Qatar-funded. Global South and Muslim-majority world framing. Covers stories Western MSM ignores."
+  },
+  {
+    "id": "SRC-071",
+    "name": "CGTN (China Global Television Network)",
+    "url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 5,
+    "note": "Chinese state international broadcaster. Reveals Beijing's desired global narrative. What China wants the world to believe = strategic signal."
+  },
+  {
+    "id": "SRC-072",
+    "name": "Global Times",
+    "url": "https://www.globaltimes.cn/rss/outbrain.xml",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 5,
+    "note": "CCP-aligned English outlet. Nationalistic framing. Reveals domestic Chinese political pressures projected internationally."
+  },
+  {
+    "id": "SRC-073",
+    "name": "Press TV",
+    "url": "https://www.presstv.ir/rss.xml",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 5,
+    "note": "Iranian state international broadcaster. Reveals Tehran's desired global framing. Anti-Western, pro-resistance axis narrative."
+  },
+  {
+    "id": "SRC-074",
+    "name": "RT (Russia Today) English",
+    "url": "https://www.rt.com/rss/",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 5,
+    "note": "Russian state international broadcaster. Reveals Moscow's narrative strategy. Anti-NATO, multipolar world framing."
+  },
+  {
+    "id": "SRC-075",
+    "name": "Al-Mayadeen",
+    "url": "https://english.almayadeen.net/rss.xml",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 4,
+    "note": "Lebanon-based, Iran/Hezbollah-aligned. Resistance axis perspective. Covers Gaza, Lebanon, Yemen from inside the axis."
+  },
+  {
+    "id": "SRC-076",
+    "name": "TeleSUR English",
+    "url": "https://telesurenglish.net/rss/",
+    "feed_type": "rss",
+    "domain": "NARRATIVE",
+    "tier": "TIER_A",
+    "max_articles": 4,
+    "note": "Venezuelan state-backed Latin American broadcaster. Anti-US imperialism framing. Covers Global South from socialist perspective."
+  },
+  {
+    "id": "SRC-061",
+    "name": "Valdai Discussion Club",
+    "rss_url": "https://news.google.com/rss/search?q=Valdai+Club+geopolitics&hl=en-US&gl=US&ceid=US:en",
+    "web_url": "https://valdaiclub.com",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "Elite Russian strategic think-tank. Editorial positions preview Russian foreign policy framing before it appears in state media. Divergence from Western framing on same events IS the intelligence signal."
+  },
+  {
+    "id": "SRC-062",
+    "name": "Observer Research Foundation (ORF India)",
+    "rss_url": "https://www.orfonline.org/research/feed/",
+    "web_url": "https://www.orfonline.org",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "India's leading strategic think-tank. Non-Western, non-Chinese perspective — third pole analytical tradition. Indo-Pacific, multipolarity, South-South framing of same events as Western sources. India's strategic autonomy doctrine produces distinctly different geopolitical readings."
+  },
+  {
+    "id": "SRC-063",
+    "name": "Institute for Security Studies (ISS Africa)",
+    "rss_url": "https://issafrica.org/rss.xml",
+    "web_url": "https://issafrica.org",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "Premier African security think-tank. African analytical tradition on governance, conflict, and state fragility differs substantially from Western framing. Reads the same African and global events through the lens of colonialism's structural legacy — which Western analysis systematically misses."
+  },
+  {
+    "id": "SRC-064",
+    "name": "ISEAS Yusof Ishak Institute (ASEAN Studies)",
+    "rss_url": "https://www.iseas.edu.sg/home/rss/",
+    "web_url": "https://www.iseas.edu.sg",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "Singapore-based. Southeast Asian strategic perspective on US-China competition, ASEAN centrality, and regional order. ASEAN framing explicitly avoids forced binary alignment — the most important analytical tradition for understanding fence-sitter geopolitics that both US and Chinese narratives systematically distort."
+  },
+  {
+    "id": "SRC-065",
+    "name": "Carnegie Endowment for International Peace",
+    "rss_url": "https://carnegieendowment.org/feed/",
+    "web_url": "https://carnegieendowment.org",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "Has offices in Moscow, Beijing, Beirut, Brussels, New Delhi, Berlin. The non-Washington Carnegie offices produce analysis from genuinely local perspectives — different from Western MSM. Carnegie Moscow and Carnegie China are especially valuable for non-adversarial expert framing of Russian and Chinese strategic thinking."
+  },
+  {
+    "id": "SRC-077",
+    "name": "CASS Institute of World Economics and Politics",
+    "rss_url": "https://news.google.com/rss/search?q=CASS+China+%22Chinese+Academy+of+Social+Sciences%22+economy&hl=en-US&gl=US&ceid=US:en",
+    "web_url": "https://cassintl.org",
+    "domain": "POWER",
+    "actor": "NON_WESTERN",
+    "language": "en",
+    "frequency": "daily",
+    "tier": "TIER_B",
+    "tier_coverage": [
+      1,
+      2
+    ],
+    "ethics_verified": true,
+    "notes": "Chinese Academy of Social Sciences international arm. Elite Chinese economic and strategic think-tank. Previews PBSC economic framing before state media. Divergence from Western economic analysis IS the signal."
+  }
+]
