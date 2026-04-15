@@ -21,6 +21,30 @@ from datetime import datetime, timezone
 RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
 
 
+
+def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
+    """1-token test call to Groq. Returns True if quota >= threshold."""
+    import requests, os
+    key = os.environ.get(api_key_env, '')
+    if not key:
+        print(f'[PRE-FLIGHT] {label}: {api_key_env} not set — skipping check')
+        return True
+    try:
+        r = requests.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
+            json={'model': 'llama-3.3-70b-versatile', 'messages': [{'role': 'user', 'content': 'hi'}], 'max_tokens': 1},
+            timeout=10
+        )
+        remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
+        print(f'[PRE-FLIGHT] {label}: {remaining:,} tokens remaining (threshold={threshold:,})')
+        if remaining < threshold:
+            print(f'[PRE-FLIGHT] {label}: quota too low — clean skip (exit 0)')
+            return False
+        return True
+    except Exception as e:
+        print(f'[PRE-FLIGHT] {label}: check failed ({e}) — proceeding anyway')
+        return True
 def _run(position, fn, **kwargs):
     print(f"\n[S3-ORC] ── {position} ──────────────────────────────")
     try:
@@ -46,6 +70,11 @@ def main():
     print("=" * 60)
 
     results = {}
+
+    # ── Pre-flight: Groq S3 quota check ──────────────────────────────────────
+    if not check_groq_tpd("GROQ_S3_API_KEY", 6000, "S3"):
+        sys.exit(0)
+
 
     from lens_s3a_patterns    import run_s3a
     from lens_s3b_truehistory import run_s3b
