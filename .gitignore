@@ -8,4 +8,4 @@ fetch_output.txt
 lens-FIX-*.py
 lens-TEST-*.py
 code/.lens_stagger
-*.docx
+# *.docx removed — session docs must be tracked
