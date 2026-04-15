@@ -495,6 +495,40 @@ def update_learning(results:dict):
             _sb_post("lens_run_meta",{"key":"lens3_last_runtime_s","value":str(res.runtime_s),
                 "recorded_at":datetime.now(timezone.utc).isoformat()})
             log.info(f"[LEARNING] Lens 3 runtime {res.runtime_s}s recorded")
+# ══════════════════════════════════════════════════════════════════════════════
+# CROSS-LENS SIGNAL DETECTION (S1 data only — LR-060 safe)
+# ══════════════════════════════════════════════════════════════════════════════
+def compute_cross_lens_signals(results: dict) -> list:
+    """Extract keywords appearing in 3+ lens summaries. Single-source spike = anomaly."""
+    import re, collections
+    summaries = {}
+    for lid, r in results.items():
+        if not isinstance(r, LensResult): continue
+        if r.status != "complete" or not r.report_id: continue
+        rows = _sb_get("lens_reports", f"?id=eq.{r.report_id}&select=summary")
+        if rows: summaries[lid] = rows[0].get("summary", "")
+    if len(summaries) < 3: return []
+    # Extract meaningful words (5+ chars, alpha only)
+    word_lenses = collections.defaultdict(set)
+    for lid, text in summaries.items():
+        words = set(w.lower() for w in re.findall(r"[a-zA-Z]{5,}", text))
+        for w in words: word_lenses[w].add(lid)
+    STOPWORDS = {"which","their","there","about","would","could","should",
+                 "these","those","where","while","signal","report","lens",
+                 "analysis","based","within","through","between","across"}
+    signals = []
+    for word, lenses in word_lenses.items():
+        if word in STOPWORDS: continue
+        count = len(lenses)
+        if count == 1:
+            # Single-source spike — consensus anomaly flag (LR-061)
+            signals.append(f"[ANOMALY] single-lens spike: "{word}" (Lens {list(lenses)[0]} only)")
+        elif count >= 3:
+            signals.append(f"[CROSS-LENS x{count}] "{word}" confirmed across {sorted(lenses)}")
+    # Sort: cross-lens first, anomalies second
+    signals.sort(key=lambda s: (0 if s.startswith("[CROSS") else 1))
+    return signals[:10]
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # STEP 8 — RUN SUMMARY
@@ -671,7 +705,8 @@ def run_orchestrator(config:dict=None) -> dict:
 
     # Summary (Step 8)
     elapsed=time.time()-t0
-    summary=generate_summary(run_id,results,pf,elapsed)
+    signals=compute_cross_lens_signals(results)
+    summary=generate_summary(run_id,results,pf,elapsed,signals=signals)
     print(summary)
 
     return _mk_result(run_id,results,pf,summary=summary,verification=vfy,
