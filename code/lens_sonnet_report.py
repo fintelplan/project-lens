@@ -52,6 +52,64 @@ def fetch_s2_full(sb) -> list:
         log.warning(f"S2 fetch failed: {e}")
         return []
 
+
+def fetch_refs_for_s2(sb, s2_findings: list) -> dict:
+    """Match S2 flagged phrases to REF IDs from lens_article_refs."""
+    import json as _json
+    today = __import__('datetime').datetime.now(
+        __import__('datetime').timezone.utc).strftime("%Y-%m-%d")
+    try:
+        r = sb.table("lens_article_refs") \
+            .select("ref_id,title,source_name,domain") \
+            .eq("collected_date", today) \
+            .execute()
+        refs = r.data or []
+    except Exception as e:
+        log.warning(f"Refs fetch failed: {e}")
+        return {}
+
+    # Build phrase → ref_id map
+    ref_map = {}
+    for ref in refs:
+        title = (ref.get("title") or "").lower()
+        ref_map[title] = ref.get("ref_id","")
+
+    # For each S2 analyst — find matching refs
+    analyst_refs = {}
+    for inj in s2_findings:
+        analyst = inj.get("analyst","?")
+        ph_raw  = inj.get("flagged_phrases","")
+        phrases = []
+        if isinstance(ph_raw, list):
+            phrases = [str(p).lower() for p in ph_raw if p and len(str(p)) > 3]
+        elif isinstance(ph_raw, str):
+            try:
+                parsed = _json.loads(ph_raw)
+                phrases = [str(p).lower() for p in parsed if p and len(str(p)) > 3]
+            except Exception:
+                phrases = [ph_raw.lower()] if len(ph_raw) > 3 else []
+
+        matched = []
+        for phrase in phrases[:5]:
+            for title, ref_id in ref_map.items():
+                if phrase in title and ref_id not in matched:
+                    matched.append(ref_id)
+                if len(matched) >= 5:
+                    break
+
+        if matched:
+            if analyst not in analyst_refs:
+                analyst_refs[analyst] = []
+            analyst_refs[analyst].extend(matched)
+
+    # Deduplicate
+    for a in analyst_refs:
+        analyst_refs[a] = list(dict.fromkeys(analyst_refs[a]))[:5]
+
+    total = sum(len(v) for v in analyst_refs.values())
+    log.info(f"REF matching: {total} refs found for {len(analyst_refs)} analysts")
+    return analyst_refs
+
 def fetch_s3a(sb) -> dict:
     try:
         r = sb.table("lens_system3_reports") \
@@ -87,7 +145,9 @@ def fetch_ma(sb) -> dict:
 
 # ── Prompt ────────────────────────────────────────────────────────────────────
 
-def build_prompt(s2, s3a, s3d, ma) -> str:
+def build_prompt(s2, s3a, s3d, ma, analyst_refs=None) -> str:
+    if analyst_refs is None:
+        analyst_refs = {}
     def ev(raw):
         if not raw: return {}
         if isinstance(raw, dict): return raw
@@ -451,9 +511,8 @@ def run_sonnet_report() -> dict:
     start = time.time()
 
     # Thai time for title (UTC+7)
-    utc_now = datetime.now(timezone.utc)
-    dc_time = utc_now - timedelta(hours=4)
-    title = utc_now.strftime("%B %d, %Y") + "  |  " + utc_now.strftime("%H:%M UTC") + "  |  " + dc_time.strftime("%I:%M %p") + " Washington DC"
+    thai_time = datetime.now(timezone.utc) + timedelta(hours=7)
+    title = thai_time.strftime("%B %d, %Y %I:%M %p")
 
     log.info(f"=== SONNET REPORT START | {title} ===")
 
@@ -470,13 +529,14 @@ def run_sonnet_report() -> dict:
 
     log.info(f"Data: S2={len(s2)} | S3-A={'yes' if s3a else 'no'} | S3-D={'yes' if s3d else 'no'} | MA={'yes' if ma else 'no'}")
 
-    prompt = build_prompt(s2, s3a, s3d, ma)
+    analyst_refs = fetch_refs_for_s2(sb, s2)
+    prompt = build_prompt(s2, s3a, s3d, ma, analyst_refs=analyst_refs)
     report = call_sonnet(client, prompt)
     if not report:
         return {"status": "GENERATION_FAILED"}
 
     docx_path = os.path.join(tempfile.gettempdir(),
-        f"lens_{utc_now.strftime('%Y%m%d_%H%M')}.docx")
+        f"lens_{thai_time.strftime('%Y%m%d_%H%M')}.docx")
 
     docx_ok = generate_docx(report, docx_path, title)
 
@@ -626,9 +686,8 @@ def run_sonnet_report() -> dict:
     start = time.time()
 
     # Thai time for title (UTC+7)
-    utc_now = datetime.now(timezone.utc)
-    dc_time = utc_now - timedelta(hours=4)
-    title = utc_now.strftime("%B %d, %Y") + "  |  " + utc_now.strftime("%H:%M UTC") + "  |  " + dc_time.strftime("%I:%M %p") + " Washington DC"
+    thai_time = datetime.now(timezone.utc) + timedelta(hours=7)
+    title = thai_time.strftime("%B %d, %Y %I:%M %p")
 
     log.info(f"=== SONNET REPORT START | {title} ===")
 
@@ -645,13 +704,14 @@ def run_sonnet_report() -> dict:
 
     log.info(f"Data: S2={len(s2)} | S3-A={'yes' if s3a else 'no'} | S3-D={'yes' if s3d else 'no'} | MA={'yes' if ma else 'no'}")
 
-    prompt = build_prompt(s2, s3a, s3d, ma)
+    analyst_refs = fetch_refs_for_s2(sb, s2)
+    prompt = build_prompt(s2, s3a, s3d, ma, analyst_refs=analyst_refs)
     report = call_sonnet(client, prompt)
     if not report:
         return {"status": "GENERATION_FAILED"}
 
     docx_path = os.path.join(tempfile.gettempdir(),
-        f"lens_{utc_now.strftime('%Y%m%d_%H%M')}.docx")
+        f"lens_{thai_time.strftime('%Y%m%d_%H%M')}.docx")
 
     docx_ok = generate_docx(report, docx_path, title)
 
