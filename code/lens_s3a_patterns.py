@@ -18,6 +18,33 @@ from typing import Optional
 from groq import Groq
 from supabase import create_client, Client
 
+
+def store_s3a_prediction(supabase, run_id: str, first_domino: str, confidence: float):
+    """
+    System 4 Seed: store S3-A first domino as a verifiable prediction.
+    S4-B will check this against reality at verification_date.
+    Food for thought only — S3 matures freely, S4 watches.
+    """
+    if not first_domino or not first_domino.strip():
+        return
+
+    from datetime import date, timedelta
+    verification_date = (date.today() + timedelta(days=90)).isoformat()
+
+    try:
+        supabase.table("lens_predictions").insert({
+            "source_system": "S3-A",
+            "prediction": first_domino.strip()[:500],  # cap at 500 chars
+            "confidence": round(float(confidence), 3) if confidence else 0.5,
+            "predicted_by": run_id,
+            "verification_date": verification_date,
+        }).execute()
+        print(f"[S4-SEED] Prediction stored → verify by {verification_date}")
+    except Exception as e:
+        print(f"[S4-SEED] Warning: could not store prediction: {e}")
+        # Non-fatal — S3 continues regardless
+
+
 logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S3-A] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("S3-A")
@@ -199,6 +226,13 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     }
 
     r = sb.table("lens_system3_reports").insert(record).execute()
+    # S4 Seed: store first_domino as verifiable prediction (lens_predictions)
+    store_s3a_prediction(
+        sb,
+        record.get("run_id", ""),
+        analysis.get("first_domino", ""),
+        float(analysis.get("quality_score", 0.5))
+    )
     saved = bool(r.data)
     elapsed = round(time.time() - start, 1)
 
