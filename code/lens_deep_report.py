@@ -1,16 +1,18 @@
 """
-lens_deep_report.py
+lens_deep_report.py v2
 Project Lens — 10-Page Deep Intelligence Report
 
-Runs once per day after morning cron (05:30 UTC).
-Fetches S3-A, S3-B, S3-D, S4 predictions, MA report.
-Calls Claude Sonnet 4.6 for deep 10-page analysis.
-Generates PDF and sends to Telegram.
+Changes from v1:
+  - DOCX format (via Node.js + docx-js) — cleaner than PDF
+  - All 4 systems: S1 + S2 + S3 + S4
+  - No markdown artifacts (#, ##, ---, *) in output
+  - No page numbers
+  - Clean professional Word document
 
-Cost: ~$0.25/day (15K input + 8K output tokens)
+Runs once per day at 05:30 UTC (after 04:28 morning cron completes).
 """
 
-import os, json, logging, time
+import os, json, logging, time, tempfile, subprocess
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
@@ -18,310 +20,253 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [DEEP-REPORT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("DEEP_REPORT")
 
-MODEL = "claude-sonnet-4-6"
-MAX_TOKENS = 16000  # ~6000 words = ~10 A4 pages
+MODEL      = "claude-sonnet-4-6"
+MAX_TOKENS = 16000
 
 
-# ── Clients ───────────────────────────────────────────────────────────────────
 def get_supabase():
     from supabase import create_client
-    return create_client(
-        os.environ["SUPABASE_URL"],
-        os.environ["SUPABASE_SERVICE_KEY"]
-    )
+    return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
 def get_anthropic():
     import anthropic
     return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 
-# ── Data fetch ────────────────────────────────────────────────────────────────
-def fetch_s3_reports(sb) -> dict:
-    """Fetch latest S3-A, S3-B, S3-D reports."""
-    ctx = {}
-    for position in ["S3-A", "S3-B", "S3-D", "S3-C"]:
-        try:
-            r = sb.table("lens_system3_reports") \
-                .select("position,summary,first_domino,patterns_found,quality_score,generated_at") \
-                .eq("position", position) \
-                .order("generated_at", desc=True) \
-                .limit(1).execute()
-            if r.data:
-                ctx[position] = r.data[0]
-                log.info(f"{position} loaded: {r.data[0].get('generated_at','?')[:16]}")
-        except Exception as e:
-            log.warning(f"{position} fetch failed: {e}")
-    return ctx
+# ── Data fetchers ─────────────────────────────────────────────────────────────
 
-
-def fetch_s4_predictions(sb) -> list:
-    """Fetch last 5 S4 predictions."""
+def fetch_s1_reports(sb) -> list:
     try:
-        r = sb.table("lens_predictions") \
-            .select("prediction,confidence,verification_date,created_at") \
-            .order("created_at", desc=True) \
-            .limit(5).execute()
-        return r.data or []
+        r = sb.table("lens_reports") \
+            .select("domain_focus,summary,quality_score,cycle,generated_at") \
+            .order("generated_at", desc=True).limit(4).execute()
+        reports = r.data or []
+        log.info(f"S1: {len(reports)} lens reports loaded")
+        return reports
     except Exception as e:
-        log.warning(f"S4 predictions fetch failed: {e}")
+        log.warning(f"S1 fetch failed: {e}")
         return []
 
-
-def fetch_ma_report(sb) -> dict:
-    """Fetch latest Mission Analyst macro report."""
-    try:
-        r = sb.table("lens_macro_reports") \
-            .select("threat_level,executive_summary,key_findings,manufactured_narratives,adversary_narrative_summary,actors_of_concern,gcsp_implications,intelligence_gaps,cui_bono_synthesis,quality_score,created_at") \
-            .order("created_at", desc=True) \
-            .limit(1).execute()
-        return r.data[0] if r.data else {}
-    except Exception as e:
-        log.warning(f"MA report fetch failed: {e}")
-        return {}
-
-
 def fetch_s2_summary(sb) -> list:
-    """Fetch top S2 injection findings from last 24h."""
     try:
         cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
         r = sb.table("injection_reports") \
             .select("analyst,injection_type,confidence_score,flagged_phrases,evidence") \
             .gte("created_at", cutoff) \
-            .order("confidence_score", desc=True) \
-            .limit(10).execute()
+            .order("confidence_score", desc=True).limit(10).execute()
         return r.data or []
     except Exception as e:
         log.warning(f"S2 fetch failed: {e}")
         return []
 
+def fetch_s3_reports(sb) -> dict:
+    ctx = {}
+    for pos in ["S3-A", "S3-B", "S3-D", "S3-C"]:
+        try:
+            r = sb.table("lens_system3_reports") \
+                .select("position,summary,first_domino,patterns_found,quality_score,generated_at") \
+                .eq("position", pos).order("generated_at", desc=True).limit(1).execute()
+            if r.data:
+                ctx[pos] = r.data[0]
+                log.info(f"{pos} loaded: {r.data[0].get('generated_at','?')[:16]}")
+        except Exception as e:
+            log.warning(f"{pos} fetch failed: {e}")
+    return ctx
+
+def fetch_s4_predictions(sb) -> list:
+    try:
+        r = sb.table("lens_predictions") \
+            .select("prediction,confidence,verification_date,created_at") \
+            .order("created_at", desc=True).limit(5).execute()
+        return r.data or []
+    except Exception as e:
+        log.warning(f"S4 fetch failed: {e}")
+        return []
+
+def fetch_ma_report(sb) -> dict:
+    try:
+        r = sb.table("lens_macro_reports") \
+            .select("threat_level,executive_summary,key_findings,adversary_narrative_summary,actors_of_concern,gcsp_implications,intelligence_gaps,cui_bono_synthesis,quality_score,created_at") \
+            .order("created_at", desc=True).limit(1).execute()
+        return r.data[0] if r.data else {}
+    except Exception as e:
+        log.warning(f"MA fetch failed: {e}")
+        return {}
+
 
 # ── Prompt builder ────────────────────────────────────────────────────────────
-def build_deep_prompt(s3: dict, s4: list, ma: dict, s2: list) -> str:
+
+def build_deep_prompt(s1, s2, s3, s4, ma) -> str:
     today = datetime.now(timezone.utc).strftime("%B %d, %Y")
 
-    # Format S3-A
-    s3a = s3.get("S3-A", {})
-    s3a_text = f"""
-S3-A: PATTERN INTELLIGENCE (7-day window)
-Generated: {s3a.get('generated_at','unknown')[:16]}
-Quality: {s3a.get('quality_score', 0):.2f}
-
-Summary:
-{s3a.get('summary', 'No data available')}
-
-First Domino (what becomes inevitable if patterns continue):
-{s3a.get('first_domino', 'Not yet identified')}
-
-Patterns found:
-{s3a.get('patterns_found', '[]')}
-""" if s3a else "S3-A: No pattern intelligence available yet."
-
-    # Format S3-B
-    s3b = s3.get("S3-B", {})
-    s3b_text = f"""
-S3-B: TRUE HISTORY / HISTORICAL ANALOG
-Generated: {s3b.get('generated_at','unknown')[:16]}
-
-{s3b.get('summary', 'No historical analog available yet.')}
-
-Historical First Domino:
-{s3b.get('first_domino', 'Not identified')}
-""" if s3b else "S3-B: No historical analog available yet."
-
-    # Format S3-D
-    s3d = s3.get("S3-D", {})
-    s3d_text = f"""
-S3-D: STRUCTURAL ACCUMULATION (30-day window)
-Generated: {s3d.get('generated_at','unknown')[:16]}
-Quality: {s3d.get('quality_score', 0):.2f}
-
-{s3d.get('summary', 'No structural analysis available yet.')}
-
-Structural First Domino:
-{s3d.get('first_domino', 'Not identified')}
-""" if s3d else "S3-D: No structural analysis available yet."
-
-    # Format S3-C
-    s3c = s3.get("S3-C", {})
-    s3c_text = f"""
-S3-C: BIAS DRIFT MONITOR (weekly)
-{s3c.get('summary', 'No drift analysis available yet — runs weekly.')}
-""" if s3c else "S3-C: Weekly drift monitor — not yet run."
-
-    # Format S4
-    if s4:
-        s4_text = "S4: ACTIVE PREDICTIONS (awaiting verification)\n"
-        for p in s4:
-            conf = p.get('confidence', 0) or 0
-            s4_text += f"\n- Prediction: {p.get('prediction','?')}\n"
-            s4_text += f"  Confidence: {conf:.0%} | Verify by: {p.get('verification_date','?')}\n"
+    # S1
+    s1_text = "SYSTEM 1 LENS REPORTS (current cycle):\n"
+    if s1:
+        for r in s1:
+            focus = (r.get("domain_focus","") or "")
+            summary = (r.get("summary","") or "")[:600]
+            q = r.get("quality_score",0) or 0
+            s1_text += f"\nLens: {focus} (quality {q:.1f}/10)\n{summary}\n"
     else:
-        s4_text = "S4: No predictions recorded yet — System 4 begins collecting from next run."
+        s1_text += "No S1 data available yet.\n"
 
-    # Format MA
+    # S2
+    s2_text = "SYSTEM 2 INJECTION FINDINGS (last 24h):\n"
+    if s2:
+        for inj in s2[:6]:
+            analyst = inj.get("analyst","?")
+            itype   = inj.get("injection_type","?")
+            conf    = inj.get("confidence_score",0) or 0
+            ev      = inj.get("evidence",{})
+            if isinstance(ev, str):
+                try: ev = json.loads(ev)
+                except: ev = {}
+            desc = ""
+            if isinstance(ev, dict):
+                desc = ev.get("description","") or ev.get("primary_narrative","") or ev.get("q1","")
+            s2_text += f"\n[{analyst}] {itype} — confidence {conf:.0%}"
+            if desc: s2_text += f"\n  {str(desc)[:300]}"
+    else:
+        s2_text += "No S2 data in last 24h.\n"
+
+    # S3
+    s3a = s3.get("S3-A",{})
+    s3b = s3.get("S3-B",{})
+    s3d = s3.get("S3-D",{})
+    s3c = s3.get("S3-C",{})
+
+    s3_text = "SYSTEM 3 INTELLIGENCE:\n"
+    if s3a:
+        s3_text += f"\nS3-A PATTERN (7-day, quality {s3a.get('quality_score',0):.2f}):\n"
+        s3_text += (s3a.get("summary","") or "")[:800] + "\n"
+        dom = s3a.get("first_domino","")
+        if dom: s3_text += f"First Domino: {dom}\n"
+    if s3d:
+        s3_text += f"\nS3-D STRUCTURAL (30-day, quality {s3d.get('quality_score',0):.2f}):\n"
+        s3_text += (s3d.get("summary","") or "")[:800] + "\n"
+        dom = s3d.get("first_domino","")
+        if dom: s3_text += f"Structural First Domino: {dom}\n"
+    if s3b:
+        s3_text += f"\nS3-B HISTORICAL ANALOG:\n"
+        s3_text += (s3b.get("summary","") or "")[:600] + "\n"
+    if s3c:
+        s3_text += f"\nS3-C BIAS DRIFT (weekly):\n"
+        s3_text += (s3c.get("summary","") or "")[:400] + "\n"
+
+    # S4
+    s4_text = "SYSTEM 4 PREDICTIONS:\n"
+    if s4:
+        for p in s4:
+            conf = p.get("confidence",0) or 0
+            s4_text += f"\nPrediction: {p.get('prediction','?')}\n"
+            s4_text += f"Confidence: {conf:.0%} | Verify by: {p.get('verification_date','?')}\n"
+    else:
+        s4_text += "No predictions recorded yet.\n"
+
+    # MA
     if ma:
-        findings = ma.get('key_findings', [])
+        findings = ma.get("key_findings",[]) or []
         if isinstance(findings, str):
             try: findings = json.loads(findings)
             except: findings = []
-        findings_text = ""
-        if findings and isinstance(findings, list):
-            for f in findings[:5]:
-                if isinstance(f, dict):
-                    findings_text += f"\n- {f.get('finding','')}: {f.get('significance','')}"
-
-        cui_bono = ma.get('cui_bono_synthesis', {})
-        if isinstance(cui_bono, str):
-            try: cui_bono = json.loads(cui_bono)
-            except: cui_bono = {}
-
-        ma_text = f"""
-MISSION ANALYST MACRO REPORT
-Generated: {ma.get('created_at','?')[:16]}
-Threat Level: {ma.get('threat_level', 'UNKNOWN')}
-Quality: {ma.get('quality_score', 0):.2f}
+        f_text = ""
+        for f in (findings[:4] if isinstance(findings,list) else []):
+            if isinstance(f, dict):
+                f_text += f"\n- {f.get('finding','')}: {f.get('significance','')}"
+        cui = ma.get("cui_bono_synthesis",{}) or {}
+        if isinstance(cui, str):
+            try: cui = json.loads(cui)
+            except: cui = {}
+        ma_text = f"""MISSION ANALYST REPORT:
+Threat Level: {ma.get('threat_level','UNKNOWN')}
+Quality: {ma.get('quality_score',0):.2f}
 
 Executive Summary:
-{ma.get('executive_summary', 'Not available')}
+{ma.get('executive_summary','Not available')}
 
-Key Findings:{findings_text}
+Key Findings:{f_text}
 
 Adversary Narrative:
-{ma.get('adversary_narrative_summary', 'Not available')}
+{ma.get('adversary_narrative_summary','Not available')}
 
-Cui Bono (who benefits):
-Primary beneficiary: {cui_bono.get('primary_beneficiary','?') if isinstance(cui_bono, dict) else 'Unknown'}
-Convergence: {cui_bono.get('convergence','?') if isinstance(cui_bono, dict) else 'Unknown'}
+Cui Bono:
+Primary: {cui.get('primary_beneficiary','?') if isinstance(cui,dict) else 'Unknown'}
+Convergence: {cui.get('convergence','?') if isinstance(cui,dict) else 'Unknown'}
 
 Intelligence Gaps:
-{ma.get('intelligence_gaps', 'None identified')}
-
-GCSP Implications:
-{json.dumps(ma.get('gcsp_implications', []), indent=2)}
+{ma.get('intelligence_gaps','None identified')}
 """
     else:
-        ma_text = "MISSION ANALYST: No macro report available yet."
-
-    # Format S2
-    s2_text = "S2 INJECTION SUMMARY (last 24h):\n"
-    for inj in s2[:5]:
-        analyst = inj.get('analyst','?')
-        itype = inj.get('injection_type','?')
-        conf = inj.get('confidence_score', 0) or 0
-        ev = inj.get('evidence', {})
-        if isinstance(ev, str):
-            try: ev = json.loads(ev)
-            except: ev = {}
-        desc = ""
-        if isinstance(ev, dict):
-            desc = ev.get('description','') or ev.get('primary_narrative','') or ev.get('q1','')
-        s2_text += f"\n[{analyst}] {itype} ({conf:.0%})"
-        if desc:
-            s2_text += f"\n  {str(desc)[:200]}"
+        ma_text = "MISSION ANALYST: No report available yet.\n"
 
     prompt = f"""You are the Senior Intelligence Analyst for Project Lens — a deep geopolitical intelligence platform serving GCSP (Geneva Centre for Security Policy) and emerging global leaders.
 
-Today's date: {today}
+Today: {today}
 
-You have received intelligence from all four analytical systems. Your task is to synthesize this into a comprehensive 10-page intelligence assessment.
+CRITICAL FORMATTING RULES — FOLLOW EXACTLY:
+1. Do NOT use any markdown syntax. No hashtags (#), no asterisks (*), no dashes (---), no underscores.
+2. Write section headers in ALL CAPS followed by a colon and new line.
+3. Sub-headers in Title Case followed by a colon and new line.
+4. Bullet points: start each item with a dash and space (- item)
+5. Write in clear, plain paragraphs. No markdown. No symbols.
+6. This will be formatted as a Word document — write clean prose only.
 
 INTELLIGENCE INPUT:
-═══════════════════════════════════════════════════════════
+{s1_text}
 
 {s2_text}
 
-{ma_text}
-
-{s3a_text}
-
-{s3b_text}
-
-{s3d_text}
-
-{s3c_text}
+{s3_text}
 
 {s4_text}
 
-═══════════════════════════════════════════════════════════
+{ma_text}
 
-REPORT REQUIREMENTS:
-- Length: 10 A4 pages (5,000-6,000 words minimum)
-- Audience: Senior analysts, GCSP educators, emerging global leaders
-- Tone: Analytically precise. Written for intelligent adults.
-- NO speculation without evidence from the intelligence above
-- Every claim must be grounded in the data provided
-- Connect patterns across systems — this is the synthesis layer
+WRITE A COMPREHENSIVE 10-PAGE INTELLIGENCE ASSESSMENT with this exact structure:
 
-MANDATORY STRUCTURE (write each section heading clearly):
+EXECUTIVE SUMMARY AND THREAT ASSESSMENT:
+Write the overall threat level and its justification. Cover the 3 most critical findings. Tell decision-makers what they need to know in 60 seconds. Describe today's information environment in one paragraph. (Target: 600 words)
 
-═══ PAGE 1: EXECUTIVE SUMMARY & THREAT ASSESSMENT ═══
-- Overall threat assessment with justification
-- The 3 most critical findings from all systems
-- What decision-makers need to know in 60 seconds
-- Today's information environment in one paragraph
+SYSTEM 1 — WHAT THE CANARY SEES:
+Analyze what each of the 4 analytical lenses observed. What is the information environment presenting right now? What signals are strong and which are weak? What is the quality of intelligence this cycle and why? (Target: 500 words)
 
-═══ PAGES 2-3: CURRENT INFORMATION ENVIRONMENT ═══
-- What System 1 observed across all analytical lenses
-- What System 2 found: injection methods, emotional framing, adversary narrative
-- The Broken Window: what was NOT being reported
-- Who shaped today's information environment and why
-- Cui Bono analysis: who benefits from today's narrative pattern
+SYSTEM 2 — HOW THE INFORMATION IS BEING SHAPED:
+Analyze each injection finding in depth. What methods are being used? What emotional states are being engineered? What adversary wants you to believe? What coordination was detected? What did System 1 miss — the Broken Window? Who benefits from today's information environment — the full Cui Bono analysis across all S2 positions? (Target: 700 words)
 
-═══ PAGES 4-6: PATTERN INTELLIGENCE (7-DAY DEEP ANALYSIS) ═══
-- The pattern that has been forming over the last 7 days
-- Event sequence analysis: what order did things happen in?
-- What loud event is consuming analytical bandwidth?
-- What quiet structural event is happening behind the noise?
-- The First Domino: what becomes inevitable if this pattern continues?
-- Acceleration analysis: what is speeding up? What is quietly ending?
-- Hidden builder analysis: who is gaining structural advantage quietly?
-- ACH (Analysis of Competing Hypotheses): what is the strongest evidence that contradicts this pattern?
-- Sectarian Trap analysis: is ethnic/religious/political tension being manufactured?
+SYSTEM 3 — WHAT IS ACTUALLY BEING BUILT:
+The 7-day pattern forming (S3-A deep analysis). The event sequence — what order did things happen? The loud event consuming analytical bandwidth. The quiet structural event behind the noise. The first domino — what becomes inevitable. What is speeding up and what is quietly ending. Who is gaining structural advantage quietly. The ACH check — strongest contradicting evidence. Sectarian trap analysis. Then the 30-day structural accumulation (S3-D). Closing windows. Silent builders. Manufactured causality. The structural first domino. The historical analog from S3-B if available. (Target: 1800 words)
 
-═══ PAGES 7-8: STRUCTURAL ACCUMULATION (30-DAY ANALYSIS) ═══
-- What has changed structurally over the past 30 days
-- Closing windows: what opportunities are quietly disappearing?
-- Silent builders: which actors have been gaining position steadily?
-- Injection drift: how has the manipulation pattern evolved over 30 days?
-- Manufactured causality: is a false causal chain being repeated as fact?
-- Structural First Domino: what structural collision is becoming inevitable?
+SYSTEM 4 — THE CONSCIENCE:
+List all active predictions with confidence levels and verification dates. What does System 4 expect to verify in 30 days? In 90 days? What would confirm the current pattern analysis? What would falsify it? What is the calibration quality of predictions so far? (Target: 400 words)
 
-═══ PAGE 9: HISTORICAL ANALOG — WE HAVE SEEN THIS BEFORE ═══
-- The closest historical parallel to current patterns
-- What happened in that historical case
-- The mechanism: how did it unfold step by step
-- What happened to actors who did not recognize the pattern in time
-- What the analog predicts for the next 30-90 days
-- The critical difference: what is different this time that could change the outcome
+MISSION ANALYST SYNTHESIS:
+The final verdict. Synthesize all four systems into one coherent picture. What is the deeper truth beneath all the noise? What structural transformation is underway? How do the systems agree and where do they diverge? The Cui Bono synthesis from the Mission Analyst — who is the primary beneficiary across all intelligence streams? (Target: 500 words)
 
-═══ PAGE 10: PREDICTIONS, STRATEGIC IMPLICATIONS & GCSP RECOMMENDATIONS ═══
-- Active System 4 predictions and their confidence levels
-- What Project Lens predicts for the next 30 days
-- What Project Lens predicts for the next 90 days
-- Strategic implications for democratic governance
-- Strategic implications for global institutional actors
-- Three specific recommendations for GCSP educators and emerging leaders
-- What to watch: the 3 signals that would confirm or deny the current pattern analysis
-- Analytical limitations: what we could not determine with current intelligence
+STRATEGIC IMPLICATIONS FOR GCSP:
+What does this mean for global governance? For emerging leaders? For democratic resilience? What institutional responses are needed? What windows are closing? Three specific recommendations for GCSP educators. Three signals to watch in the next 30 days. (Target: 400 words)
 
-Write the full report now. Do not abbreviate. Do not summarize. This is a full analytical document."""
+ANALYTICAL LIMITATIONS AND CONFIDENCE ASSESSMENT:
+What could not be determined. Where data was incomplete. Where reasoning required judgment beyond evidence. Overall confidence rating for this assessment. What additional intelligence would improve the next assessment. (Target: 300 words)
+
+Write the full report now. Minimum 5000 words. No markdown. No symbols. Plain analytical prose."""
 
     log.info(f"Prompt built: {len(prompt)} chars")
     return prompt
 
 
 # ── Sonnet 4.6 call ───────────────────────────────────────────────────────────
+
 def call_sonnet(client, prompt: str) -> Optional[str]:
     for attempt in range(1, 4):
         try:
-            log.info(f"Calling {MODEL} (attempt {attempt}/3) — generating 10-page report...")
+            log.info(f"Calling {MODEL} attempt {attempt}/3 — generating 10-page report...")
             msg = client.messages.create(
                 model=MODEL,
                 max_tokens=MAX_TOKENS,
                 messages=[{"role": "user", "content": prompt}]
             )
             report = msg.content[0].text
-            log.info(f"Report generated: {len(report)} chars, ~{len(report)//5} words")
+            log.info(f"Report generated: {len(report)} chars, ~{len(report.split())} words")
             return report
         except Exception as e:
             log.error(f"Sonnet call failed attempt {attempt}: {e}")
@@ -330,146 +275,201 @@ def call_sonnet(client, prompt: str) -> Optional[str]:
     return None
 
 
-# ── PDF generation ────────────────────────────────────────────────────────────
-def generate_pdf(report_text: str, output_path: str, date_str: str) -> bool:
+# ── DOCX generation via Node.js ───────────────────────────────────────────────
+
+def generate_docx(report_text: str, output_path: str, date_str: str) -> bool:
     try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import cm
-        from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
-        from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
+        # Check node available
+        result = subprocess.run(["node", "--version"], capture_output=True, text=True)
+        if result.returncode != 0:
+            log.warning("Node.js not available — falling back to text")
+            return False
 
-        doc = SimpleDocTemplate(
-            output_path,
-            pagesize=A4,
-            rightMargin=2.5*cm,
-            leftMargin=2.5*cm,
-            topMargin=2.5*cm,
-            bottomMargin=2.5*cm
-        )
+        # Install docx if needed
+        subprocess.run(["npm", "install", "-g", "docx"], capture_output=True)
 
-        styles = getSampleStyleSheet()
+        # Parse report into sections
+        sections = []
+        current_section = None
+        current_content = []
 
-        # Custom styles
-        title_style = ParagraphStyle(
-            'ReportTitle',
-            parent=styles['Heading1'],
-            fontSize=18,
-            fontName='Helvetica-Bold',
-            textColor=colors.HexColor('#1a1a2e'),
-            spaceAfter=6,
-            alignment=TA_CENTER
-        )
-        subtitle_style = ParagraphStyle(
-            'Subtitle',
-            parent=styles['Normal'],
-            fontSize=11,
-            fontName='Helvetica',
-            textColor=colors.HexColor('#555555'),
-            spaceAfter=20,
-            alignment=TA_CENTER
-        )
-        section_style = ParagraphStyle(
-            'Section',
-            parent=styles['Heading2'],
-            fontSize=13,
-            fontName='Helvetica-Bold',
-            textColor=colors.HexColor('#1a1a2e'),
-            spaceBefore=16,
-            spaceAfter=8,
-            borderPad=4,
-        )
-        body_style = ParagraphStyle(
-            'Body',
-            parent=styles['Normal'],
-            fontSize=10,
-            fontName='Helvetica',
-            leading=16,
-            spaceAfter=8,
-            alignment=TA_JUSTIFY
-        )
-        meta_style = ParagraphStyle(
-            'Meta',
-            parent=styles['Normal'],
-            fontSize=8,
-            fontName='Helvetica',
-            textColor=colors.HexColor('#888888'),
-            spaceAfter=4
-        )
-
-        story = []
-
-        # Cover
-        story.append(Spacer(1, 1*cm))
-        story.append(Paragraph("PROJECT LENS", title_style))
-        story.append(Paragraph("Deep Intelligence Assessment", subtitle_style))
-        story.append(Paragraph(f"Classification: ANALYTICAL | Date: {date_str}", meta_style))
-        story.append(Paragraph("Prepared for: GCSP Educators and Emerging Global Leaders", meta_style))
-        story.append(Spacer(1, 0.3*cm))
-        story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#1a1a2e')))
-        story.append(Spacer(1, 0.5*cm))
-
-        # Parse and format report
-        lines = report_text.split('\n')
-        for line in lines:
-            line = line.strip()
-            if not line:
-                story.append(Spacer(1, 0.2*cm))
+        for line in report_text.split('\n'):
+            stripped = line.strip()
+            if not stripped:
+                if current_content:
+                    current_content.append("")
                 continue
 
-            # Section headers (═══)
-            if line.startswith('═══') or line.startswith('==='):
-                clean = line.replace('═', '').replace('=', '').strip()
-                story.append(Spacer(1, 0.3*cm))
-                story.append(HRFlowable(width="100%", thickness=0.5,
-                                        color=colors.HexColor('#cccccc')))
-                story.append(Paragraph(clean, section_style))
-                continue
+            # Detect ALL CAPS section headers
+            words = stripped.rstrip(':').split()
+            is_header = (
+                len(words) >= 2 and
+                stripped.endswith(':') and
+                stripped.rstrip(':').replace(' ','').replace('-','').replace('—','').isupper() and
+                len(stripped) < 100
+            )
 
-            # Sub-bullets
-            if line.startswith('- ') or line.startswith('• '):
-                clean = line[2:].strip()
-                # Escape HTML chars
-                clean = clean.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                bullet_style = ParagraphStyle(
-                    'Bullet',
-                    parent=body_style,
-                    leftIndent=15,
-                    firstLineIndent=-10,
-                    spaceBefore=2
-                )
-                story.append(Paragraph(f"• {clean}", bullet_style))
-                continue
+            if is_header:
+                if current_section:
+                    sections.append({"header": current_section, "content": '\n'.join(current_content)})
+                current_section = stripped.rstrip(':')
+                current_content = []
+            else:
+                current_content.append(stripped)
 
-            # Bold headers (ALL CAPS lines)
-            if line.isupper() and len(line) > 10 and ':' not in line:
-                story.append(Paragraph(f"<b>{line}</b>", body_style))
-                continue
+        if current_section:
+            sections.append({"header": current_section, "content": '\n'.join(current_content)})
 
-            # Regular body text
-            safe = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            story.append(Paragraph(safe, body_style))
+        # Write JS generator
+        sections_json = json.dumps(sections, ensure_ascii=False)
+        date_safe = date_str.replace("'", "\\'")
 
-        # Footer
-        story.append(Spacer(1, 1*cm))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#cccccc')))
-        story.append(Paragraph(
-            f"Generated by Project Lens · {date_str} · Claude Sonnet 4.6 · GCSP Intelligence Platform",
-            meta_style
-        ))
+        js = f"""
+const {{ Document, Packer, Paragraph, TextRun, HeadingLevel,
+         AlignmentType, LevelFormat, BorderStyle }} = require('docx');
+const fs = require('fs');
 
-        doc.build(story)
-        log.info(f"PDF generated: {output_path}")
-        return True
+const sections_data = {sections_json};
+
+const children = [];
+
+// Cover
+children.push(new Paragraph({{
+  alignment: AlignmentType.CENTER,
+  spacing: {{ before: 2880, after: 240 }},
+  children: [new TextRun({{ text: 'PROJECT LENS', bold: true, size: 56, font: 'Arial' }})]
+}}));
+children.push(new Paragraph({{
+  alignment: AlignmentType.CENTER,
+  spacing: {{ before: 0, after: 480 }},
+  children: [new TextRun({{ text: 'Deep Intelligence Assessment', size: 28, font: 'Arial', color: '555555' }})]
+}}));
+children.push(new Paragraph({{
+  alignment: AlignmentType.CENTER,
+  spacing: {{ after: 120 }},
+  children: [new TextRun({{ text: '{date_safe}', size: 22, font: 'Arial', color: '888888' }})]
+}}));
+children.push(new Paragraph({{
+  alignment: AlignmentType.CENTER,
+  spacing: {{ after: 480 }},
+  children: [new TextRun({{ text: 'Prepared for: GCSP Educators and Emerging Global Leaders', size: 22, font: 'Arial', color: '888888' }})]
+}}));
+
+// Divider line
+children.push(new Paragraph({{
+  spacing: {{ after: 480 }},
+  border: {{ bottom: {{ style: BorderStyle.SINGLE, size: 6, color: '1a1a2e', space: 1 }} }}
+}}));
+
+// Sections
+for (const sec of sections_data) {{
+  // Section header
+  children.push(new Paragraph({{
+    spacing: {{ before: 480, after: 240 }},
+    border: {{ bottom: {{ style: BorderStyle.SINGLE, size: 2, color: 'cccccc', space: 4 }} }},
+    children: [new TextRun({{ text: sec.header, bold: true, size: 28, font: 'Arial', color: '1a1a2e' }})]
+  }}));
+
+  // Section content
+  const lines = sec.content.split('\\n');
+  for (const line of lines) {{
+    const trimmed = line.trim();
+    if (!trimmed) {{
+      children.push(new Paragraph({{ spacing: {{ after: 80 }} }}));
+      continue;
+    }}
+
+    // Bullet items
+    if (trimmed.startsWith('- ')) {{
+      children.push(new Paragraph({{
+        numbering: {{ reference: 'bullets', level: 0 }},
+        spacing: {{ after: 80 }},
+        children: [new TextRun({{ text: trimmed.slice(2), size: 20, font: 'Arial' }})]
+      }}));
+      continue;
+    }}
+
+    // Sub-headers (Title Case ending with colon, under 80 chars)
+    const isSubHeader = trimmed.endsWith(':') && trimmed.length < 80 &&
+      !trimmed.includes('  ') && trimmed[0] === trimmed[0].toUpperCase();
+
+    if (isSubHeader) {{
+      children.push(new Paragraph({{
+        spacing: {{ before: 240, after: 120 }},
+        children: [new TextRun({{ text: trimmed, bold: true, size: 22, font: 'Arial', color: '333333' }})]
+      }}));
+      continue;
+    }}
+
+    // Regular body paragraph
+    children.push(new Paragraph({{
+      spacing: {{ after: 120 }},
+      alignment: AlignmentType.JUSTIFIED,
+      children: [new TextRun({{ text: trimmed, size: 20, font: 'Arial' }})]
+    }}));
+  }}
+}}
+
+const doc = new Document({{
+  numbering: {{
+    config: [{{
+      reference: 'bullets',
+      levels: [{{
+        level: 0,
+        format: LevelFormat.BULLET,
+        text: '•',
+        alignment: AlignmentType.LEFT,
+        style: {{ paragraph: {{ indent: {{ left: 720, hanging: 360 }} }} }}
+      }}]
+    }}]
+  }},
+  sections: [{{
+    properties: {{
+      page: {{
+        size: {{ width: 11906, height: 16838 }},
+        margin: {{ top: 1440, right: 1440, bottom: 1440, left: 1440 }}
+      }}
+    }},
+    children: children
+  }}]
+}});
+
+Packer.toBuffer(doc).then(buffer => {{
+  fs.writeFileSync('{output_path}', buffer);
+  console.log('DOCX generated: {output_path}');
+}}).catch(e => {{
+  console.error('DOCX error:', e.message);
+  process.exit(1);
+}});
+"""
+
+        # Write JS file
+        js_path = output_path.replace('.docx', '_gen.js')
+        with open(js_path, 'w', encoding='utf-8') as f:
+            f.write(js)
+
+        # Run Node.js
+        result = subprocess.run(
+            ["node", js_path],
+            capture_output=True, text=True, timeout=60
+        )
+
+        if result.returncode == 0 and os.path.exists(output_path):
+            log.info(f"DOCX generated: {output_path}")
+            os.remove(js_path)
+            return True
+        else:
+            log.error(f"Node.js failed: {result.stderr[:300]}")
+            return False
 
     except Exception as e:
-        log.error(f"PDF generation failed: {e}")
+        log.error(f"DOCX generation failed: {e}")
         return False
 
 
 # ── Telegram send ─────────────────────────────────────────────────────────────
-def send_pdf_telegram(pdf_path: str, date_str: str) -> bool:
+
+def send_docx_telegram(docx_path: str, date_str: str, word_count: int) -> bool:
     import requests
     token   = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
@@ -478,101 +478,84 @@ def send_pdf_telegram(pdf_path: str, date_str: str) -> bool:
         return False
     try:
         caption = (
-            f"📄 <b>PROJECT LENS — Deep Intelligence Report</b>\n"
-            f"<i>{date_str}</i>\n\n"
-            f"10-page analysis powered by Claude Sonnet 4.6\n"
-            f"Covering: Pattern Intelligence · Structural Analysis · "
-            f"Historical Analog · S4 Predictions\n\n"
-            f"<i>Rate MA report: python code/lens_rate.py 4</i>"
+            f"📄 PROJECT LENS — Deep Intelligence Report\n"
+            f"{date_str}\n\n"
+            f"Systems: S1 Canary + S2 Immune + S3 Memory + S4 Conscience\n"
+            f"Model: Claude Sonnet 4.6 | Words: ~{word_count:,}\n"
+            f"Format: Word document (.docx)\n\n"
+            f"Rate: python code/lens_rate.py 4"
         )
+        fname = f"ProjectLens_Intel_{date_str.replace(' ','_').replace(':','').replace(',','')}.docx"
         url = f"https://api.telegram.org/bot{token}/sendDocument"
-        with open(pdf_path, 'rb') as f:
-            resp = requests.post(url, data={
-                "chat_id": chat_id,
-                "caption": caption,
-                "parse_mode": "HTML"
-            }, files={"document": (f"lens_deep_report_{date_str.replace(' ','_')}.pdf", f, "application/pdf")},
-            timeout=30)
+        with open(docx_path, 'rb') as f:
+            resp = requests.post(url,
+                data={"chat_id": chat_id, "caption": caption},
+                files={"document": (fname, f, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+                timeout=60)
         if resp.status_code == 200:
-            log.info("PDF sent via Telegram ✅")
+            log.info("DOCX sent via Telegram ✅")
             return True
         else:
-            log.error(f"Telegram send failed: {resp.status_code} {resp.text[:200]}")
+            log.error(f"Telegram failed: {resp.status_code} {resp.text[:200]}")
             return False
     except Exception as e:
-        log.error(f"Telegram PDF send failed: {e}")
+        log.error(f"Telegram DOCX send failed: {e}")
         return False
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 def run_deep_report() -> dict:
-    start = time.time()
+    start    = time.time()
     date_str = datetime.now(timezone.utc).strftime("%B %d, %Y %H:%M UTC")
-    log.info(f"=== DEEP REPORT START | {date_str} ===")
+    log.info(f"=== DEEP REPORT v2 START | {date_str} ===")
 
     try:
         sb     = get_supabase()
         client = get_anthropic()
     except Exception as e:
-        log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
 
-    # Fetch all intelligence
-    log.info("Fetching intelligence from all systems...")
-    s3   = fetch_s3_reports(sb)
-    s4   = fetch_s4_predictions(sb)
-    ma   = fetch_ma_report(sb)
-    s2   = fetch_s2_summary(sb)
+    log.info("Fetching all 4 systems...")
+    s1 = fetch_s1_reports(sb)
+    s2 = fetch_s2_summary(sb)
+    s3 = fetch_s3_reports(sb)
+    s4 = fetch_s4_predictions(sb)
+    ma = fetch_ma_report(sb)
 
-    log.info(f"Data loaded: S3 positions={list(s3.keys())}, S4 predictions={len(s4)}, MA={'yes' if ma else 'no'}, S2={len(s2)}")
+    log.info(f"S1={len(s1)} lenses | S2={len(s2)} injections | S3={list(s3.keys())} | S4={len(s4)} predictions | MA={'yes' if ma else 'no'}")
 
-    # Build prompt and call Sonnet 4.6
-    prompt = build_deep_prompt(s3, s4, ma, s2)
+    prompt = build_deep_prompt(s1, s2, s3, s4, ma)
     report = call_sonnet(client, prompt)
-
     if not report:
         return {"status": "GENERATION_FAILED"}
 
-    # Generate PDF
-    import tempfile
-    pdf_path = os.path.join(tempfile.gettempdir(), f"lens_deep_report_{datetime.now(timezone.utc).strftime('%Y%m%d')}.pdf")
+    word_count = len(report.split())
 
-    try:
-        import reportlab
-        pdf_ok = generate_pdf(report, pdf_path, date_str)
-    except ImportError:
-        log.warning("reportlab not installed — sending text report via Telegram instead")
-        pdf_ok = False
+    # Generate DOCX
+    docx_path = os.path.join(tempfile.gettempdir(),
+        f"lens_deep_{datetime.now(timezone.utc).strftime('%Y%m%d')}.docx")
 
-    if pdf_ok:
-        send_pdf_telegram(pdf_path, date_str)
+    docx_ok = generate_docx(report, docx_path, date_str)
+
+    if docx_ok:
+        send_docx_telegram(docx_path, date_str, word_count)
     else:
-        # Fallback: send as text chunks
+        # Fallback: plain text chunks
         import requests
-        token   = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-        chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+        token   = os.environ.get("TELEGRAM_BOT_TOKEN","")
+        chat_id = os.environ.get("TELEGRAM_CHAT_ID","")
         if token and chat_id:
-            # Send in 4000-char chunks
-            chunks = [report[i:i+4000] for i in range(0, len(report), 4000)]
-            log.info(f"Sending report as {len(chunks)} text messages")
-            for i, chunk in enumerate(chunks[:8]):  # max 8 messages
-                requests.post(
-                    f"https://api.telegram.org/bot{token}/sendMessage",
-                    json={"chat_id": chat_id, "text": chunk},
-                    timeout=10
-                )
+            log.info("DOCX failed — sending as text chunks")
+            chunks = [report[i:i+4000] for i in range(0, min(len(report), 32000), 4000)]
+            for chunk in chunks:
+                requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id, "text": chunk}, timeout=10)
                 time.sleep(1)
 
     elapsed = round(time.time() - start, 1)
-    words = len(report.split())
-    log.info(f"=== DEEP REPORT COMPLETE | {words} words | {elapsed}s ===")
-
-    return {
-        "status":  "OK",
-        "words":   words,
-        "elapsed": elapsed,
-        "pdf":     pdf_ok,
-    }
+    log.info(f"=== DEEP REPORT COMPLETE | {word_count} words | {elapsed}s ===")
+    return {"status": "OK", "words": word_count, "elapsed": elapsed, "docx": docx_ok}
 
 
 if __name__ == "__main__":
