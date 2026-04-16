@@ -23,7 +23,7 @@ log = logging.getLogger("lens_orchestrator")
 # ── Env ───────────────────────────────────────────────────────────────────────
 SUPABASE_URL      = os.getenv("SUPABASE_URL","")
 SUPABASE_KEY      = os.getenv("SUPABASE_SERVICE_KEY","")
-GROQ_MANAGER_KEY  = os.getenv("GROQ_MANAGER_API_KEY","")
+GROQ_MANAGER_KEY  = os.getenv("GROQ_MA_API_KEY","")
 GITHUB_ACTIONS    = os.getenv("GITHUB_ACTIONS","false").lower()=="true"
 LENS_FORCE        = os.getenv("LENS_FORCE","0")=="1"
 LENS_DRY_RUN      = os.getenv("LENS_DRY_RUN","0")=="1"

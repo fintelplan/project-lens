@@ -8,7 +8,7 @@
 # Warns on manual triggers.
 # Calculates dynamic stagger for Cerebras lenses.
 #
-# Model: llama-3.3-70b-versatile via Groq (GROQ_MANAGER_API_KEY)
+# Model: llama-3.3-70b-versatile via Groq (GROQ_MA_API_KEY)
 # Separate API key — never competes with Lens 1 quota.
 #
 # Rules:
@@ -29,7 +29,7 @@ load_dotenv()
 
 SUPABASE_URL        = os.getenv('SUPABASE_URL', '')
 SUPABASE_KEY        = os.getenv('SUPABASE_SERVICE_KEY', '')
-GROQ_MANAGER_KEY    = os.getenv('GROQ_MANAGER_API_KEY', '')
+GROQ_MANAGER_KEY    = os.getenv('GROQ_MA_API_KEY', '')
 GITHUB_ACTIONS      = os.getenv('GITHUB_ACTIONS', 'false').lower() == 'true'
 LENS_FORCE          = os.getenv('LENS_FORCE', '0') == '1'
 

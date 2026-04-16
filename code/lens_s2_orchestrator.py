@@ -13,7 +13,7 @@ Positions:
   S2-C  lens_s2c_emotion.py      run_s2c()           mistral-small  MISTRAL_API_KEY
   S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_S2_API_KEY
   S2-E  lens_s2e_legitimacy.py   run_s2e()           llama-3.3-70b  GROQ_S2E_API_KEY
-  MA    lens_mission_analyst.py  run_mission_analyst() llama-3.3-70b GROQ_MANAGER_API_KEY
+  MA    lens_mission_analyst.py  run_mission_analyst() llama-3.3-70b GROQ_MA_API_KEY
 
 Architecture: LR-058 to LR-064.
   One-way flow. System 1 scripts FROZEN.
