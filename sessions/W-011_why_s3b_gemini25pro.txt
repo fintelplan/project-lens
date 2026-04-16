@@ -1,0 +1,29 @@
+W-011 — WHY: gemini-2.5-pro substitution for gemini-1.5-pro in S3-B
+
+DATE: 2026-04-16
+SESSION: LENS-011
+
+WHAT WAS DESIGNED:
+  Architecture doc Table 6 specified gemini-1.5-pro for S3-B.
+  Reason: 1M+ context window essential for True History DB queries.
+  True History DB grows every run — needs capacity to hold full history.
+
+WHAT HAPPENED:
+  gemini-1.5-pro was sunset by Google before LENS-011.
+  Model not available via Gemini API free tier.
+
+SUBSTITUTION:
+  Model: gemini-2.5-pro
+  Why chosen: direct successor, same 1M+ context window preserved.
+  Reasoning quality: STRONGER than gemini-1.5-pro (newer generation).
+
+WHAT IS LOST: Nothing. gemini-2.5-pro is strictly better.
+WHAT IS GAINED: Stronger reasoning for historical analog detection.
+
+WHEN TO REVISIT:
+  If gemini-2.5-pro leaves free tier.
+  Always verify: 1M+ context is non-negotiable for S3-B.
+  True History DB will exceed 100K tokens within 90 days.
+
+RULE: S3-B must always use highest-context Gemini model on free tier.
+      Context window > reasoning quality as primary selection criterion.
