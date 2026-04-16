@@ -147,6 +147,15 @@ def main():
     from lens_mission_analyst import run_mission_analyst
     ok_ma, _ = _run("Mission Analyst", run_mission_analyst, run_id=RUN_ID)
     results["Mission Analyst"] = ok_ma
+    # S4-E: Upgrade Trigger Monitor — runs last, zero quota impact
+    try:
+        from lens_s4_upgrade_monitor import run_upgrade_monitor
+        upgrade_result = run_upgrade_monitor()
+        results["S4-E"] = upgrade_result.get("status") == "OK"
+        log.info(f"S4-E thresholds: {upgrade_result.get('thresholds', {})}")
+    except Exception as e:
+        log.warning(f"S4-E upgrade monitor failed (non-fatal): {e}")
+        results["S4-E"] = False
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
