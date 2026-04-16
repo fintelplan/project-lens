@@ -1,0 +1,20 @@
+W-012 — WHY: gemini model changes in S2-B and S3-B
+
+DATE: 2026-04-16
+SESSION: LENS-011
+
+S2-B: gemini-1.5-flash → gemini-2.0-flash
+  REASON: gemini-1.5-flash returned 404 — model sunset by Google
+  FIX: gemini-2.0-flash — same free tier, 1500 RPD, 1M context preserved
+
+S3-B: gemini-2.5-pro → gemini-2.0-flash
+  REASON: gemini-2.5-pro free tier quota = 0 (effectively unusable)
+  FIX: gemini-2.0-flash — reliable free tier, adequate for True History DB
+
+GROQ_MA_API_KEY isolation fix:
+  REASON: old MA key shared org with GROQ_S3_API_KEY — same 100K TPD pool
+  FIX: new Groq account (separate Gmail) — MA now has clean isolated 100K TPD
+
+RULE: Always verify free tier quota before assigning model to a position.
+      gemini-2.0-flash is the reliable Gemini free tier workhorse.
+      gemini-2.5-pro free tier is near-zero — avoid for automated systems.
