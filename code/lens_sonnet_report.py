@@ -451,8 +451,9 @@ def run_sonnet_report() -> dict:
     start = time.time()
 
     # Thai time for title (UTC+7)
-    thai_time = datetime.now(timezone.utc) + timedelta(hours=7)
-    title = thai_time.strftime("%B %d, %Y %I:%M %p")
+    utc_now = datetime.now(timezone.utc)
+    dc_time = utc_now - timedelta(hours=4)
+    title = utc_now.strftime("%B %d, %Y") + "  |  " + utc_now.strftime("%H:%M UTC") + "  |  " + dc_time.strftime("%I:%M %p") + " Washington DC"
 
     log.info(f"=== SONNET REPORT START | {title} ===")
 
@@ -475,7 +476,7 @@ def run_sonnet_report() -> dict:
         return {"status": "GENERATION_FAILED"}
 
     docx_path = os.path.join(tempfile.gettempdir(),
-        f"lens_{thai_time.strftime('%Y%m%d_%H%M')}.docx")
+        f"lens_{utc_now.strftime('%Y%m%d_%H%M')}.docx")
 
     docx_ok = generate_docx(report, docx_path, title)
 
@@ -625,8 +626,9 @@ def run_sonnet_report() -> dict:
     start = time.time()
 
     # Thai time for title (UTC+7)
-    thai_time = datetime.now(timezone.utc) + timedelta(hours=7)
-    title = thai_time.strftime("%B %d, %Y %I:%M %p")
+    utc_now = datetime.now(timezone.utc)
+    dc_time = utc_now - timedelta(hours=4)
+    title = utc_now.strftime("%B %d, %Y") + "  |  " + utc_now.strftime("%H:%M UTC") + "  |  " + dc_time.strftime("%I:%M %p") + " Washington DC"
 
     log.info(f"=== SONNET REPORT START | {title} ===")
 
@@ -649,7 +651,7 @@ def run_sonnet_report() -> dict:
         return {"status": "GENERATION_FAILED"}
 
     docx_path = os.path.join(tempfile.gettempdir(),
-        f"lens_{thai_time.strftime('%Y%m%d_%H%M')}.docx")
+        f"lens_{utc_now.strftime('%Y%m%d_%H%M')}.docx")
 
     docx_ok = generate_docx(report, docx_path, title)
 
