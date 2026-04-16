@@ -27,7 +27,7 @@ log = logging.getLogger("S3-B")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 GEMINI_KEY   = os.environ.get("GEMINI_API_KEY")
-MODEL        = "gemini-2.0-flash"
+MODEL        = "gemini-2.5-pro"
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 28
 
@@ -231,6 +231,28 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     }
 
     r = sb.table("lens_system3_reports").insert(record).execute()
+
+    # ── Write each analog to lens_true_history living DB (3-B architecture requirement) ──
+    try:
+        analogs = analysis.get("patterns_found", [])
+        th_rows = []
+        for analog in analogs:
+            if not isinstance(analog, dict): continue
+            th_rows.append({
+                "era":           analog.get("era", "unknown"),
+                "analog_title":  analog.get("title", analog.get("name", "untitled"))[:200],
+                "mechanism":     analog.get("mechanism", analog.get("description", ""))[:500],
+                "current_event": analog.get("current_parallel", analog.get("current", ""))[:500],
+                "confidence":    float(analog.get("confidence", analysis.get("quality_score", 0.5))),
+                "evidence":      analog.get("evidence", analog.get("significance", ""))[:1000],
+                "run_id":        run_id,
+            })
+        if th_rows:
+            sb.table("lens_true_history").insert(th_rows).execute()
+            log.info(f"True History DB: {len(th_rows)} analogs saved")
+    except Exception as th_e:
+        log.warning(f"True History DB write failed (non-critical): {th_e}")
+
     saved = bool(r.data)
     elapsed = round(time.time() - start, 1)
     log.info(f"=== S3-B COMPLETE | saved={'YES' if saved else 'NO'} | {elapsed}s ===")
