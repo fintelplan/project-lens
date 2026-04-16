@@ -179,8 +179,8 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     sb     = create_client(SUPABASE_URL, SUPABASE_KEY)
     client = Cerebras(api_key=CEREBRAS_KEY)
 
-    s1 = fetch_s1_reports(sb)
-    s2 = fetch_s2_reports(sb)
+    s1 = fetch_s1_reports(sb, window_days)
+    s2 = fetch_s2_reports(sb, window_days)
     log.info(f"Fetched {len(s1)} S1 reports + {len(s2)} S2 reports (last {LOOKBACK_DAYS} days)")
 
     if not s1:
