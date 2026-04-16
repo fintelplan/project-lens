@@ -522,9 +522,9 @@ def compute_cross_lens_signals(results: dict) -> list:
         count = len(lenses)
         if count == 1:
             # Single-source spike — consensus anomaly flag (LR-061)
-            signals.append(f"[ANOMALY] single-lens spike: "{word}" (Lens {list(lenses)[0]} only)")
+            signals.append(f"[ANOMALY] single-lens spike: '{word}' (Lens {list(lenses)[0]} only)")
         elif count >= 3:
-            signals.append(f"[CROSS-LENS x{count}] "{word}" confirmed across {sorted(lenses)}")
+            signals.append(f"[CROSS-LENS x{count}] '{word}' confirmed across {sorted(lenses)}")
     # Sort: cross-lens first, anomalies second
     signals.sort(key=lambda s: (0 if s.startswith("[CROSS") else 1))
     return signals[:10]
