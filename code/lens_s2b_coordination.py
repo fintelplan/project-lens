@@ -352,9 +352,8 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         run_id = f"s2b_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
 
     log.info(f"=== S2-B Coordination Analyzer START | run_id={run_id} | cycle={cycle} ===")
-    log.info("S2-B: waiting 70s for Gemini RPM window from S1 to clear...")
-    time.sleep(70)
-    log.info(f"Model: {MODEL} | Context: 1M | AFC: DISABLED | RPM guard: ACTIVE")
+    log.info("S2-B: waiting 180s for Gemini RPM window from S1 to clear...")
+    time.sleep(180)
 
     try:
         sb     = get_supabase()
