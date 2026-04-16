@@ -283,12 +283,48 @@ def format_corrections_for_prompt(corrections: list[dict]) -> str:
     return "\n".join(lines)
 
 
+
+# ── S3 Context fetch ──────────────────────────────────────────────────────────
+def fetch_s3_context(sb) -> dict:
+    """
+    FIX-3: Fetch latest S3-A and S3-D reports for MA context.
+    Architecture doc Table 7: MA receives S2-corrected, S3-contextualized intelligence.
+    S3 context = pattern intelligence (7-day) + structural trends (30-day).
+    """
+    ctx = {"s3a": None, "s3d": None}
+    try:
+        r = sb.table("lens_system3_reports") \
+            .select("position, report_type, summary, first_domino, generated_at") \
+            .eq("position", "S3-A") \
+            .order("generated_at", desc=True) \
+            .limit(1).execute()
+        if r.data:
+            ctx["s3a"] = r.data[0]
+            log.info(f"S3-A context loaded: {r.data[0].get('generated_at','?')[:16]}")
+    except Exception as e:
+        log.warning(f"S3-A context fetch failed: {e}")
+    try:
+        r = sb.table("lens_system3_reports") \
+            .select("position, report_type, summary, first_domino, generated_at") \
+            .eq("position", "S3-D") \
+            .order("generated_at", desc=True) \
+            .limit(1).execute()
+        if r.data:
+            ctx["s3d"] = r.data[0]
+            log.info(f"S3-D context loaded: {r.data[0].get('generated_at','?')[:16]}")
+    except Exception as e:
+        log.warning(f"S3-D context fetch failed: {e}")
+    if not ctx["s3a"] and not ctx["s3d"]:
+        log.info("No S3 context available yet — MA proceeds without it (normal on first runs)")
+    return ctx
+
 # ── Synthesis prompt ──────────────────────────────────────────────────────────
 def build_synthesis_prompt(
     s1_reports: list[dict],
     s2_reports: list[dict],
     corrections: list[dict],
     cycle: Optional[str],
+    s3_context: dict = None,
 ) -> str:
     sections = []
     total_chars = 0
@@ -331,6 +367,33 @@ def build_synthesis_prompt(
             break
         sections.append(entry)
         total_chars += len(entry)
+
+    # ── S3 Context (Pattern Intelligence + Structural Trends) ──────────────────
+    if s3_context:
+        s3_section = "\n=== SYSTEM 3 CONTEXT (Pattern Intelligence + Structural Trends) ===\n"
+        s3_section += "(Food for thought — S3 matures freely, read as background context)\n"
+        s3a = s3_context.get("s3a")
+        s3d = s3_context.get("s3d")
+        if s3a:
+            s3a_sum  = truncate(s3a.get("summary", ""), 1200)
+            s3a_dom  = s3a.get("first_domino", "")
+            s3a_date = s3a.get("generated_at", "")[:16]
+            s3_section += f"\n[S3-A PATTERN — 7-day window @ {s3a_date}]\n{s3a_sum}\n"
+            if s3a_dom:
+                s3_section += f"First Domino (what becomes inevitable if patterns continue):\n{s3a_dom}\n"
+        if s3d:
+            s3d_sum  = truncate(s3d.get("summary", ""), 1200)
+            s3d_dom  = s3d.get("first_domino", "")
+            s3d_date = s3d.get("generated_at", "")[:16]
+            s3_section += f"\n[S3-D STRUCTURAL — 30-day window @ {s3d_date}]\n{s3d_sum}\n"
+            if s3d_dom:
+                s3_section += f"Structural First Domino:\n{s3d_dom}\n"
+        if total_chars + len(s3_section) <= MAX_TOTAL_CHARS:
+            sections.append(s3_section)
+            total_chars += len(s3_section)
+            log.info(f"S3 context added to MA prompt ({len(s3_section)} chars)")
+        else:
+            log.info("S3 context skipped — prompt cap reached")
 
     prompt = "".join(sections)
     log.info(f"Synthesis prompt: {len(prompt)} chars ({len(corrections)} corrections prepended)")
@@ -482,7 +545,9 @@ def run_mission_analyst(
     )
 
     # ── Build prompt with corrections prepended ───────────────────────────────
-    prompt = build_synthesis_prompt(s1_reports, s2_reports, corrections, cycle)
+    # FIX-3: fetch S3 context and pass to MA — closes S1→S2→S3→MA circuit
+    s3_context = fetch_s3_context(sb)
+    prompt = build_synthesis_prompt(s1_reports, s2_reports, corrections, cycle, s3_context)
 
     analysis = call_mission_analyst(client, prompt, cycle)
     if analysis is None:
