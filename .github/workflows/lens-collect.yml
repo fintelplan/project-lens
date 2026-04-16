@@ -33,7 +33,10 @@ jobs:
             supabase \
             python-dotenv
       - name: Run collection + injection detection
-        run: python code/fetch_text.py
+        run: |
+          python code/fetch_text.py
+          python code/lens_fetch_tierc.py || echo "Tier C non-fatal"
+          python code/lens_fetch_tierd.py || echo "Tier D non-fatal"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
