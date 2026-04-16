@@ -74,6 +74,15 @@ FIVE ANALYTICAL QUESTIONS:
 3. ACCELERATION: Which trends are speeding up? Which are quietly ending?
 4. FIRST DOMINO: If current patterns continue, what event becomes inevitable in 30-90 days?
 5. HIDDEN BUILDER: Who is consistently building structural advantage while appearing passive?
+6. ACH CHECK (adversarial hardening):
+   What is the strongest evidence that CONTRADICTS the pattern you found?
+   If that contradicting evidence existed and you missed it — what would it look like?
+   State this explicitly. Do not skip it.
+7. SECTARIAN TRAP SEQUENCE (7-day window):
+   Is vocabulary about any ethnic, religious, or political group escalating in frequency?
+   Are moderate voices decreasing while extreme voices increase in coverage?
+   Who is amplifying this tension while appearing to report it neutrally?
+   Is the escalation proportional to actual events or manufactured beyond them?
 
 OUTPUT FORMAT — valid JSON only:
 {
@@ -92,7 +101,17 @@ OUTPUT FORMAT — valid JSON only:
     {"correction": "what S2 missed or over-weighted", "reason": "why from pattern perspective"}
   ],
   "summary": "2-3 sentence plain English summary of what is being built",
-  "quality_score": 0.0
+  "quality_score": 0.0,
+  "ach_check": {
+    "strongest_contradiction": "the evidence that would most challenge this pattern analysis",
+    "what_missed_looks_like": "if we got this wrong, what would the data have shown differently"
+  },
+  "sectarian_trap_signal": {
+    "detected": false,
+    "escalating_group": "group name or null",
+    "amplifier": "who is amplifying while appearing neutral, or null",
+    "organic_or_manufactured": "ORGANIC|MANUFACTURED|UNCLEAR"
+  }
 }
 Rules: Ground EVERY claim in specific events from the reports provided.
 Never predict. Identify what is already in motion."""
