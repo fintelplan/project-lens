@@ -90,7 +90,7 @@ def main():
     print("Project Lens — System 3 Orchestrator")
     print(f"  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"  run_id: {RUN_ID}")
-    print("  S3-A · S3-B · S3-D · S3-E  |  S3-C deferred")
+    print("  S3-A · S3-B · S3-C · S3-D · S3-E")
     print("=" * 60)
 
     results = {}
@@ -111,8 +111,8 @@ def main():
     ok_b, _ = _run("S3-B True History",          run_s3b, run_id=RUN_ID)
     results["S3-B"] = ok_b
 
-    print("\n[S3-ORC] S3-C: Bias Drift Monitor — deferred (needs Cohere account)")
-    results["S3-C"] = True
+    ok_c, _ = _run("S3-C Bias Drift Monitor (weekly)", run_s3c, run_id=RUN_ID)
+    results["S3-C"] = ok_c  # SKIPPED = ok (cadence check inside)
 
     ok_d, _ = _run("S3-D Long-term Researcher",  run_s3d, run_id=RUN_ID)
     results["S3-D"] = ok_d
