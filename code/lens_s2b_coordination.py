@@ -129,7 +129,7 @@ def build_prompt(reports: list) -> str:
         body    = truncate_report(r.get("content", "") or "")
         source  = r.get("source_name", "Unknown")
         domain  = r.get("domain", "")
-        pub_at  = r.get("published_at", r.get("collected_at", ""))[:19] if r.get("published_at") or r.get("created_at") else "unknown"
+        pub_at  = r.get("published_at", r.get("collected_at", ""))[:19] if r.get("published_at") or r.get("collected_at") else "unknown"
         entry   = f"=== ARTICLE {i}: [{source}] [{domain}] @ {pub_at} ===\nHEADLINE: {title}\n{body}\n"
         if total_chars + len(entry) > MAX_TOTAL_CHARS:
             break
