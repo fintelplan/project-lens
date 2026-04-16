@@ -89,6 +89,14 @@ The report must answer:
 4. WHAT THE ADVERSARY WANTS: The adversarial narrative and its strategic goal
 5. THREAT ASSESSMENT: Overall threat level to democratic governance and information integrity
 6. WHAT MATTERS FOR GCSP: Specific implications for global governance, emerging leaders
+7. CUI BONO SYNTHESIS: Who benefits from the OVERALL PATTERN of injections?
+   - S2-A found injection method X — who benefits from this method being used?
+   - S2-B found coordination pattern — who benefits from this coordination?
+   - S2-C found emotional framing — who benefits from this emotional state?
+   - S2-D found adversary narrative — who benefits from this narrative being accepted?
+   - Is the SAME ACTOR appearing across multiple S2 positions?
+   - Convergence of beneficiary = most reliable attribution possible.
+   - Five positions pointing at same actor = confirmed intelligence, not inference.
 
 Tone: Analytically precise. No sensationalism. No speculation without evidence.
       Honest about uncertainty. Written for intelligent adults who can handle complexity.
@@ -132,7 +140,13 @@ Format:
   ],
   "intelligence_gaps": "<what we could not determine with current sources>",
   "quality_score": <0.0-1.0>,
-  "analyst_note": "<1 sentence meta-note on report quality or caveats>"
+  "analyst_note": "<1 sentence meta-note on report quality or caveats>",
+  "cui_bono_synthesis": {
+    "primary_beneficiary": "<actor or category who benefits most from today's injection pattern>",
+    "convergence": "<CONFIRMED|PROBABLE|UNCLEAR — based on how many S2 positions point to same actor>",
+    "evidence": "<which S2 positions support this attribution>",
+    "note": "<1 sentence — what this tells us about the strategic intent behind today's information environment>"
+  }
 }"""
 
 
