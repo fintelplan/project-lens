@@ -1,0 +1,44 @@
+W-010 — WHY DOCUMENT
+S3-E Self-Check: SambaNova Instead of Local Ollama
+Project Lens | LENS-010 | 2026-04-15
+
+DESIGN INTENT (from architecture doc Table 6):
+  S3-E MUST be local. Ollama llama-3.1-70b.
+  Air-gapped self-check that cannot be manipulated through provider infrastructure.
+  Epistemic independence guaranteed.
+
+WHAT WE BUILT INSTEAD:
+  SambaNova API (RDU hardware) — llama-3.3-70b
+  Remote API call, not local.
+
+WHY THE DEVIATION:
+  1. No local machine available with sufficient RAM (16GB+ required for 70B model)
+  2. Ollama on Windows requires significant setup + maintenance
+  3. SambaNova uses RDU (Reconfigurable Dataflow Unit) hardware — third hardware type
+     alongside Groq (LPU) and Cerebras (WSE). Different silicon = different failure modes.
+  4. No DeepSeek anywhere — SambaNova satisfies the epistemic independence intent
+     through hardware diversity, not air-gap.
+
+WHAT IS LOST:
+  True air-gap. If SambaNova API is compromised or goes down, S3-E fails.
+  API-level attacks are theoretically possible (though SambaNova has no record of this).
+
+WHAT IS GAINED:
+  Third hardware architecture in the stack (LPU + WSE + RDU).
+  Different training pipeline from all other providers used.
+  No quota competition with any other system.
+  Zero additional cost.
+
+WHEN TO REVISIT:
+  When a local machine with 16GB+ RAM is available for project use.
+  Ollama deployment would restore true air-gap and full architecture compliance.
+  Trigger: hardware availability, not budget.
+
+PATTERN DEFENDED:
+  Pattern 5: Recursive Self-Injection
+  Current defense: SambaNova RDU hardware diversity.
+  Ideal defense: local Ollama air-gap.
+  Gap acknowledged and documented.
+
+Status: ACCEPTED DEVIATION — documented, monitored
+Author: James Maverick | Session: LENS-010

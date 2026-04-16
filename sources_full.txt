@@ -1,0 +1,635 @@
+{
+  "meta": {
+    "file": "lens-SRC-001_sources.json",
+    "project": "Project Lens",
+    "version": "2.0",
+    "created": "LENS-003",
+    "total_sources": 41,
+    "ethics_note": "All sources are public institutional sources. Three ethics tests applied to each.",
+    "updated": "LENS-006",
+    "audit_note": "Full source audit â€” 12 fixes applied (A/B/C)"
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "name": "US State Dept via Google News",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+%22US+State+Department%22+foreign+policy&ceid=US:en&hl=en-US&gl=US",
+      "web_url": "https://www.state.gov",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "US State Dept press releases via Google News RSS â€” state.gov direct RSS returns 0 articles. Google News indexes state.gov and provides public RSS. LR-014(E) compliant.",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-002",
+      "name": "White House News",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "https://www.whitehouse.gov/news/feed/",
+      "web_url": "https://www.whitehouse.gov",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official White House releases and statements",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-003",
+      "name": "Xinhua World News",
+      "domain": "POWER",
+      "actor": "China",
+      "rss_url": "https://www.xinhuanet.com/english/rss/worldrss.xml",
+      "web_url": "https://www.fmprc.gov.cn/eng",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Xinhua official Chinese state news â€” Fix C: replaced broken China MFA RSS",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-004",
+      "name": "Kremlin News",
+      "domain": "POWER",
+      "actor": "Russia",
+      "rss_url": "http://kremlin.ru/events/president/news/feed",
+      "web_url": "https://kremlin.ru/eng",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official Kremlin presidential statements",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-005",
+      "name": "UN News",
+      "domain": "POWER",
+      "actor": "UN",
+      "rss_url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+      "web_url": "https://www.nato.int",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "UN official global news â€” Fix B: relabeled from NATO (URL was already UN News)",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-006",
+      "name": "Reuters via Google News",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:reuters.com&ceid=US:en&hl=en-US&gl=US",
+      "web_url": "https://www.reuters.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Reuters articles via Google News RSS â€” Reuters killed direct RSS June 2020. Google News indexes reuters.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
+      "tier": "TIER1"
+    },
+    {
+      "id": "SRC-007",
+      "name": "AP News via Google News",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&ceid=US:en&hl=en-US&gl=US",
+      "web_url": "https://apnews.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "AP News articles via Google News RSS â€” AP blocked RSSHub 403. Google News indexes apnews.com and provides public RSS. Last 24h articles. LR-014(E) compliant.",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-008",
+      "name": "US Department of Defense",
+      "domain": "MILITARY",
+      "actor": "US",
+      "rss_url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?max=10&ContentType=1&Site=945",
+      "web_url": "https://www.defense.gov",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Official US military news and policy",
+      "tier": "STATE"
+    },
+    {
+      "id": "SRC-009",
+      "name": "RAND Corporation",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://www.rand.org/news/press.xml",
+      "web_url": "https://www.rand.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "RAND think tank press releases â€” Fix A: correct RAND RSS URL",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-010",
+      "name": "CSIS â€” Center for Strategic Studies",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://www.csis.org/rss.xml",
+      "web_url": "https://www.csis.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Top US foreign policy think tank",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-011",
+      "name": "War on the Rocks",
+      "domain": "MILITARY",
+      "actor": "Think Tank",
+      "rss_url": "https://warontherocks.com/feed/",
+      "web_url": "https://ofac.treas.gov",
+      "frequency": "daily",
+      "tier_coverage": [
+        1
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Military strategy analysis â€” Fix B: relabeled from OFAC (URL was already War on the Rocks)",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-012",
+      "name": "Foreign Policy Magazine",
+      "domain": "NARRATIVE",
+      "actor": "Global",
+      "rss_url": "https://foreignpolicy.com/feed/",
+      "web_url": "https://www.imf.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Foreign Policy analysis â€” Fix B: relabeled from IMF (URL was already Foreign Policy)",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-013",
+      "name": "The Diplomat",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://thediplomat.com/feed/",
+      "web_url": "https://www.bis.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Asia-Pacific geopolitics â€” Fix B: relabeled from BIS (URL was already The Diplomat)",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-014",
+      "name": "arXiv AI Papers",
+      "domain": "TECH",
+      "actor": "Global",
+      "rss_url": "https://rss.arxiv.org/rss/cs.AI",
+      "web_url": "https://arxiv.org",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "arXiv AI preprints â€” correct URL: rss.arxiv.org/rss/cs.AI. Returns 0 articles on Saturday+Sunday by design (arXiv policy). Works Mon-Fri automatically. No fix needed for weekends â€” this is expected behavior. Do not change URL.",
+      "tier": "TIER3",
+      "reserve_id": "SRC-015"
+    },
+    {
+      "id": "SRC-015",
+      "name": "MIT Technology Review",
+      "domain": "TECH",
+      "actor": "Global",
+      "rss_url": "https://www.technologyreview.com/feed/",
+      "web_url": "https://www.technologyreview.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Leading tech journalism â€” AI, quantum, semiconductor coverage",
+      "tier": "TIER2"
+    },
+    {
+      "id": "SRC-016",
+      "name": "Bellingcat",
+      "domain": "NARRATIVE",
+      "actor": "OSINT",
+      "rss_url": "https://www.bellingcat.com/feed/",
+      "web_url": "https://www.bellingcat.com",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Open source investigation â€” conflict verification and network analysis",
+      "tier": "TIER1"
+    },
+    {
+      "id": "SRC-017",
+      "name": "DFRLab â€” Digital Forensic Research Lab",
+      "domain": "NARRATIVE",
+      "actor": "Think Tank",
+      "rss_url": "https://medium.com/feed/dfrlab",
+      "web_url": "https://www.dfrlab.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Influence operations and disinformation detection",
+      "tier": "TIER1"
+    },
+    {
+      "id": "SRC-018",
+      "name": "Al Jazeera World",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "web_url": "https://www.sipri.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Al Jazeera global news â€” Fix B: relabeled from SIPRI (URL was already Al Jazeera)",
+      "tier": "TIER1"
+    },
+    {
+      "id": "SRC-019",
+      "name": "BBC World News",
+      "domain": "POWER",
+      "actor": "Global",
+      "rss_url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+      "web_url": "https://www.iea.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "BBC global news â€” Fix B: relabeled from IEA (URL was already BBC World)",
+      "tier": "TIER1",
+      "reserve_id": "SRC-033"
+    },
+    {
+      "id": "SRC-020",
+      "name": "ICIJ â€” International Consortium of Investigative Journalists",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "rss_url": "https://www.icij.org/feed/",
+      "web_url": "https://www.icij.org",
+      "frequency": "weekly",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "Hidden financial networks and non-state actor investigations",
+      "tier": "TIER1",
+      "reserve_id": "SRC-034"
+    },
+    {
+      "id": "SRC-021",
+      "name": "Google News: Corruption Dark Money",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22corruption%22+OR+%22dark+money%22+OR+%22money+laundering%22",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — corruption, dark money, money laundering. Layer 2 topic-filtered. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-022",
+      "name": "Google News: Sanctions Evasion",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions+evasion%22+OR+%22shell+company%22+OR+%22oligarch%22",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — sanctions evasion, shell companies, oligarch assets. Cui Bono intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-023",
+      "name": "Google News: Energy Security",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22energy+security%22+OR+%22oil+price%22+OR+%22gas+supply%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — energy security, oil price, gas supply. Physical reality intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-024",
+      "name": "Google News: Financial Stability",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22sanctions%22+OR+%22financial+stability%22+OR+%22debt+crisis%22",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — sanctions, financial stability, debt crisis. Cui Bono financial intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-025",
+      "name": "Yahoo News RSS",
+      "rss_url": "https://news.yahoo.com/rss/",
+      "domain": "POWER",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 4,
+      "notes": "Yahoo News general RSS — 50 articles of broad world news. Layer 4 wide-angle backup. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-026",
+      "name": "EFF Digital Rights",
+      "rss_url": "https://www.eff.org/rss/updates.xml",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Electronic Frontier Foundation — digital rights, AI surveillance, privacy, cyber law. TIER1: original reporting and legal analysis. Best source for rights-contracting tech deployments. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-027",
+      "name": "Wired Magazine",
+      "rss_url": "https://www.wired.com/feed/rss",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Wired — geopolitical tech coverage: AI chips, semiconductor wars, surveillance, cyber warfare, export controls. TIER2: analytical depth. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-028",
+      "name": "Ars Technica",
+      "rss_url": "https://feeds.arstechnica.com/arstechnica/index",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Ars Technica — deep tech analysis, AI, security, infrastructure. TIER2: specialist depth. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-029",
+      "name": "IEEE Spectrum",
+      "rss_url": "https://spectrum.ieee.org/feeds/feed.rss",
+      "domain": "TECH",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "IEEE Spectrum — semiconductor engineering, AI hardware, critical infrastructure tech. TIER2: engineering specialist. Only source for semiconductor/chip-level intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-030",
+      "name": "Google News: IMF World Bank Economy",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IMF%22+OR+%22World+Bank%22+OR+%22debt+restructuring%22+OR+%22sovereign+debt%22",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — IMF, World Bank, debt restructuring, sovereign debt. Debt Trap intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-031",
+      "name": "Google News: Critical Minerals",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22critical+minerals%22+OR+%22rare+earth%22+OR+%22food+security%22+OR+%22water+scarcity%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — critical minerals, rare earth, food security, water scarcity. Physical reality intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-032",
+      "name": "Google News: IEA Energy Transition",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:48h+%22IEA%22+OR+%22energy+transition%22+OR+%22renewable+energy%22+OR+%22energy+poverty%22",
+      "domain": "RESOURCE",
+      "actor": "Global",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — IEA, energy transition, renewable energy, energy poverty. GCSP physical foundation intelligence. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-033",
+      "name": "Financial Times World",
+      "rss_url": "https://www.ft.com/rss/home/uk",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Financial Times — gold standard for financial intelligence. Primary source for sanctions, central bank signals, sovereign debt. TIER1: original reporting with institutional credibility. Reserve for BBC when BBC fails."
+    },
+    {
+      "id": "SRC-034",
+      "name": "OCCRP — Organized Crime and Corruption",
+      "rss_url": "https://occrp.org/en/feed",
+      "domain": "NETWORK",
+      "actor": "Global",
+      "tier": "TIER1",
+      "layer": 1,
+      "notes": "Organized Crime and Corruption Reporting Project. Investigative journalism exposing money laundering networks, oligarch assets, state-crime nexus. TIER1: 430 official investigations triggered. Reserve for ICIJ when ICIJ fails."
+    },
+    {
+      "id": "SRC-035",
+      "name": "Relief Web",
+      "rss_url": "https://reliefweb.int/updates/rss.xml",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 2,
+      "notes": "UN OCHA-managed humanitarian intelligence platform. Covers conflicts, disasters, displacement, humanitarian crises. TIER2: authoritative on human impact of military conflicts — fills ACLED gap."
+    },
+    {
+      "id": "SRC-036",
+      "name": "Crisis Group",
+      "rss_url": "https://www.crisisgroup.org/rss.xml",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "International Crisis Group — conflict prevention gold standard. Read by UN Security Council, foreign ministries, peacekeepers. TIER2: deep conflict analysis not wire news. Was in GNI but died — now working again.",
+      "reserve_id": "SRC-042"
+    },
+    {
+      "id": "SRC-037",
+      "name": "Google News: IMF",
+      "domain": "FINANCE",
+      "actor": "IMF",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22IMF%22+OR+%22International+Monetary+Fund%22+%22lending%22+OR+%22debt%22+OR+%22fiscal%22",
+      "web_url": "https://www.imf.org",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER3",
+      "layer": 1,
+      "notes": "Google News IMF topic RSS — replaces broken imf.org direct feed. Covers IMF statements, programs, country reviews. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-038",
+      "name": "Google News: World Bank",
+      "domain": "FINANCE",
+      "actor": "World Bank",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22World+Bank%22+%22debt%22+OR+%22development%22+OR+%22infrastructure%22+OR+%22loan%22",
+      "web_url": "https://www.worldbank.org",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER3",
+      "layer": 1,
+      "notes": "Google News World Bank topic RSS — replaces broken blogs.worldbank.org direct feed. Covers WB lending, development finance, country programs. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-039",
+      "name": "Google News: Central Banks",
+      "domain": "FINANCE",
+      "actor": "Global",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=when:24h+%22central+bank%22+OR+%22Federal+Reserve%22+OR+%22interest+rates%22+OR+%22inflation%22",
+      "web_url": "https://news.google.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        2,
+        3
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER3",
+      "layer": 2,
+      "notes": "Google News topic RSS — central bank decisions, Federal Reserve, interest rates, inflation signals. Monetary policy intelligence layer. LR-014(E) compliant."
+    },
+    {
+      "id": "SRC-040",
+      "name": "Military Times",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "rss_url": "https://www.militarytimes.com/arc/outboundfeeds/rss/",
+      "web_url": "https://www.defensenews.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Military Times — independent defense journalism covering Pentagon, Congress, all service branches. Replaces SIPRI 404. TIER2: daily reporting on procurement, policy, operations. LR-014(E) compliant.",
+      "reserve_id": "SRC-043"
+    },
+    {
+      "id": "SRC-041",
+      "name": "Breaking Defense",
+      "domain": "MILITARY",
+      "actor": "Global",
+      "rss_url": "https://breakingdefense.com/feed/",
+      "web_url": "https://breakingdefense.com",
+      "frequency": "daily",
+      "tier_coverage": [
+        1,
+        2
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "tier": "TIER2",
+      "layer": 1,
+      "notes": "Breaking Defense — deep defense policy analysis, Pentagon, NATO, Indo-Pacific strategy. TIER2: read by defense officials and analysts. Strongest source for early military posture signals."
+    },
+    {
+      "id": "SRC-042",
+      "name": "Google News: Crisis Group",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22Crisis+Group%22+OR+%22conflict+prevention%22+%22ceasefire%22+OR+%22peace+talks%22",
+      "domain": "MILITARY",
+      "tier": "TIER2",
+      "actor": "Crisis Group",
+      "language": "en",
+      "tier_coverage": [
+        "MILITARY",
+        "POWER"
+      ]
+    },
+    {
+      "id": "SRC-043",
+      "name": "Google News: Defense Military",
+      "rss_url": "https://news.google.com/rss/search?ceid=US:en&hl=en-US&gl=US&q=%22military%22+%22defense%22+%22pentagon%22+OR+%22armed+forces%22+OR+%22deployment%22",
+      "domain": "MILITARY",
+      "tier": "TIER2",
+      "actor": "Military News",
+      "language": "en",
+      "tier_coverage": [
+        "MILITARY"
+      ]
+    }
+  ]
+}
