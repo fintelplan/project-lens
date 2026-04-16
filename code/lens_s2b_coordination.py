@@ -1,10 +1,10 @@
 """
 lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
-Model: gemini-2.0-flash (Google — GEMINI_API_KEY)
+Model: gemini-1.5-flash (Google — GEMINI_API_KEY)
 Context: 1,000,000 tokens — holds ALL reports simultaneously
 Guard: GeminiRPMGuard (15 RPM free tier) + AFC disabled
-RESTORED: gemini-2.0-flash per architecture book
+FIXED: gemini-1.5-flash per architecture doc Table 4 per architecture book
 Input: lens_reports (latest cycle)
 Output: injection_reports (analyst='S2-B')
 """
@@ -27,7 +27,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("s2b")
 
-MODEL            = "gemini-2.0-flash"
+MODEL            = "gemini-1.5-flash"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 3
@@ -46,6 +46,7 @@ class GeminiRPMGuard:
     """
     RPM_LIMITS = {
         "gemini-2.0-flash": 15,
+        "gemini-1.5-flash": 15,
         "gemini-1.5-pro":    2,
         "gemini-2.5-flash": 10,
         "gemini-2.0-flash": 15,
@@ -188,7 +189,7 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             rpm_guard.wait_if_needed(label="S2-B")
-            log.info(f"S2-B calling gemini-2.0-flash (attempt {attempt})")
+            log.info(f"S2-B calling gemini-1.5-flash (attempt {attempt})")
 
             response = client.models.generate_content(
                 model=MODEL,
@@ -338,7 +339,7 @@ def save_coordination_report(
     try:
         result = sb.table("injection_reports").insert(rows).execute()
         saved  = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} S2-B rows (gemini-2.0-flash, 1M context)")
+        log.info(f"Saved {saved} S2-B rows (gemini-1.5-flash, 1M context)")
         return True
     except Exception as e:
         log.error(f"Failed to save S2-B results: {e}")
