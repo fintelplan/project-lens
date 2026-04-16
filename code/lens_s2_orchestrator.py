@@ -133,7 +133,10 @@ def main():
     # ── S2-D: Adversary Narrative ─────────────────────────────────────────────
     from lens_s2d_adversary import run_s2d
     ok_d, _ = _run("S2-D", run_s2d, run_id=RUN_ID)
+    from lens_s2_gap import run_s2_gap
+    ok_gap, _ = _run("S2-GAP Gap Analysis", run_s2_gap, run_id=RUN_ID)
     results["S2-D"] = ok_d
+    results["S2-GAP"] = ok_gap
 
     # ── S2-E: Legitimacy Filter ───────────────────────────────────────────────
     from lens_s2e_legitimacy import run_s2e
