@@ -74,7 +74,16 @@ def format_critical_alert(reason, signal, threat):
 
 def send_daily_brief(run_id=None):
     try:
-        return send_message(format_daily_brief(fetch_latest(run_id)))
+        result = send_message(format_daily_brief(fetch_latest(run_id)))
+        # S4 RLHF reminder — rate this report for calibration
+        rating_msg = (
+            "\u2b50 <b>Rate this report (S4 RLHF)</b>\n"
+            "Run: <code>python code/lens_rate.py 4</code>\n"
+            "Scale: 1=Poor 2=Weak 3=Adequate 4=Good 5=Excellent\n"
+            "Add note: <code>python code/lens_rate.py 4 'good signal'</code>"
+        )
+        send_message(rating_msg)
+        return result
     except Exception as e:
         log.error(f"Daily brief failed: {e}"); return False
 
