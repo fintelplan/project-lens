@@ -1,7 +1,7 @@
 """
 lens_mission_analyst.py — Mission Analyst (Lens 5)
 Project Lens | LENS-010
-Model: llama-3.3-70b-versatile (Groq — GROQ_MANAGER_API_KEY)
+Model: llama-3.3-70b-versatile (Groq — GROQ_MA_API_KEY)
 Input: lens_reports (S1) + injection_reports (S2) — latest cycle
 Output: lens_macro_reports (Supabase)
 
@@ -156,7 +156,7 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_MANAGER_API_KEY"])
+    return Groq(api_key=os.environ["GROQ_MA_API_KEY"])
 
 
 def fetch_s1_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
