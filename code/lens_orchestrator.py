@@ -714,7 +714,7 @@ def run_orchestrator(config:dict=None) -> dict:
     # Telegram intelligence report
     try:
         from lens_telegram import send_s1_intelligence
-        send_s1_intelligence(run_id=RUN_ID)
+        send_s1_intelligence(run_id=run_id)
     except Exception as _te:
         print(f"[S1-ORC] Telegram step failed (non-fatal): {_te}")
 
