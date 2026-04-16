@@ -126,7 +126,14 @@ def main():
     for pos, ok in results.items():
         print(f"  {'✅' if ok else '❌'} {pos}")
 
-    failed = [k for k, v in results.items() if not v]
+    # Step report — fires after S3 completes
+    try:
+        from lens_telegram import send_s3_intelligence
+        send_s3_intelligence(run_id=RUN_ID)
+    except Exception as _te:
+        print(f"[S3-ORC] Telegram step report failed (non-fatal): {_te}")
+
+        failed = [k for k, v in results.items() if not v]
     if failed:
         print(f"\n[S3-ORC] {len(failed)} failed: {failed}")
         # S3-E failure is a WARNING — Pattern 5 defense unavailable this cycle
