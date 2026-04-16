@@ -126,22 +126,38 @@ def should_run_today() -> bool:
     """S3-D runs 2x per week: Monday (0) and Thursday (3) only."""
     return datetime.now(timezone.utc).weekday() in (0, 3)
 
+def get_window_days() -> int:
+    """
+    3-I: Dynamic window based on weekday.
+    Monday   = 30-day operational window (what changed recently)
+    Thursday = 90-day structural window  (what is being built long-term)
+    180-day deferred until True History DB has 90+ days of data.
+    """
+    weekday = datetime.now(timezone.utc).weekday()
+    if weekday == 3:   # Thursday
+        return 90
+    return 30          # Monday (default)
 
-def fetch_s1_reports(sb: Client) -> list:
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)).isoformat()
+
+def fetch_s1_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).isoformat()
+    limit  = MAX_S1_REPORTS if lookback_days <= 30 else MAX_S1_REPORTS * 3
     r = sb.table("lens_reports") \
         .select("id,domain_focus,summary,cycle,generated_at") \
         .gte("generated_at", cutoff).order("generated_at", desc=False) \
-        .limit(MAX_S1_REPORTS).execute()
+        .limit(limit).execute()
+    log.info(f"Fetched {len(r.data or [])} S1 reports (window={lookback_days}d)")
     return r.data or []
 
 
-def fetch_s2_reports(sb: Client) -> list:
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)).isoformat()
+def fetch_s2_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).isoformat()
+    limit  = MAX_S2_REPORTS if lookback_days <= 30 else MAX_S2_REPORTS * 3
     r = sb.table("injection_reports") \
         .select("analyst,injection_type,evidence,confidence_score,created_at") \
         .gte("created_at", cutoff).order("created_at", desc=False) \
-        .limit(MAX_S2_REPORTS).execute()
+        .limit(limit).execute()
+    log.info(f"Fetched {len(r.data or [])} S2 reports (window={lookback_days}d)")
     return r.data or []
 
 
@@ -151,6 +167,8 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         run_id = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
     log.info(f"=== S3-D Long-term Researcher START | run_id={run_id} ===")
 
+    window_days = get_window_days()
+    log.info(f"S3-D window: {window_days}-day (Monday=30d, Thursday=90d)")
     if not should_run_today():
         log.info(f"S3-D skipping — not Monday or Thursday (today={datetime.now(timezone.utc).strftime(chr(37)+chr(65))})")
         return {"status": "SKIPPED", "run_id": run_id}
