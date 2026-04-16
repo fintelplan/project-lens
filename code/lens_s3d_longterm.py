@@ -62,6 +62,19 @@ FIVE RESEARCH QUESTIONS:
 5. CONVERGENCE SIGNALS:
    Where are multiple slow-moving trends converging toward the same pressure point?
    What structural collision is becoming inevitable?
+6. CAPABILITY 2 — MANUFACTURED CAUSALITY (30-day verification):
+   Was the claimed cause actually followed by the claimed effect over the last 30 days?
+   Is a causal chain being repeated and cited as established fact without verification?
+   Are new events being interpreted THROUGH a pre-established causal narrative?
+   Does the chain consistently serve the same strategic beneficiary (Cui Bono)?
+7. ACH CHECK (adversarial hardening):
+   What is the strongest evidence that CONTRADICTS your structural analysis?
+   If your 30-day pattern analysis is wrong, what would the data have looked like instead?
+   State the most disconfirming evidence explicitly.
+8. SECTARIAN TRAP 30-DAY TRACKING:
+   What was the baseline level of ethnic/religious/political tension 30 days ago vs today?
+   Is escalation organic (proportional to actual events) or manufactured (disproportionate)?
+   What historical analog predicts what happens next if the current trajectory continues?
 
 OUTPUT FORMAT — valid JSON only:
 {
@@ -85,7 +98,24 @@ OUTPUT FORMAT — valid JSON only:
     {"correction": "pattern S2 is systematically missing", "reason": "visible only over 30 days"}
   ],
   "summary": "2-3 sentence plain English summary of 30-day structural picture",
-  "quality_score": 0.0
+  "quality_score": 0.0,
+  "capability_2": {
+    "manufactured_causality_detected": false,
+    "claimed_chain": "the causal claim being repeated as established fact, or null",
+    "verified": "YES|NO|PARTIALLY — was cause actually followed by effect over 30 days?",
+    "cui_bono": "who benefits from this causal narrative being accepted"
+  },
+  "ach_check": {
+    "strongest_contradiction": "evidence most challenging to the 30-day structural analysis",
+    "failure_mode": "if this analysis is wrong, what would the data have looked like"
+  },
+  "sectarian_trap_30d": {
+    "baseline_tension": "LOW|MODERATE|HIGH — 30 days ago",
+    "current_tension": "LOW|MODERATE|HIGH — today",
+    "escalation_type": "ORGANIC|MANUFACTURED|UNCLEAR",
+    "historical_analog": "which historical precedent matches this trajectory, or null",
+    "predicted_next": "what the analog suggests happens next"
+  }
 }
 Rules: Ground EVERYTHING in specific evidence spanning the full 30-day window.
 Single events are noise. Patterns across 30 days are signal.
