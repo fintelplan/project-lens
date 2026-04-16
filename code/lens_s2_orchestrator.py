@@ -172,6 +172,12 @@ def main():
             print("[S2-ORC] WARNING: S2-A failed — Mission Analyst ran without injection corrections.")
             sys.exit(1)
     else:
+        # Telegram intelligence report
+        try:
+            from lens_telegram import send_s2_intelligence
+            send_s2_intelligence()
+        except Exception as _te:
+            print(f"[S2-ORC] Telegram step failed (non-fatal): {_te}")
         print("\n[S2-ORC] All positions complete.")
 
     print("=" * 60 + "\n")

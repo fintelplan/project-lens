@@ -711,6 +711,12 @@ def run_orchestrator(config:dict=None) -> dict:
     signals=compute_cross_lens_signals(results)
     summary=generate_summary(run_id,results,pf,elapsed,signals=signals)
     print(summary)
+    # Telegram intelligence report
+    try:
+        from lens_telegram import send_s1_intelligence
+        send_s1_intelligence(run_id=RUN_ID)
+    except Exception as _te:
+        print(f"[S1-ORC] Telegram step failed (non-fatal): {_te}")
 
     return _mk_result(run_id,results,pf,summary=summary,verification=vfy,
                       elapsed_s=elapsed,exit_reason="complete",pipeline_continued=True,
