@@ -1,0 +1,33 @@
+name: Lens Sonnet Report
+
+on:
+  schedule:
+    - cron: '28 15 * * *'   # 11:28 AM Washington DC (EDT) = 10:28 PM Thailand
+    - cron: '28  3 * * *'   # 11:28 PM Washington DC (EDT) = 10:28 AM Thailand
+  workflow_dispatch:
+
+jobs:
+  sonnet-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: |
+          pip install anthropic supabase python-dotenv requests
+          npm install -g docx
+      - name: Run Sonnet report
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python code/lens_sonnet_report.py
