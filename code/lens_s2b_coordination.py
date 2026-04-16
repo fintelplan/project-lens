@@ -86,26 +86,27 @@ def get_gemini():
 
 
 # ── Data fetch ────────────────────────────────────────────────────────────────
-def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list:
+def fetch_raw_articles(sb: Client, cycle: Optional[str] = None) -> list:
+    """
+    FIX-2: Read raw articles NOT lens_reports.
+    Architecture doc Table 4: S2-B must hold ALL raw articles simultaneously.
+    Coordination detection requires source timing — not post-analysis summaries.
+    """
+    from datetime import datetime, timedelta, timezone
     try:
-        if cycle:
-            result = sb.table("lens_reports") \
-                .select("id, domain_focus, summary, cycle, generated_at") \
-                .eq("cycle", cycle) \
-                .order("generated_at", desc=True) \
-                .limit(8) \
-                .execute()
-        else:
-            result = sb.table("lens_reports") \
-                .select("id, domain_focus, summary, cycle, generated_at") \
-                .order("generated_at", desc=True) \
-                .limit(4) \
-                .execute()
-        reports = result.data or []
-        log.info(f"Fetched {len(reports)} lens reports (cycle={cycle})")
-        return reports
+        # Fetch last 6 hours of raw articles — covers current + previous cycle
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
+        result = sb.table("lens_raw_articles") \
+            .select("id, title, content, source_name, domain, published_at, created_at") \
+            .gte("created_at", cutoff) \
+            .order("created_at", desc=False) \
+            .limit(200) \
+            .execute()
+        articles = result.data or []
+        log.info(f"Fetched {len(articles)} raw articles (last 6h) for coordination analysis")
+        return articles
     except Exception as e:
-        log.error(f"Failed to fetch lens_reports: {e}")
+        log.error(f"Failed to fetch lens_raw_articles: {e}")
         return []
 
 
@@ -116,18 +117,27 @@ def truncate_report(text: str) -> str:
 
 
 def build_prompt(reports: list) -> str:
+    """
+    FIX-2: Build prompt from raw articles (title + content + source + timing).
+    S2-B detects coordination by seeing which sources published similar
+    framing at similar times — requires raw source data, not summaries.
+    """
     sections = []
     total_chars = 0
     for i, r in enumerate(reports, 1):
-        text  = truncate_report(r.get("summary", ""))
-        entry = f"=== REPORT {i}: {r.get('domain_focus', 'Unknown')} (ID: {r.get('id', '?')}) ===\n{text}\n"
+        title   = (r.get("title", "") or "")[:200]
+        body    = truncate_report(r.get("content", "") or "")
+        source  = r.get("source_name", "Unknown")
+        domain  = r.get("domain", "")
+        pub_at  = r.get("published_at", r.get("created_at", ""))[:19] if r.get("published_at") or r.get("created_at") else "unknown"
+        entry   = f"=== ARTICLE {i}: [{source}] [{domain}] @ {pub_at} ===\nHEADLINE: {title}\n{body}\n"
         if total_chars + len(entry) > MAX_TOTAL_CHARS:
             break
         sections.append(entry)
         total_chars += len(entry)
     combined = "\n".join(sections)
-    pct = total_chars / 4000
-    log.info(f"S2-B prompt: {len(sections)} reports, {total_chars} chars ({pct:.0f}% of 1M context)")
+    pct = (total_chars / MAX_TOTAL_CHARS) * 100
+    log.info(f"S2-B prompt: {len(sections)} raw articles, {total_chars} chars ({pct:.1f}% of 1M context)")
     return f"Analyze {len(reports)} intelligence reports for cross-source coordination patterns.\n\n{combined}\n\nReturn JSON only."
 
 
@@ -363,13 +373,13 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
 
-    reports = fetch_latest_reports(sb, cycle)
+    reports = fetch_raw_articles(sb, cycle)  # FIX-2: raw articles not summaries
     if not reports:
-        log.warning("No lens_reports found — S2-B cannot run")
-        return {"status": "NO_REPORTS", "reports_analyzed": 0}
+        log.warning("No raw articles found (last 6h) — S2-B cannot run")
+        return {"status": "NO_RAW_ARTICLES", "reports_analyzed": 0}
     if len(reports) < 2:
-        log.warning(f"Only {len(reports)} report — need 2+")
-        return {"status": "INSUFFICIENT_REPORTS", "reports_analyzed": len(reports)}
+        log.warning(f"Only {len(reports)} raw articles — need 2+")
+        return {"status": "INSUFFICIENT_ARTICLES", "reports_analyzed": len(reports)}
 
     rpm_guard = GeminiRPMGuard(model=MODEL)
     analysis  = call_coordination_analyzer(client, reports, rpm_guard)
