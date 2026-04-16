@@ -25,6 +25,8 @@ Session: LENS-010 (orchestrator fix)
 
 import sys
 import traceback
+import logging
+log = logging.getLogger("S2-ORC")
 from datetime import datetime, timezone
 
 # ── Shared run identity ───────────────────────────────────────────────────────

@@ -97,9 +97,9 @@ def fetch_raw_articles(sb: Client, cycle: Optional[str] = None) -> list:
         # Fetch last 6 hours of raw articles — covers current + previous cycle
         cutoff = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
         result = sb.table("lens_raw_articles") \
-            .select("id, title, content, source_name, domain, published_at, created_at") \
-            .gte("created_at", cutoff) \
-            .order("created_at", desc=False) \
+            .select("id, title, content, source_name, domain, published_at, collected_at") \
+            .gte("collected_at", cutoff) \
+            .order("collected_at", desc=False) \
             .limit(200) \
             .execute()
         articles = result.data or []
@@ -129,7 +129,7 @@ def build_prompt(reports: list) -> str:
         body    = truncate_report(r.get("content", "") or "")
         source  = r.get("source_name", "Unknown")
         domain  = r.get("domain", "")
-        pub_at  = r.get("published_at", r.get("created_at", ""))[:19] if r.get("published_at") or r.get("created_at") else "unknown"
+        pub_at  = r.get("published_at", r.get("collected_at", ""))[:19] if r.get("published_at") or r.get("created_at") else "unknown"
         entry   = f"=== ARTICLE {i}: [{source}] [{domain}] @ {pub_at} ===\nHEADLINE: {title}\n{body}\n"
         if total_chars + len(entry) > MAX_TOTAL_CHARS:
             break
