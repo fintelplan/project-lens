@@ -1,0 +1,28 @@
+name: Lens Ref Export (Free Tier)
+
+on:
+  schedule:
+    - cron: '58 4  * * *'   # after 04:28 cron
+    - cron: '58 13 * * *'   # after 13:28 cron
+    - cron: '58 17 * * *'   # after 17:28 cron
+    - cron: '58 21 * * *'   # after 21:28 cron
+  workflow_dispatch:
+
+jobs:
+  ref-export-free:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install supabase python-dotenv requests openpyxl
+      - name: Export refs (free tier)
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python code/lens_ref_system.py --mode free

@@ -1,0 +1,26 @@
+name: Lens Reference Export
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC daily = 1:00 PM Thailand
+  workflow_dispatch:
+
+jobs:
+  ref-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: pip install supabase python-dotenv requests openpyxl
+      - name: Assign refs + export Excel
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python code/lens_ref_system.py --export
