@@ -519,6 +519,22 @@ def run_mission_analyst(
         f"{elapsed}s ==="
     )
     print(json.dumps(summary, indent=2))
+
+    # ── Telegram daily brief (fires after every successful MA run) ──────────
+    try:
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from lens_telegram import send_daily_brief, send_critical_alert
+        send_daily_brief(run_id=run_id)
+        if summary.get("threat_level") in ("CRITICAL", "HIGH"):
+            send_critical_alert(
+                reason=f"Mission Analyst threat={summary['threat_level']}",
+                signal=summary.get("executive_summary","")[:400],
+                threat=summary.get("threat_level","HIGH")
+            )
+    except Exception as _te:
+        log.warning(f"Telegram alert failed (non-critical): {_te}")
+
     return summary
 
 
