@@ -40,10 +40,7 @@ def get_supabase() -> Client:
 def count_s1_runs(sb: Client) -> int:
     """Count distinct S1 run_ids in lens_reports."""
     try:
-        r = sb.table("lens_reports") \
-            .select("id") \
-
-            .execute()
+        r = sb.table("lens_reports").select("id").execute()
         run_ids = set(row["id"] for row in (r.data or []))
         return len(run_ids)
     except Exception as e:

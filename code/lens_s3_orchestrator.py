@@ -4,7 +4,7 @@ Project Lens — System 3 Orchestrator
 
 S3-A  lens_s3a_patterns.py     daily      llama-3.3-70b   Groq/GROQ_S3_API_KEY
 S3-B  lens_s3b_truehistory.py  daily      gemini-2.0-flash Google/GEMINI_API_KEY
-S3-C  NOT BUILT                weekly     command-r-plus  Cohere — needs account
+S3-C  lens_s3c_biasdrift.py   weekly     command-r-plus  Cohere/COHERE_API_KEY
 S3-D  lens_s3d_longterm.py     Mon+Thu    qwen-3-235b     Cerebras/CEREBRAS_API_KEY
 S3-E  lens_s3e_selfcheck.py    daily      llama-3.3-70b   SambaNova/SAMBANOVA_API_KEY
 
@@ -102,6 +102,7 @@ def main():
 
     from lens_s3a_patterns    import run_s3a
     from lens_s3b_truehistory import run_s3b
+    from lens_s3c_biasdrift   import run_s3c
     from lens_s3d_longterm    import run_s3d
     from lens_s3e_selfcheck   import run_s3e
 

@@ -509,7 +509,6 @@ def save_macro_report(
         "quality_score":        float(analysis.get("quality_score", 0.0)),
         "s1_report_ids":        s1_report_ids,
         "s2_report_ids":        s2_report_ids,
-        "generated_at":         datetime.now(timezone.utc).isoformat(),
     }
 
     try:
