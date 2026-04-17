@@ -29,6 +29,9 @@ from lens_sanitize import sanitize_text, add_runtime_flag
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
 from lens_quota_guard import guard_check_with_fallback
 
+# ── Response schema validator (I2) ────────────────────────────────────────────
+from lens_response_guard import validate_parsed_response, format_validation_for_log
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -205,6 +208,11 @@ def call_injection_tracer(client: Groq, report: dict, replaced_phrases: list[str
                     raw = raw[4:]
             raw = raw.strip()
             parsed = json.loads(raw)
+
+            # ── Response schema validation (I2) ──────────────────────────────
+            vr = validate_parsed_response(parsed, "S2-A")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
 
             # Ensure pre-sanitized phrases always appear in findings (never silently dropped)
             if replaced_phrases:

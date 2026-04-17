@@ -21,6 +21,9 @@ from supabase import create_client, Client
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
 from lens_quota_guard import guard_check_with_fallback
 
+# ── Response schema validator (I2) ────────────────────────────────────────────
+from lens_response_guard import validate_parsed_response, format_validation_for_log
+
 
 def store_s3a_prediction(supabase, run_id: str, first_domino: str, confidence: float):
     """
@@ -218,6 +221,11 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                 if raw.startswith("json"): raw = raw[4:]
             raw = raw.strip()
             analysis = json.loads(raw)
+
+            # ── Response schema validation (I2) ──────────────────────────────
+            vr = validate_parsed_response(analysis, "S3-A")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
             break
         except Exception as e:
             log.warning(f"Attempt {attempt} failed: {e}")

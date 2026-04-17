@@ -27,6 +27,9 @@ from supabase import create_client, Client
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
 from lens_quota_guard import guard_check_with_fallback
 
+# ── Response schema validator (I2) ────────────────────────────────────────────
+from lens_response_guard import validate_parsed_response, format_validation_for_log
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -451,6 +454,11 @@ def call_mission_analyst(client: Groq, prompt: str, cycle: Optional[str]) -> Opt
             raw = raw.strip()
 
             parsed = json.loads(raw)
+
+            # ── Response schema validation (I2) ──────────────────────────────
+            vr = validate_parsed_response(parsed, "MA")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
             log.info(
                 f"Mission Analyst result: "
                 f"threat={parsed.get('threat_level', '?')}, "

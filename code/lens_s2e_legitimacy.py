@@ -20,6 +20,9 @@ from supabase import create_client, Client
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
 from lens_quota_guard import guard_check_with_fallback
 
+# ── Response schema validator (I2) ────────────────────────────────────────────
+from lens_response_guard import validate_parsed_response, format_validation_for_log
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -236,6 +239,11 @@ def call_legitimacy_filter(client: Groq, report: dict, guard: "TPMGuard") -> Opt
             raw = raw.strip()
 
             parsed = json.loads(raw)
+
+            # ── Response schema validation (I2) ──────────────────────────────
+            vr = validate_parsed_response(parsed, "S2-E")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
             actors = parsed.get("actors_assessed", [])
             low_actors = parsed.get("low_legitimacy_actors_pushing_narrative", [])
             log.info(

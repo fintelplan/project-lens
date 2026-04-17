@@ -27,6 +27,9 @@ from supabase import create_client, Client
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
 from lens_quota_guard import guard_check_with_fallback
 
+# ── Response schema validator (I2) ────────────────────────────────────────────
+from lens_response_guard import validate_parsed_response, format_validation_for_log
+
 logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S2-GAP] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("S2-GAP")
@@ -196,6 +199,11 @@ def call_groq(client: Groq, prompt: str) -> Optional[dict]:
                 if raw.startswith("json"):
                     raw = raw[4:]
             parsed = json.loads(raw.strip())
+
+            # ── Response schema validation (I2) ──────────────────────────────
+            vr = validate_parsed_response(parsed, "S2-GAP")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
             log.info(f"Gap analysis complete | severity={parsed.get('gap_severity','?')}")
             return parsed
         except json.JSONDecodeError as e:
