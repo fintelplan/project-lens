@@ -209,6 +209,18 @@ def build_prompt(s2, s3a, s3d, ma, analyst_refs=None) -> str:
         dom = s3d.get("first_domino","")
         if dom: s3d_text += f"Structural First Domino: {dom}\n"
 
+    # Format analyst_refs for citation in prompt (LENS-014 C1)
+    refs_text = ""
+    if analyst_refs:
+        header = "\nREFERENCES (cite these REF IDs when findings stem from matched articles):\n"
+        body_lines = []
+        for analyst in ["S2-A", "S2-B", "S2-C", "S2-D", "S2-E", "S2-GAP"]:
+            ids = analyst_refs.get(analyst, [])
+            if ids:
+                body_lines.append(f"  {analyst}: {', '.join(ids[:5])}")
+        if body_lines:
+            refs_text = header + "\n".join(body_lines) + "\n"
+
     prompt = f"""You are writing an intelligence report. Write exactly 5 pages of precise, factual analysis.
 
 CRITICAL FORMATTING RULES:
@@ -218,12 +230,14 @@ CRITICAL FORMATTING RULES:
 4. Bullet items start with dash and space (- item).
 5. Plain prose paragraphs. Nothing decorative.
 6. Be precise and complete. No padding. No summaries.
+7. If a REFERENCES block appears below, cite REF IDs inline in square brackets like [REF-20260418-0023] when a finding stems from a matched article. If no REF ID corresponds to a finding, state the finding without citation. Do not fabricate REF IDs.
 
 DATA:
 {s2_text}
 {ma_text}
 {s3a_text}
 {s3d_text}
+{refs_text}
 
 WRITE EXACTLY THIS STRUCTURE:
 
