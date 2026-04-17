@@ -2,9 +2,7 @@ name: Lens Manager + Analyze
 on:
   schedule:
     - cron: '28 13 * * *'
-    - cron: '28 17 * * *'
-    - cron: '28 21 * * *'
-    - cron: '28 4  * * *'
+    - cron: '28 1  * * *'
   workflow_dispatch:
     inputs:
       force:

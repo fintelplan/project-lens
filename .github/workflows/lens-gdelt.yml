@@ -7,9 +7,7 @@ on:
     # analyze:  13:30 17:30 21:30 04:30 UTC
     # gdelt:    13:45 17:45 21:45 04:45 UTC
     - cron: '45 13 * * *'
-    - cron: '45 17 * * *'
-    - cron: '45 21 * * *'
-    - cron: '45 4  * * *'
+    - cron: '45 1  * * *'
   workflow_dispatch:  # manual trigger for testing
 
 jobs:

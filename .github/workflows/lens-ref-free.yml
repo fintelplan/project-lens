@@ -2,10 +2,8 @@ name: Lens Ref Export (Free Tier)
 
 on:
   schedule:
-    - cron: '58 4  * * *'   # after 04:28 cron
     - cron: '58 13 * * *'   # after 13:28 cron
-    - cron: '58 17 * * *'   # after 17:28 cron
-    - cron: '58 21 * * *'   # after 21:28 cron
+    - cron: '58 1  * * *'   # after 01:28 cron
   workflow_dispatch:
 
 jobs:

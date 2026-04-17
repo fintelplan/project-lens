@@ -3,7 +3,7 @@
 # AI 5 — Management AI
 #
 # Runs BEFORE every analyze cycle.
-# Guards the 4x daily budget.
+# Guards the 2x daily budget.
 # Checks all providers before firing.
 # Warns on manual triggers.
 # Calculates dynamic stagger for Cerebras lenses.
@@ -13,7 +13,7 @@
 #
 # Rules:
 #   LR-047(P): Manager must run before every analyze cycle
-#   LR-048(P): Daily budget = 4 runs. Hard cap.
+#   LR-048(P): Daily budget = 2 runs. Hard cap.
 #   LR-049(P): Manual runs warned clearly before consuming budget
 # ============================================================
 
@@ -33,7 +33,7 @@ GROQ_MANAGER_KEY    = os.getenv('GROQ_MA_API_KEY', '')
 GITHUB_ACTIONS      = os.getenv('GITHUB_ACTIONS', 'false').lower() == 'true'
 LENS_FORCE          = os.getenv('LENS_FORCE', '0') == '1'
 
-DAILY_BUDGET        = 4       # sacred — never exceed
+DAILY_BUDGET        = 2       # sacred — never exceed
 GEMINI_RPD_LIMIT    = 20      # Gemini free tier daily limit
 GEMINI_RPD_BUFFER   = 2       # keep 2 requests as buffer
 CEREBRAS_SAFE_GAP   = 30      # seconds Cerebras needs to clear queue

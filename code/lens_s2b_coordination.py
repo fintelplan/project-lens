@@ -95,7 +95,7 @@ def fetch_raw_articles(sb: Client, cycle: Optional[str] = None) -> list:
     from datetime import datetime, timedelta, timezone
     try:
         # Fetch last 6 hours of raw articles — covers current + previous cycle
-        cutoff = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=12)).isoformat()
         result = sb.table("lens_raw_articles") \
             .select("id, title, content, source_name, domain, published_at, collected_at") \
             .gte("collected_at", cutoff) \
@@ -103,7 +103,7 @@ def fetch_raw_articles(sb: Client, cycle: Optional[str] = None) -> list:
             .limit(200) \
             .execute()
         articles = result.data or []
-        log.info(f"Fetched {len(articles)} raw articles (last 6h) for coordination analysis")
+        log.info(f"Fetched {len(articles)} raw articles (last 12h) for coordination analysis")
         return articles
     except Exception as e:
         log.error(f"Failed to fetch lens_raw_articles: {e}")
@@ -375,7 +375,7 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     reports = fetch_raw_articles(sb, cycle)  # FIX-2: raw articles not summaries
     if not reports:
-        log.warning("No raw articles found (last 6h) — S2-B cannot run")
+        log.warning("No raw articles found (last 12h) — S2-B cannot run")
         return {"status": "NO_RAW_ARTICLES", "reports_analyzed": 0}
     if len(reports) < 2:
         log.warning(f"Only {len(reports)} raw articles — need 2+")
