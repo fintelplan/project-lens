@@ -38,13 +38,8 @@ DOMAINS        = [
 
 # ─── Cycle Detection ──────────────────────────────────────────────────────────
 
-def get_cycle():
-    hour = datetime.now(timezone.utc).hour
-    if hour == 13:   return "morning"
-    elif hour == 17: return "midday"
-    elif hour == 21: return "afternoon"
-    elif hour == 4:  return "midnight"
-    else:            return "manual"
+# Canonical cycle resolution (LENS-014 O1). Returns '2of1' | '2of2' | 'manual'.
+from lens_cycle import get_cycle  # noqa: E402
 
 # ─── Prompts ──────────────────────────────────────────────────────────────────
 

@@ -1221,18 +1221,10 @@ def save_lens_report(supabase, lens, summary, food_for_thought,
     return report_id
 
 
-def get_cycle():
-    """
-    Cycle labels matching real cron schedule.
-    08 UTC=morning | 12 UTC=midday | 16 UTC=afternoon | 20 UTC=evening
-    Fix: LENS-005 FIX-021 — wrong hours from earlier session.
-    """
-    hour = datetime.now(timezone.utc).hour
-    if   3 <= hour <= 5:   return "morning"
-    elif 13 <= hour <= 14: return "afternoon"
-    elif 17 <= hour <= 18: return "evening"
-    elif 21 <= hour <= 22: return "night"
-    else:                  return "manual"
+# Canonical cycle resolution (LENS-014 O1). Returns '2of1' | '2of2' | 'manual'.
+# Supersedes the old per-file implementation (LENS-005 FIX-021 and earlier
+# drift-prone variants). See code/lens_cycle.py for canonical logic.
+from lens_cycle import get_cycle  # noqa: E402
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────

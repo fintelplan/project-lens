@@ -266,17 +266,12 @@ def save_source_health(health_records: list):
         except Exception:
             pass
 
+# ── Canonical cycle (LENS-014 O1) ───────────────────────────
+from lens_cycle import get_cycle  # noqa: E402
+
 # ── Main ──────────────────────────────────────────────────────
 def main():
-    cycle_hour = datetime.now(timezone.utc).hour
-    if cycle_hour < 10:
-        cycle = 'morning'
-    elif cycle_hour < 13:
-        cycle = 'midday'
-    elif cycle_hour < 17:
-        cycle = 'afternoon'
-    else:
-        cycle = 'evening'
+    cycle = get_cycle()
 
     print('=' * 60)
     print(f'Project Lens — fetch_text.py')

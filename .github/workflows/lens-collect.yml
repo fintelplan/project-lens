@@ -29,7 +29,8 @@ jobs:
             feedparser==6.0.12 \
             requests \
             supabase \
-            python-dotenv
+            python-dotenv \
+            tzdata
       - name: Run collection + injection detection
         run: |
           python code/fetch_text.py

@@ -31,6 +31,9 @@ LENS_SKIP         = os.getenv("LENS_SKIP","")
 LENS_ONLY         = os.getenv("LENS_ONLY","")
 QUALITY_FLOOR     = float(os.getenv("LENS_QUALITY_FLOOR","4.0"))
 
+# ── Canonical cycle (LENS-014 O1) ─────────────────────────────────────────────
+from lens_cycle import get_cycle
+
 # ── Constants ─────────────────────────────────────────────────────────────────
 DAILY_BUDGET        = 2    # LENS-013 T-04 aligned with lens_manager.py (2x/day cron)
 GEMINI_RPD_LIMIT    = 20
@@ -407,10 +410,9 @@ def run_lens_with_healing(lens_id:int, stagger_s:int=0) -> LensResult:
 # ══════════════════════════════════════════════════════════════════════════════
 # STEP 6 — CHECKPOINT + RESUME  (LR-052 to LR-056)
 # ══════════════════════════════════════════════════════════════════════════════
-def _cycle():
-    h=datetime.now(timezone.utc).hour
-    return ("morning" if 5<=h<10 else "afternoon" if 10<=h<15
-            else "evening" if 15<=h<20 else "night")
+# Removed: local cycle helper (LENS-014 O1). Now uses canonical get_cycle().
+# Old logic mapped UTC hour ranges 5-9/10-14/15-19/20-4 to
+# morning/afternoon/evening/night. New canonical mapping lives in lens_cycle.
 
 def _next_pending(results:dict) -> int:
     for lid in [1,2,3,4]:
@@ -419,7 +421,7 @@ def _next_pending(results:dict) -> int:
     return 5
 
 def save_checkpoint(run_id:str, job_count:int, results:dict, article_ids:list) -> bool:
-    data={"run_id":run_id,"cycle":_cycle(),"job_count":job_count,
+    data={"run_id":run_id,"cycle":get_cycle(),"job_count":job_count,
           "resume_from":_next_pending(results),
           "lens_1_status":results.get(1,LensResult(1,"pending")).status,
           "lens_2_status":results.get(2,LensResult(2,"pending")).status,

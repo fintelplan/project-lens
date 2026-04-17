@@ -21,7 +21,7 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: |
-          pip install anthropic supabase python-dotenv requests
+          pip install anthropic supabase python-dotenv requests tzdata
           npm install -g docx
       - name: Run Sonnet report
         env:

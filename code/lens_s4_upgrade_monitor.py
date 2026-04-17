@@ -19,6 +19,9 @@ import os, json, logging, requests
 from datetime import datetime, timezone
 from supabase import create_client, Client
 
+# ── Canonical cycle + era boundary (LENS-014 O1) ──────────────────────────────
+from lens_cycle import DAY_1_UTC, CANONICAL_CYCLES, LEGACY_CYCLES
+
 logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S4-E] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("S4-E")
@@ -37,21 +40,53 @@ def get_supabase() -> Client:
     return create_client(url, key)
 
 
-def count_s1_runs(sb: Client) -> int:
-    """Count distinct S1 run_ids in lens_reports."""
+def count_s1_runs_legacy(sb: Client) -> int:
+    """Count S1 production runs from the LEGACY era (before DAY_1_UTC).
+
+    Legacy era used mixed labels: morning/afternoon/evening/midnight
+    (per LENS-005 FIX-021 and earlier). These rows preserve operational
+    history from before the LENS-014 O1 canonical cycle rollout.
+    """
     try:
-        # Count production cron runs only. One row per cron (domain_focus='ALL').
-        # Allowlist: 4 architectural production cycles. Excludes 'manual' dev/test
-        # artifacts (81% of historical rows) and any future non-production cycles.
-        PRODUCTION_CYCLES = ["morning", "afternoon", "evening", "midnight"]
         r = sb.table("lens_reports") \
             .select("id", count="exact") \
-            .in_("cycle", PRODUCTION_CYCLES) \
+            .in_("cycle", LEGACY_CYCLES) \
+            .lt("generated_at", DAY_1_UTC.isoformat()) \
             .execute()
         return r.count or len(r.data or [])
     except Exception as e:
-        log.warning(f"S1 count failed: {e}")
+        log.warning(f"S1 legacy count failed: {e}")
         return 0
+
+
+def count_s1_runs_new(sb: Client) -> int:
+    """Count S1 production runs from the NEW era (at or after DAY_1_UTC).
+
+    New era uses canonical cycle labels: 2of1 / 2of2. All rows after
+    Day 1 (April 17, 2026 UTC) should carry canonical labels per
+    LENS-014 O1 (lens_cycle.py).
+    """
+    try:
+        r = sb.table("lens_reports") \
+            .select("id", count="exact") \
+            .in_("cycle", CANONICAL_CYCLES) \
+            .gte("generated_at", DAY_1_UTC.isoformat()) \
+            .execute()
+        return r.count or len(r.data or [])
+    except Exception as e:
+        log.warning(f"S1 new count failed: {e}")
+        return 0
+
+
+def count_s1_runs(sb: Client) -> int:
+    """Total S1 production runs across both eras (legacy + new).
+
+    Preserves full operational history for upgrade-trigger accounting.
+    S4-E threshold check uses this total, ensuring pre-Day-1 experience
+    counts toward maturity. Individual eras accessible via the
+    count_s1_runs_legacy() and count_s1_runs_new() helpers.
+    """
+    return count_s1_runs_legacy(sb) + count_s1_runs_new(sb)
 
 
 def count_s2_reports(sb: Client) -> int:
@@ -113,11 +148,14 @@ def run_upgrade_monitor() -> dict:
         log.error(f"Supabase init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
 
-    s1_runs    = count_s1_runs(sb)
-    s2_reports = count_s2_reports(sb)
-    s3_days    = count_s3_days(sb)
+    s1_runs_legacy = count_s1_runs_legacy(sb)
+    s1_runs_new    = count_s1_runs_new(sb)
+    s1_runs        = s1_runs_legacy + s1_runs_new
+    s2_reports     = count_s2_reports(sb)
+    s3_days        = count_s3_days(sb)
 
-    log.info(f"S1 runs: {s1_runs}/{THRESHOLD_S1_RUNS} | "
+    log.info(f"S1 runs: {s1_runs}/{THRESHOLD_S1_RUNS} "
+             f"(legacy: {s1_runs_legacy}, new: {s1_runs_new}) | "
              f"S2 reports: {s2_reports}/{THRESHOLD_S2_REPORTS} | "
              f"S3 days: {s3_days}/{THRESHOLD_S3_DAYS}")
 
@@ -126,11 +164,13 @@ def run_upgrade_monitor() -> dict:
     # Check S1 threshold
     if s1_runs >= THRESHOLD_S1_RUNS:
         alerts.append(
-            f"🔔 S1 UPGRADE TRIGGER: {s1_runs} complete runs reached.\n"
+            f"🔔 S1 UPGRADE TRIGGER: {s1_runs} complete runs reached "
+            f"(legacy: {s1_runs_legacy}, new: {s1_runs_new}).\n"
             f"Table 8 threshold: {THRESHOLD_S1_RUNS}.\n"
             f"Action: S2 corrections can now feed back to S1 source scoring (5-B)."
         )
-        log.info(f"S1 THRESHOLD CROSSED: {s1_runs} >= {THRESHOLD_S1_RUNS}")
+        log.info(f"S1 THRESHOLD CROSSED: {s1_runs} >= {THRESHOLD_S1_RUNS} "
+                 f"(legacy: {s1_runs_legacy}, new: {s1_runs_new})")
 
     # Check S2 threshold
     if s2_reports >= THRESHOLD_S2_REPORTS:
@@ -167,7 +207,9 @@ def run_upgrade_monitor() -> dict:
 
     return {
         "status":      "OK",
-        "s1_runs":     s1_runs,
+        "s1_runs":        s1_runs,
+        "s1_runs_legacy": s1_runs_legacy,
+        "s1_runs_new":    s1_runs_new,
         "s2_reports":  s2_reports,
         "s3_days":     s3_days,
         "thresholds":  {

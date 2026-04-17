@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv feedparser
+          pip install requests python-dotenv feedparser tzdata
 
       - name: Run GDELT enrichment
         env:

@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
-      - run: pip install supabase python-dotenv requests openpyxl
+      - run: pip install supabase python-dotenv requests openpyxl tzdata
       - name: Export refs (free tier)
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
