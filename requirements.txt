@@ -1,0 +1,15 @@
+# Project Lens — Python dependencies
+# Used by 3 workflows with cache: pip
+#   lens-sonnet.yml      (Opus 4.7 adaptive thinking report)
+#   lens-ref-free.yml    (free-tier refs export)
+#   lens-ref-sonnet.yml  (Sonnet refs export)
+#
+# Other workflows (lens-collect, lens-gdelt, lens-manage-analyze)
+# still use inline pip install — migrate in LENS-015.
+
+anthropic
+supabase
+python-dotenv
+requests
+openpyxl
+tzdata

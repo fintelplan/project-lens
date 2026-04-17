@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
-      - run: pip install supabase python-dotenv requests openpyxl tzdata
+      - run: pip install -r requirements.txt
       - name: Export refs (Sonnet)
         env:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
