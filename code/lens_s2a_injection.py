@@ -26,6 +26,9 @@ from supabase import create_client, Client
 
 from lens_sanitize import sanitize_text, add_runtime_flag
 
+# ── Quota guard (LR-074) ──────────────────────────────────────────────────────
+from lens_quota_guard import guard_check_with_fallback
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -387,6 +390,14 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
+
+    # ── Quota guard pre-flight (LR-074) ───────────────────────────────────────
+    quota_guard = guard_check_with_fallback(positions=["S2-A"], run_id=run_id, sb=sb)
+    skipped = [p for p, d in quota_guard.position_decisions.items() if d == "SKIP"]
+    if "S2-A" in skipped:
+        reason = quota_guard.group_results[0].reason if quota_guard.group_results else "quota SKIP"
+        log.warning(f"S2-A quota SKIP: {reason}")
+        return {"status": "QUOTA_SKIP", "reason": reason, "reports_analyzed": 0}
 
     reports = fetch_latest_reports(sb, cycle)
     if not reports:

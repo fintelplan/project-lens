@@ -18,6 +18,9 @@ from typing import Optional
 from groq import Groq
 from supabase import create_client, Client
 
+# ── Quota guard (LR-074) ──────────────────────────────────────────────────────
+from lens_quota_guard import guard_check_with_fallback
+
 
 def store_s3a_prediction(supabase, run_id: str, first_domino: str, confidence: float):
     """
@@ -178,6 +181,15 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     if already_ran_today(sb):
         log.info("S3-A already ran in last 20h — skipping (daily cadence)")
         return {"status": "SKIPPED", "run_id": run_id}
+
+    # ── Quota guard pre-flight (LR-074) ───────────────────────────────────────
+    quota_guard = guard_check_with_fallback(positions=["S3-A"], run_id=run_id, sb=sb)
+    skipped = [p for p, d in quota_guard.position_decisions.items() if d == "SKIP"]
+    if "S3-A" in skipped:
+        reason = quota_guard.group_results[0].reason if quota_guard.group_results else "quota SKIP"
+        log.warning(f"S3-A quota SKIP: {reason}")
+        return {"status": "QUOTA_SKIP", "reason": reason, "run_id": run_id}
+
     s1 = fetch_s1_reports(sb, LOOKBACK_DAYS)
     s2 = fetch_s2_reports(sb, LOOKBACK_DAYS)
     log.info(f"Fetched {len(s1)} S1 reports + {len(s2)} S2 reports")

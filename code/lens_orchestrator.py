@@ -32,7 +32,7 @@ LENS_ONLY         = os.getenv("LENS_ONLY","")
 QUALITY_FLOOR     = float(os.getenv("LENS_QUALITY_FLOOR","4.0"))
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-DAILY_BUDGET        = 4
+DAILY_BUDGET        = 2    # LENS-013 T-04 aligned with lens_manager.py (2x/day cron)
 GEMINI_RPD_LIMIT    = 20
 GEMINI_RPD_BUFFER   = 2
 CEREBRAS_SAFE_GAP   = 30

@@ -24,6 +24,9 @@ from typing import Optional
 from groq import Groq
 from supabase import create_client, Client
 
+# ── Quota guard (LR-074) ──────────────────────────────────────────────────────
+from lens_quota_guard import guard_check_with_fallback
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
@@ -540,6 +543,14 @@ def run_mission_analyst(
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
+
+    # ── Quota guard pre-flight (LR-074) ───────────────────────────────────────
+    quota_guard = guard_check_with_fallback(positions=["MA"], run_id=run_id, sb=sb)
+    skipped = [p for p, d in quota_guard.position_decisions.items() if d == "SKIP"]
+    if "MA" in skipped:
+        reason = quota_guard.group_results[0].reason if quota_guard.group_results else "quota SKIP"
+        log.warning(f"MA quota SKIP: {reason}")
+        return {"status": "QUOTA_SKIP", "reason": reason}
 
     s1_reports = fetch_s1_reports(sb, cycle)
     s2_reports = fetch_s2_reports(sb, run_id)
