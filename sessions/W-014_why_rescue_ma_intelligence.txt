@@ -1,0 +1,100 @@
+W-014 — WHY: Rescue cui_bono_synthesis and intelligence_gaps
+==============================================================
+
+DATE:    2026-04-17
+SESSION: LENS-013
+COMMIT:  6e711bf (same commit as cron change, T-03-B within)
+
+WHAT CHANGED
+------------
+Two lines added to save_macro_report() row dict in code/lens_mission_analyst.py:
+
+  "cui_bono_synthesis":   analysis.get("cui_bono_synthesis", {}),
+  "intelligence_gaps":    analysis.get("intelligence_gaps", ""),
+
+No schema change needed. Both columns already existed in lens_macro_reports
+since the table was created in LENS-010.
+
+WHY THIS MATTERED
+-----------------
+MA's SYSTEM_PROMPT (lens_mission_analyst.py lines 105-145) explicitly
+instructs the LLM to generate both fields in every run:
+
+  "cui_bono_synthesis": {
+    "primary_beneficiary": "<actor or category who benefits most from today's
+                             injection pattern>",
+    "convergence": "<CONFIRMED | PROBABLE | UNCLEAR - based on how many S2
+                     positions point to same actor>",
+    "evidence": "<which S2 positions support this attribution>",
+    "note": "<1 sentence - strategic intent behind today's information
+              environment>"
+  },
+  "intelligence_gaps": "<what we could not determine with current sources>"
+
+MA has been generating these fields every run since LENS-010 (~two weeks).
+The LLM produced the output. Python parsed the JSON successfully. The
+analysis dict contained the keys. But save_macro_report() only picked
+14 keys out of that dict and wrote them to Supabase. The other keys were
+garbage-collected.
+
+Lost data:
+- cui_bono_synthesis = convergence attribution. When five S2 positions
+  point at the same beneficiary, that's confirmed intelligence, not
+  inference. Project Lens's signature analytical output.
+- intelligence_gaps = epistemic humility. What current sources cannot
+  reveal. Keeps reports honest about their limits.
+
+Both fields NEVER reached Sonnet 4.6. Never reached Telegram briefs.
+Never reached any operator-facing output. Two weeks of invisible loss.
+
+HOW WE DISCOVERED IT
+--------------------
+During T-03 fix (MA INSERT failing on non-existent generated_at column),
+Claude initially did a single-column fix (LENS-012 pattern-match). Bro
+Alpha then invoked discipline: "why we can't predict?"
+
+Forced audit: full schema-vs-code diff. Query actual Supabase columns,
+grep full row dict from code, compare. Revealed four drifts (not one):
+
+1. s2_corrections_applied: code writes, table has (schema cache refresh
+   needed, not actually missing)
+2. cui_bono_synthesis: table has, code doesn't write (THIS)
+3. intelligence_gaps: table has, code doesn't write (THIS)
+4. actors_named + macro_summary: table has, code doesn't write (legacy,
+   left alone)
+
+T-03-B rescued items 2 and 3 in the same patch as the cron change.
+
+WHY IN SAME PATCH AS CRON CHANGE (NOT SEPARATE)
+------------------------------------------------
+The rescue is 2 lines. Artificially splitting into separate patch would be
+ceremony, not caution. Both changes land in the same 2x/day cron cycle
+next run, so testing them together is natural. Git history keeps the
+concerns separate via clear commit message sections (T-04 cron + T-03-B
+rescue).
+
+RULE BORN FROM THIS DISCOVERY
+-----------------------------
+LR-071(P) - Schema-Code Pre-Flight Before INSERT Patch
+  "When a Supabase INSERT fails with column-not-found error, BEFORE writing
+   the patch, perform full schema-vs-code audit: (1) query the actual
+   table schema, (2) grep the complete INSERT row dict, (3) diff both
+   sides, (4) fix ALL gaps in one atomic migration + code patch. Never
+   fix columns one at a time - masked errors behind the first column
+   will surface after the fix, forcing multiple round-trips."
+
+FIRST PRODUCTION VERIFICATION
+------------------------------
+Next 2x/day cron at 01:28 UTC will produce the first MA row with
+complete intelligence output. Check Supabase:
+
+  SELECT cui_bono_synthesis, intelligence_gaps, created_at
+  FROM lens_macro_reports
+  ORDER BY created_at DESC LIMIT 1;
+
+Expected: both fields populated with structured JSON / text content.
+
+AUTHOR
+------
+Team Geeks (Bro Alpha + Claude Opus 4.7)
+LENS-013 session, April 17, 2026

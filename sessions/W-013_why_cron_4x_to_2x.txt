@@ -1,0 +1,111 @@
+W-013 — WHY: Cron cadence reduced 4x/day to 2x/day
+====================================================
+
+DATE:    2026-04-17
+SESSION: LENS-013
+COMMIT:  6e711bf (tag: v2x-daily-rollout)
+
+WHAT CHANGED
+------------
+Four YAML workflows reduced from 4 cron lines to 2:
+  .github/workflows/lens-collect.yml
+  .github/workflows/lens-gdelt.yml
+  .github/workflows/lens-manage-analyze.yml
+  .github/workflows/lens-ref-free.yml
+
+Kept: 13:28 UTC (DC 9:28 AM) + 01:28 UTC (DC 9:28 PM)
+Dropped: 04:28 UTC + 17:28 UTC + 21:28 UTC (old 4x schedule)
+
+Companion changes in same commit:
+  code/lens_manager.py DAILY_BUDGET 4 -> 2
+  code/lens_s2b_coordination.py timedelta(hours=6) -> timedelta(hours=12)
+
+WHY WE DID IT
+-------------
+1. FREE TIER QUOTA MATH WAS FAILING UNDER 4x/DAY
+   Each cron consumes ~30K Groq llama-3.3-70b tokens (MA + S2-A + S2-E + S2-GAP + S3-A).
+   4 crons x 30K = 120K tokens/day.
+   Groq free tier cap: 100K TPD (verified via official docs).
+   Result: every day, crons #3 and #4 hit 429 partway through. Partial runs became the norm.
+
+2. PHILOSOPHY: COMPLETE CYCLES > PARTIAL CYCLES
+   DOC-006 Part 11: $0 free tier is a design constraint, not a limitation.
+   Given the constraint, the choice is between:
+     4 partial cycles per day (inconsistent, retry storms, MA save failures)
+     2 complete cycles per day (clean MA, clean S4-E, clean S3-A)
+   The canary needs to be HEARD, not just breathe more often.
+   2 complete pulses beat 4 partial pulses for intelligence quality.
+
+3. SYMMETRY GIVES BOTH SONNET REPORTS FRESH DATA
+   Previous schedule: Sonnet 2 at 03:28 UTC reading MA from 21:28 UTC (6h old).
+   New schedule:      Sonnet 2 at 03:28 UTC reading MA from 01:28 UTC (2h old).
+   Both Sonnet reports now get equally fresh synthesis input.
+
+4. BOTH CRONS DURING OPERATOR WAKING HOURS
+   Bro Alpha in Thailand (UTC+7). Under old 4x, cron at 04:28 UTC = 11:28 AM Thai (watchable)
+   but cron at 21:28 UTC = 04:28 AM Thai (asleep). Under new 2x, both crons are at
+   20:28 Thai (evening) and 08:28 Thai (morning). Both watchable in real time.
+
+WHY WE DID IT THIS WAY (NOT SOMETHING ELSE)
+-------------------------------------------
+ALTERNATIVES CONSIDERED AND REJECTED:
+
+  Option: Upgrade Groq Developer tier (~$3-5/month)
+  Rejected: Breaks $0 free-tier philosophy. Paid capacity for work the free tier
+            can actually do at 2x/day. LR-068 (evidence before upgrade) violated.
+
+  Option: Create multiple Groq accounts (original T-05 plan)
+  Rejected: Explicit Groq ToS violation. Multi-account to bypass quota = suspension risk.
+            Verified via web search — Groq says "Groq's terms of service prohibit
+            creating multiple accounts to circumvent rate limits."
+            Recorded as LR-072.
+
+  Option: Redistribute positions off llama-3.3-70b
+  Rejected for now: 2-3 hours of careful work, risk of quality degradation on
+                    S2-A/S2-E/S3-A if target model is weaker. May revisit in LENS-015+
+                    IF 2x/day alone doesn't solve it.
+
+  Option: Keep 4x/day, just accept partial runs
+  Rejected: Observed behavior already shows MA saved 0 rows in 72 hours. System
+            was producing less, not more, under 4x/day.
+
+COUNTER-CHECK (WHAT COULD STILL GO WRONG)
+-----------------------------------------
+1. S3-A 7-day window now has 14 data points instead of 28 at 2x/day.
+   Statistical power for pattern detection halved.
+   Mitigation: accepted as tradeoff; monitor quality for 2 weeks per LR-068.
+   If quality suffers, consider widening S3-A window to 14 days in LENS-015.
+
+2. Pattern 2 (manufactured consensus) operates on 3-6 hour windows.
+   Could a coordination burst happen entirely in the 12h gap and be missed?
+   Mitigation: S2-B lookback widened 6h -> 12h (same patch). Each cron sees
+   the full previous interval. No gaps.
+
+3. Cycle label mapping function may return unexpected labels at 01 UTC.
+   Mitigation: verified — lens_orchestrator.py _cycle() returns "night" for
+   01 UTC (not a crashable value). analyze_lens.py and analyze_lens_multi.py
+   have inconsistent mappings (pre-existing drift documented in LENS-013).
+   Queued for LENS-014 unification (P5).
+
+ROLLBACK PLAN
+-------------
+git tag v2x-daily-rollout exists at commit 6e711bf (T-04 pre-rescue) and can
+be used as rollback point. To revert:
+  git checkout v2x-daily-rollout^ (the commit before)
+  git reset --hard
+  git push --force
+
+Or selective: re-add the 2 removed cron lines to each yml file.
+
+RULE BORN FROM THIS
+-------------------
+LR-073(A) — Lookback-Frequency Coupling
+  "When cron frequency changes, audit every time-window lookback in downstream
+   reading code for density preservation. A lookback of N hours paired with
+   a frequency of every M hours requires N >= M to avoid silent coverage gaps.
+   Widen lookbacks BEFORE deploying the frequency change, in the same patch."
+
+AUTHOR
+------
+Team Geeks (Bro Alpha + Claude Opus 4.7)
+LENS-013 session, April 17, 2026

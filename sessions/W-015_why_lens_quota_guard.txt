@@ -1,0 +1,150 @@
+W-015 — WHY: lens_quota_guard.py observer mode MVP
+====================================================
+
+DATE:    2026-04-17
+SESSION: LENS-013
+COMMIT:  9e17301 (tag: v2x-daily-quota-guard-mvp)
+
+WHAT CHANGED
+------------
+New module: code/lens_quota_guard.py (~500 lines, 6 failure layers)
+New test suite: tests/test_lens_quota_guard.py (27 passing tests)
+New Supabase table: lens_quota_ledger (16 columns, RLS enabled)
+New SQL DDL: sql/create_lens_quota_ledger.sql (idempotent)
+New docs: code/README_lens_quota_guard.md (deployment + rollback)
+
+Not yet wired into lens_orchestrator.py. Deliberate. LENS-014 P3 decision.
+
+WHY WE BUILT THIS
+-----------------
+Run #29 on April 17 revealed a critical failure class: positions burning
+retry storms against an already-exhausted quota, leaving downstream
+positions (MA, S3-A) with no headroom. S2-A made 4 retries on 429 errors
+before giving up. Each retry consumed ~1.2K tokens. By the time S2-GAP
+and MA tried to fire, Groq TPD was at 97K/100K — no meaningful headroom.
+
+Without a pre-flight check, the pipeline cannot distinguish between
+"quota healthy" and "quota exhausted, retrying would be pointless."
+Retry logic is local to each position, so no coordination across
+positions. Result: systematic partial failure under quota pressure.
+
+Cron change T-04 (4x -> 2x) reduced daily Groq consumption from ~120K
+to ~60K, providing headroom in normal operation. But it didn't solve
+the fundamental coordination problem: positions still have no way to
+know quota state before firing.
+
+lens_quota_guard.py solves this by providing a pre-flight check:
+  - Queries lens_quota_ledger for today's accumulated consumption
+  - Compares to known provider limits
+  - Returns PROCEED / PROCEED_TIGHT / DEGRADE / SKIP decision
+  - Logs every decision to the ledger
+
+Imported pattern from GNI Autonomous ai_engine/quota_guard.py (GNI-R-112).
+
+WHY LEDGER-FIRST (NOT PROVIDER-API POLLING)
+-------------------------------------------
+Original design called for provider API polling to read rate-limit
+headers. Rejected:
+
+  1. Every provider has different header schemes. Groq uses x-ratelimit-*,
+     Gemini uses different format, Cerebras/Mistral/SambaNova/Cohere each
+     different again. Complex integration surface.
+  2. Polling itself consumes tokens (even 1-token probes cost 1 token).
+     Defeats the purpose of saving tokens.
+  3. Polling doesn't work offline or during provider outages - guard
+     itself becomes a failure point.
+  4. Our own ledger is more accurate than polled headers because we
+     measure our consumption, not foreign reports.
+
+Ledger-first: each position's estimated consumption is logged. Guard sums
+today's logged consumption and compares to known limits. Zero cost, works
+offline, accurate.
+
+WHY OBSERVER MODE FIRST (NOT ACTIVE BLOCKING)
+---------------------------------------------
+LR-068 discipline: evidence before upgrade. Before the guard starts
+blocking positions, we need data on what real quota consumption looks
+like under the new 2x/day cadence.
+
+In observer mode:
+  - All decisions are LOGGED
+  - Only SKIP actually blocks positions (hard safety net)
+  - PROCEED_TIGHT and DEGRADE become PROCEED (advisory only)
+  - After 2-3 cron cycles, we'll have real data to tune thresholds
+
+Active blocking with wrong thresholds = blocking legitimate crons =
+losing intelligence. Observer mode first, active second.
+
+WHY 33-TEST ERROR-0 MATRIX
+--------------------------
+Bro Alpha's request: build error-0 quality including worst-case testing.
+
+Six failure layers enumerated:
+  Layer 1 — Connectivity       (T01-T03): unreachable, timeout, 5xx
+  Layer 2 — Authentication     (T04-T06): missing key, 401, 403
+  Layer 3 — Response integrity (T07-T11): non-JSON, schema drift, etc
+  Layer 4 — Quota data truth   (T12-T15): clock skew, over-limit reports
+  Layer 5 — Ledger persistence (T16-T19): Supabase fails, RLS, cache
+  Layer 6 — Decision correctness (T20-T30+): all threshold branches
+
+27 tests all PASS. 6 are skipped in MVP (network probe layer deferred
+because MVP is ledger-only).
+
+Design principles crystallized from the matrix:
+  1. FAIL-SAFE not fail-secure. Guard crashes -> cron PROCEEDS. Blocking
+     legitimate work because of guard bugs is worse than degraded
+     telemetry.
+  2. Fire-and-forget ledger. Cron primary job is intelligence. If ledger
+     write fails, cron still PROCEEDs.
+  3. Conservative estimation. When quota data ambiguous, assume WORSE
+     consumption.
+  4. No memory state between crons. GitHub Actions = fresh process each
+     time. Supabase is the only durable state.
+
+PRODUCTION VERIFICATION
+-----------------------
+First real dry-run at 19:16 UTC April 17:
+  Supabase client init: OK
+  Ledger read (first time, empty):    HTTP 200 OK, returned 0 rows
+  Decision: PROCEED @ 69% headroom
+  Ledger write: HTTP 201 Created, 1 row inserted
+  Verification query: confirmed row with all expected fields
+
+First ledger row captured:
+  2026-04-17T12:16:59 | groq/llama-3.3-70b-versatile | PROCEED |
+  headroom=69.0% | est_use=31000
+
+RULES BORN FROM THIS
+--------------------
+LR-074(A) - Pre-Flight Quota Guard Pattern
+  "Every pipeline that calls paid/quota-limited providers must have an
+   active pre-flight quota check. The guard: (1) queries remaining quota
+   before expensive calls; (2) estimates current run consumption;
+   (3) decides PROCEED / DEGRADE / SKIP based on headroom; (4) logs all
+   decisions to a ledger table; (5) sends operator alerts at threshold
+   crossings. Imported from GNI-R-112."
+
+LR-075(A) - Sacred Cron Inviolability
+  "The scheduled production crons are the irreducible minimum of the
+   system's intelligence production. They are SACRED - always permitted
+   regardless of quota state. Every other pipeline must defer to them."
+
+LR-076(P) - Cross-Project Learning Discipline
+  "When facing an architectural problem, check if sister projects have
+   solved it already. GNI Autonomous's scar tissue is available for
+   import into Project Lens. Credit the origin (GNI-R-NNN)."
+
+WHAT LENS-014 WILL DO
+---------------------
+After observing 2-3 cron cycles of real ledger data:
+  1. Decision: wire guard_check_with_fallback() into lens_orchestrator.py
+     pre-flight, before firing S2/S3/MA
+  2. Tune thresholds if needed (currently 40/20/0)
+  3. Add Telegram alerts at threshold crossings (currently silent)
+  4. Possibly upgrade to active DEGRADE enforcement (not just SKIP)
+
+AUTHOR
+------
+Team Geeks (Bro Alpha + Claude Opus 4.7)
+LENS-013 session, April 17, 2026
+Observer mode MVP committed at 9e17301 with tag v2x-daily-quota-guard-mvp.
