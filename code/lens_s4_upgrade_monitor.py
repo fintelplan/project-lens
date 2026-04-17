@@ -40,9 +40,15 @@ def get_supabase() -> Client:
 def count_s1_runs(sb: Client) -> int:
     """Count distinct S1 run_ids in lens_reports."""
     try:
-        r = sb.table("lens_reports").select("id").execute()
-        run_ids = set(row["id"] for row in (r.data or []))
-        return len(run_ids)
+        # Count production cron runs only. One row per cron (domain_focus='ALL').
+        # Allowlist: 4 architectural production cycles. Excludes 'manual' dev/test
+        # artifacts (81% of historical rows) and any future non-production cycles.
+        PRODUCTION_CYCLES = ["morning", "afternoon", "evening", "midnight"]
+        r = sb.table("lens_reports") \
+            .select("id", count="exact") \
+            .in_("cycle", PRODUCTION_CYCLES) \
+            .execute()
+        return r.count or len(r.data or [])
     except Exception as e:
         log.warning(f"S1 count failed: {e}")
         return 0

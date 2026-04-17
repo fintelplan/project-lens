@@ -70,3 +70,10 @@ CREATE POLICY "quota_ledger_public_read"
 -- Expected: 14 columns including id, run_id, cron_time_utc, provider, model,
 -- quota_type, limit_value, used_value, remaining, estimated_use, headroom_pct,
 -- decision, reason, error_class, positions, created_at.
+
+-- ── PostgREST schema cache reload (LR-074 family) ───────────────────────────
+-- Force PostgREST to refresh its schema cache immediately after DDL.
+-- Without this, new columns/tables return "does not exist" errors for 30s-5min
+-- while PostgREST's cache expires. Discipline pattern until LENS-015 adopts
+-- Supabase CLI migrations (which handle this automatically).
+NOTIFY pgrst, 'reload schema';
