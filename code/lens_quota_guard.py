@@ -475,6 +475,176 @@ def guard_check(
     return results
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# I1 — Transition alert system (LR-074 + LR-068: evidence-based alerting)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_previous_decision(sb, provider: str, model: str) -> Optional[str]:
+    """
+    Fetch the 2nd-most-recent ledger row's decision for this provider/model.
+    THIS cron just wrote the most-recent row, so the 2nd-most-recent is
+    the previous state we want to compare against.
+
+    Returns decision string ('PROCEED' | 'DEGRADE' | etc.) or None if:
+      - Supabase unreachable
+      - No prior ledger rows for this provider/model
+      - Only one row exists (first-ever run — no transition)
+    """
+    if sb is None:
+        return None
+    try:
+        r = (sb.table("lens_quota_ledger")
+             .select("decision, cron_time_utc")
+             .eq("provider", provider)
+             .eq("model", model)
+             .order("cron_time_utc", desc=True)
+             .limit(2)
+             .execute())
+        rows = r.data or []
+        if len(rows) < 2:
+            return None
+        return rows[1].get("decision")
+    except Exception as e:
+        log.warning(f"get_previous_decision failed for {provider}/{model}: {e}")
+        return None
+
+
+# Transition matrix — which transitions warrant an alert
+# Returns (should_alert, alert_type) where alert_type is used for emoji/tone
+ALERT_TRANSITIONS: dict[tuple[str, str], str] = {
+    # Degradation paths
+    ("PROCEED",        "DEGRADE"):       "WARNING",
+    ("PROCEED_TIGHT",  "DEGRADE"):       "WARNING",
+    ("PROCEED",        "SKIP"):          "ESCALATION",
+    ("PROCEED_TIGHT",  "SKIP"):          "ESCALATION",
+    ("DEGRADE",        "SKIP"):          "ESCALATION",
+    # Recovery paths
+    ("SKIP",           "DEGRADE"):       "PARTIAL_RECOVERY",
+    ("SKIP",           "PROCEED_TIGHT"): "RECOVERY",
+    ("SKIP",           "PROCEED"):       "RECOVERY",
+    ("DEGRADE",        "PROCEED_TIGHT"): "RECOVERY",
+    ("DEGRADE",        "PROCEED"):       "RECOVERY",
+    # Override notice
+    ("PROCEED",        "FORCE"):         "OVERRIDE",
+    ("PROCEED_TIGHT",  "FORCE"):         "OVERRIDE",
+    ("DEGRADE",        "FORCE"):         "OVERRIDE",
+    ("SKIP",           "FORCE"):         "OVERRIDE",
+}
+
+
+def should_alert(previous_decision: Optional[str],
+                 current_decision: str) -> tuple[bool, Optional[str]]:
+    """
+    Pure function: decide if this transition warrants a Telegram alert.
+
+    Returns (should_send, alert_type).
+      should_send = True means send an alert
+      alert_type  = WARNING | ESCALATION | RECOVERY | PARTIAL_RECOVERY | OVERRIDE
+
+    No alert fires when:
+      - previous_decision is None (first-ever row, no prior state)
+      - current_decision == previous_decision (no transition)
+      - Transition is to/from TEST (test mode — not real state)
+      - Transition not in ALERT_TRANSITIONS (e.g., PROCEED -> PROCEED_TIGHT
+        which is within normal range and not noteworthy)
+    """
+    if previous_decision is None:
+        return False, None
+    if current_decision == previous_decision:
+        return False, None
+    if previous_decision == "TEST" or current_decision == "TEST":
+        return False, None
+
+    key = (previous_decision, current_decision)
+    if key in ALERT_TRANSITIONS:
+        return True, ALERT_TRANSITIONS[key]
+    return False, None
+
+
+def format_transition_alert(result, previous_decision: str,
+                            alert_type: str) -> str:
+    """
+    Build an HTML-formatted Telegram message describing a quota transition.
+    Uses HTML parse_mode (matches lens_telegram.send_message default).
+    """
+    emoji_map = {
+        "WARNING":          "⚠️",
+        "ESCALATION":       "🚨",
+        "RECOVERY":         "✅",
+        "PARTIAL_RECOVERY": "🟡",
+        "OVERRIDE":         "⚡",
+    }
+    emoji = emoji_map.get(alert_type, "ℹ️")
+
+    headroom_str = (f"{result.headroom_pct:.1f}%"
+                    if result.headroom_pct is not None else "unknown")
+    used_str = (f"{result.used_value:,}/{result.limit_value:,}"
+                if result.used_value is not None and result.limit_value is not None
+                else "unknown")
+    positions_str = ", ".join(result.positions) if result.positions else "—"
+
+    lines = [
+        f"{emoji} <b>QUOTA GUARD</b>: {alert_type}",
+        "",
+        f"<b>{result.provider}</b>/{result.model} ({result.quota_type})",
+        f"State: <code>{previous_decision}</code> → <code>{result.decision}</code>",
+        f"Headroom: {headroom_str}",
+        f"Used: {used_str}",
+        f"Est. next run: {result.estimated_use:,}",
+        f"Positions: {positions_str}",
+    ]
+    if result.reason:
+        lines.append(f"Reason: {result.reason}")
+    return "\n".join(lines)
+
+
+def send_transition_alerts(sb, results: list) -> int:
+    """
+    For each QuotaResult in results: check transition from ledger, send alert
+    if warranted. Returns count of alerts actually sent.
+
+    Fail-safe: all exceptions caught + logged. Never raises.
+    Crash-fallback results (provider='unknown') are skipped.
+    """
+    if sb is None or not results:
+        return 0
+
+    sent = 0
+    try:
+        from lens_telegram import send_message as _tg_send
+    except ImportError:
+        log.warning("lens_telegram import failed — transition alerts disabled")
+        return 0
+
+    for result in results:
+        try:
+            # Skip crash-fallback results
+            if result.provider == "unknown" or result.model == "unknown":
+                continue
+
+            # Skip if alerts disabled by env var (e.g. tests, force override)
+            if os.environ.get("LENS_GUARD_TEST", "0") == "1":
+                continue
+
+            prev = get_previous_decision(sb, result.provider, result.model)
+            fire, alert_type = should_alert(prev, result.decision)
+            if not fire:
+                continue
+
+            message = format_transition_alert(result, prev, alert_type)
+            if _tg_send(message, parse_mode="HTML"):
+                sent += 1
+                log.info(f"Transition alert sent: {result.provider}/{result.model} "
+                         f"{prev} -> {result.decision} ({alert_type})")
+            else:
+                log.warning(f"Transition alert send failed: {result.provider}/{result.model}")
+        except Exception as e:
+            log.warning(f"Alert loop error for result {result}: {e}")
+            continue
+
+    return sent
+
+
 def guard_check_with_fallback(
     positions: list[str],
     run_id: Optional[str] = None,
@@ -488,10 +658,19 @@ def guard_check_with_fallback(
 
     Handles T27: guard crashes with unexpected exception.
     Handles T28: guard takes too long (future: add timeout wrapper).
+
+    Also orchestrates transition alerts via send_transition_alerts().
+    Alert failures are swallowed — never affect guard return value.
     """
     try:
-        return guard_check(positions=positions, run_id=run_id, sb=sb,
-                           record_ledger=record_ledger)
+        results = guard_check(positions=positions, run_id=run_id, sb=sb,
+                              record_ledger=record_ledger)
+        # Fire transition alerts after successful guard + ledger write
+        try:
+            send_transition_alerts(sb, results)
+        except Exception as alert_err:
+            log.warning(f"send_transition_alerts failed (non-fatal): {alert_err}")
+        return results
     except Exception as e:
         # Total guard failure. Log everywhere. Return safe default.
         tb = traceback.format_exc()
