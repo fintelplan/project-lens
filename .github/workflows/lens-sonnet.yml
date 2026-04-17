@@ -2,8 +2,7 @@ name: Lens Sonnet Report
 
 on:
   schedule:
-    - cron: '28 15 * * *'   # 11:28 AM Washington DC (EDT) = 10:28 PM Thailand
-    - cron: '28  3 * * *'   # 11:28 PM Washington DC (EDT) = 10:28 AM Thailand
+    - cron: '30 6 * * *'    # 06:30 UTC = 13:00 Myanmar Time (1x/day Opus 4.7)
   workflow_dispatch:
 
 jobs:

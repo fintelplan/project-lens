@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [SONNET-RPT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("SONNET_RPT")
 
-MODEL      = "claude-sonnet-4-6"
+MODEL      = "claude-opus-4-7"
 MAX_TOKENS = 8000
 
 
