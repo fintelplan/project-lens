@@ -1,8 +1,8 @@
 name: Lens Sonnet Report
 
 on:
-  schedule:
-    - cron: '30 6 * * *'    # 06:30 UTC = 13:00 Myanmar Time (1x/day Opus 4.7)
+  # Scheduled cron DISABLED pending new forensic report design (LENS-015).
+  # Manual trigger still available via workflow_dispatch.
   workflow_dispatch:
 
 jobs:
