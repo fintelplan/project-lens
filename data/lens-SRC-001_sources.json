@@ -862,7 +862,7 @@
     {
       "id": "SRC-066",
       "name": "Dawn (Pakistan)",
-      "url": "https://www.dawn.com/feeds/latest-news",
+      "rss_url": "https://www.dawn.com/feeds/latest-news",
       "feed_type": "rss",
       "domain": "POWER",
       "tier": "TIER_B",
@@ -872,7 +872,7 @@
     {
       "id": "SRC-067",
       "name": "Asia Times",
-      "url": "https://asiatimes.com/feed/",
+      "rss_url": "https://asiatimes.com/feed/",
       "feed_type": "rss",
       "domain": "POWER",
       "tier": "TIER_B",
@@ -882,7 +882,7 @@
     {
       "id": "SRC-068",
       "name": "Middle East Eye",
-      "url": "https://www.middleeasteye.net/rss",
+      "rss_url": "https://www.middleeasteye.net/rss",
       "feed_type": "rss",
       "domain": "POWER",
       "tier": "TIER_B",
@@ -892,7 +892,7 @@
     {
       "id": "SRC-069",
       "name": "The Hindu",
-      "url": "https://www.thehindu.com/news/feeder/default.rss",
+      "rss_url": "https://www.thehindu.com/news/feeder/default.rss",
       "feed_type": "rss",
       "domain": "POWER",
       "tier": "TIER_B",
@@ -902,7 +902,7 @@
     {
       "id": "SRC-070",
       "name": "Al Jazeera English",
-      "url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "rss_url": "https://www.aljazeera.com/xml/rss/all.xml",
       "feed_type": "rss",
       "domain": "POWER",
       "tier": "TIER_B",
@@ -912,7 +912,7 @@
     {
       "id": "SRC-071",
       "name": "CGTN (China Global Television Network)",
-      "url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
+      "rss_url": "https://www.cgtn.com/subscribe/rss/section/world.xml",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
@@ -922,7 +922,7 @@
     {
       "id": "SRC-072",
       "name": "Global Times",
-      "url": "https://www.globaltimes.cn/rss/outbrain.xml",
+      "rss_url": "https://www.globaltimes.cn/rss/outbrain.xml",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
@@ -932,7 +932,7 @@
     {
       "id": "SRC-073",
       "name": "Press TV",
-      "url": "https://www.presstv.ir/rss.xml",
+      "rss_url": "https://www.presstv.ir/rss.xml",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
@@ -942,7 +942,7 @@
     {
       "id": "SRC-074",
       "name": "RT (Russia Today) English",
-      "url": "https://www.rt.com/rss/",
+      "rss_url": "https://www.rt.com/rss/",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
@@ -952,7 +952,7 @@
     {
       "id": "SRC-075",
       "name": "Al-Mayadeen",
-      "url": "https://english.almayadeen.net/rss.xml",
+      "rss_url": "https://english.almayadeen.net/rss.xml",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
@@ -962,7 +962,7 @@
     {
       "id": "SRC-076",
       "name": "TeleSUR English",
-      "url": "https://telesurenglish.net/rss/",
+      "rss_url": "https://telesurenglish.net/rss/",
       "feed_type": "rss",
       "domain": "NARRATIVE",
       "tier": "TIER_A",
