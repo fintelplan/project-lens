@@ -1200,7 +1200,7 @@ async def run_lens(lens, system_prompt, articles_full: list):
 
 
 def save_lens_report(supabase, lens, summary, food_for_thought,
-                     article_ids, domain_counts, cycle):
+                     article_ids, domain_counts, cycle, quality_total):
     record = {
         "cycle":            cycle,
         "domain_focus":     "ALL",
@@ -1214,6 +1214,7 @@ def save_lens_report(supabase, lens, summary, food_for_thought,
         "system":            "S1",
         "protected":         False,
         "injection_assumed": True,
+        "quality_score":     quality_total,
     }
     response  = supabase.table("lens_reports").insert(record).execute()
     report_id = response.data[0]["id"] if response.data else "unknown"
@@ -1294,7 +1295,7 @@ async def main():
         quality = score_lens_quality(analysis, lens["lens_name"])
         save_lens_report(
             supabase, lens, summary, fft,
-            article_ids, counts, cycle
+            article_ids, counts, cycle, quality["total"]
         )
         print(f"  Quality score: {quality['total']}/10 "
               f"(spec={quality['details'].get('specificity',0):.1f} "
