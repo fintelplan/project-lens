@@ -554,9 +554,9 @@ def run_mission_analyst(
 
     # ── Quota guard pre-flight (LR-074) ───────────────────────────────────────
     quota_guard = guard_check_with_fallback(positions=["MA"], run_id=run_id, sb=sb)
-    skipped = [p for p, d in quota_guard.position_decisions.items() if d == "SKIP"]
-    if "MA" in skipped:
-        reason = quota_guard.group_results[0].reason if quota_guard.group_results else "quota SKIP"
+    skip_result = next((r for r in quota_guard if r.decision == "SKIP" and "MA" in r.positions), None)
+    if skip_result:
+        reason = skip_result.reason
         log.warning(f"MA quota SKIP: {reason}")
         return {"status": "QUOTA_SKIP", "reason": reason}
 
