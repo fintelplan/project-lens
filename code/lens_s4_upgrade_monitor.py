@@ -135,6 +135,61 @@ def send_telegram(message: str) -> bool:
         return False
 
 
+def fetch_alert_state(sb: Client, threshold_id: str):
+    """Fetch crossing-edge state row for a given threshold_id.
+    Returns the row dict if a state row exists, else None.
+    Returns None on read failure as graceful fallback (LR-080) — None means
+    "treat as fresh" and the original fire-every-run behaviour is preserved
+    rather than silent-failing into an unknown alert state.
+    """
+    try:
+        r = (
+            sb.table("lens_s4_alert_state")
+              .select("threshold_id,last_count,threshold_value,last_alerted_at,updated_at")
+              .eq("threshold_id", threshold_id)
+              .limit(1)
+              .execute()
+        )
+        rows = r.data or []
+        return rows[0] if rows else None
+    except Exception as e:
+        log.warning(f"Alert state fetch failed for {threshold_id}: {e} - degrading to fire-every-run")
+        return None
+
+
+def upsert_alert_state(sb: Client, threshold_id: str, current: int,
+                       threshold_value: int, alerted: bool,
+                       prev_alerted_at) -> bool:
+    """Upsert one row in lens_s4_alert_state.
+    last_alerted_at: bumped to now() iff alerted=True this run; else preserved
+    from prev_alerted_at (which may be None on first insert — column stays NULL).
+    Returns True on success, False on logged failure (non-fatal — alerting itself
+    still works via the should_alert path; only the dedupe state is at risk).
+    """
+    try:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        record = {
+            "threshold_id": threshold_id,
+            "last_count": current,
+            "threshold_value": threshold_value,
+            "updated_at": now_iso,
+        }
+        if alerted:
+            record["last_alerted_at"] = now_iso
+        elif prev_alerted_at is not None:
+            record["last_alerted_at"] = prev_alerted_at
+        # else: omit -> DB column stays NULL on first insert
+        (
+            sb.table("lens_s4_alert_state")
+              .upsert(record, on_conflict="threshold_id")
+              .execute()
+        )
+        return True
+    except Exception as e:
+        log.warning(f"Alert state upsert failed for {threshold_id}: {e}")
+        return False
+
+
 def run_upgrade_monitor() -> dict:
     """
     S4-E: Check all Table 8 upgrade thresholds.
@@ -161,29 +216,70 @@ def run_upgrade_monitor() -> dict:
 
     alerts = []
 
-    # Check S1 threshold
-    if s1_runs >= THRESHOLD_S1_RUNS:
+    # Check S1 threshold (crossing-edge gate - LENS-017 I7)
+    s1_state = fetch_alert_state(sb, "S1_RUNS")
+    s1_should_alert = (
+        s1_runs >= THRESHOLD_S1_RUNS
+        and (
+            s1_state is None
+            or s1_state["threshold_value"] != THRESHOLD_S1_RUNS
+            or s1_state["last_count"] < THRESHOLD_S1_RUNS
+        )
+    )
+    if s1_should_alert:
         alerts.append(
             f"🔔 S1 UPGRADE TRIGGER: {s1_runs} complete runs reached "
             f"(legacy: {s1_runs_legacy}, new: {s1_runs_new}).\n"
             f"Table 8 threshold: {THRESHOLD_S1_RUNS}.\n"
             f"Action: S2 corrections can now feed back to S1 source scoring (5-B)."
         )
-        log.info(f"S1 THRESHOLD CROSSED: {s1_runs} >= {THRESHOLD_S1_RUNS} "
+        log.info(f"S1 THRESHOLD CROSSED (edge): {s1_runs} >= {THRESHOLD_S1_RUNS} "
                  f"(legacy: {s1_runs_legacy}, new: {s1_runs_new})")
+    elif s1_runs >= THRESHOLD_S1_RUNS:
+        log.info(f"S1 above threshold ({s1_runs} >= {THRESHOLD_S1_RUNS}) - alert suppressed (already fired)")
+    upsert_alert_state(
+        sb, "S1_RUNS", s1_runs, THRESHOLD_S1_RUNS,
+        alerted=s1_should_alert,
+        prev_alerted_at=(s1_state.get("last_alerted_at") if s1_state else None),
+    )
 
-    # Check S2 threshold
-    if s2_reports >= THRESHOLD_S2_REPORTS:
+    # Check S2 threshold (crossing-edge gate - LENS-017 I7)
+    s2_state = fetch_alert_state(sb, "S2_REPORTS")
+    s2_should_alert = (
+        s2_reports >= THRESHOLD_S2_REPORTS
+        and (
+            s2_state is None
+            or s2_state["threshold_value"] != THRESHOLD_S2_REPORTS
+            or s2_state["last_count"] < THRESHOLD_S2_REPORTS
+        )
+    )
+    if s2_should_alert:
         alerts.append(
             f"🔔 S2 UPGRADE TRIGGER: {s2_reports} injection reports reached.\n"
             f"Table 8 threshold: {THRESHOLD_S2_REPORTS}.\n"
             f"Action: S3 patterns can now feed back to S2 immune rules (5-A).\n"
             f"Action: Phase 2 RL — simple EMA source weight adjustment ready."
         )
-        log.info(f"S2 THRESHOLD CROSSED: {s2_reports} >= {THRESHOLD_S2_REPORTS}")
+        log.info(f"S2 THRESHOLD CROSSED (edge): {s2_reports} >= {THRESHOLD_S2_REPORTS}")
+    elif s2_reports >= THRESHOLD_S2_REPORTS:
+        log.info(f"S2 above threshold ({s2_reports} >= {THRESHOLD_S2_REPORTS}) - alert suppressed (already fired)")
+    upsert_alert_state(
+        sb, "S2_REPORTS", s2_reports, THRESHOLD_S2_REPORTS,
+        alerted=s2_should_alert,
+        prev_alerted_at=(s2_state.get("last_alerted_at") if s2_state else None),
+    )
 
-    # Check S3 threshold
-    if s3_days >= THRESHOLD_S3_DAYS:
+    # Check S3 threshold (crossing-edge gate - LENS-017 I7)
+    s3_state = fetch_alert_state(sb, "S3_DAYS")
+    s3_should_alert = (
+        s3_days >= THRESHOLD_S3_DAYS
+        and (
+            s3_state is None
+            or s3_state["threshold_value"] != THRESHOLD_S3_DAYS
+            or s3_state["last_count"] < THRESHOLD_S3_DAYS
+        )
+    )
+    if s3_should_alert:
         alerts.append(
             f"🔔 S3 UPGRADE TRIGGER: {s3_days} days of continuous operation.\n"
             f"Table 8 threshold: {THRESHOLD_S3_DAYS}.\n"
@@ -191,7 +287,14 @@ def run_upgrade_monitor() -> dict:
             f"Action: 180-day S3-D window can now activate.\n"
             f"Action: Phase 3 DL classifier on prediction-outcome pairs ready."
         )
-        log.info(f"S3 THRESHOLD CROSSED: {s3_days} >= {THRESHOLD_S3_DAYS}")
+        log.info(f"S3 THRESHOLD CROSSED (edge): {s3_days} >= {THRESHOLD_S3_DAYS}")
+    elif s3_days >= THRESHOLD_S3_DAYS:
+        log.info(f"S3 above threshold ({s3_days} >= {THRESHOLD_S3_DAYS}) - alert suppressed (already fired)")
+    upsert_alert_state(
+        sb, "S3_DAYS", s3_days, THRESHOLD_S3_DAYS,
+        alerted=s3_should_alert,
+        prev_alerted_at=(s3_state.get("last_alerted_at") if s3_state else None),
+    )
 
     # Progress report (always — so Bro Alpha can track progress)
     s1_pct = min(100, int(s1_runs / THRESHOLD_S1_RUNS * 100))
