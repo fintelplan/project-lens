@@ -17,6 +17,7 @@ import requests
 import feedparser
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lens_injection_detector import scan_article
+from lens_entity_extract import extract_entities_for_article  # LENS-018 T3
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
@@ -333,6 +334,12 @@ def main():
             if article_id:
                 total_saved += 1
                 save_indicator_matches(article_id, matches)
+                # LENS-018 T3: extract entities (fail-safe, never blocks)
+                try:
+                    extract_entities_for_article(article, article_id)
+                except Exception as _entity_exc:
+                    # Belt-and-suspenders — module is already internally fail-safe
+                    print(f'  WARNING: entity extraction failed: {str(_entity_exc)[:80]}')
 
     # Save source health to Supabase (LENS-006)
     run_at = datetime.now(timezone.utc).isoformat()
