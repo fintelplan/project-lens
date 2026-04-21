@@ -106,7 +106,7 @@ def send_s1_intelligence(run_id=None):
             cutoff = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
             arts = sb.table("lens_raw_articles") \
                 .select("title,url,source_name") \
-                .gte("created_at", cutoff).order("created_at", desc=True).limit(20).execute().data or []
+                .gte("collected_at", cutoff).order("collected_at", desc=True).limit(20).execute().data or []
             if arts:
                 lines.append("<b>What the canary read:</b>")
                 seen_urls, seen_src, count = set(), set(), 0

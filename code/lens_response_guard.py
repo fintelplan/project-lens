@@ -106,31 +106,57 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     },
 
     # S2-E Legitimacy Filter
+    # LENS-017 C/I1: realigned with actual S2-E LLM output shape (was generic
+    # template using 'findings'; real output uses 'actors_assessed').
     "S2-E": {
         "required_keys": [
-            "analyst", "findings",
+            "analyst", "actors_assessed",
         ],
         "optional_keys": [
-            "lens_id", "actors_flagged", "tier_distribution",
+            "lens_id", "lens_name",
+            "low_legitimacy_actors_pushing_narrative",
+            "legitimacy_gap_signal",
             "analyst_note", "correction_to_ma",
         ],
         "typed_fields": {
             "analyst": str,
-            "findings": list,
+            "actors_assessed": list,
+            "low_legitimacy_actors_pushing_narrative": list,
+            "legitimacy_gap_signal": str,
         },
     },
 
     # S2-GAP Gap Analyst
+    # LENS-017 C/I2: realigned with actual S2-GAP LLM output shape.
+    # S2-GAP doesn't output 'analyst' (that's set at save-time in Python) and
+    # doesn't output 'findings' (its schema is gap-specific: severity + key
+    # finding + per-category lists).
     "S2-GAP": {
         "required_keys": [
-            "analyst", "findings",
+            "gap_severity", "key_gap_finding",
         ],
         "optional_keys": [
-            "gaps_detected", "analyst_note", "correction_to_ma",
+            "missed_by_s1", "over_amplified_by_s1", "adversary_only",
+            "silence_analysis", "quality_score",
+            "analyst_note", "correction_to_ma",
         ],
         "typed_fields": {
-            "analyst": str,
-            "findings": list,
+            "gap_severity": str,
+            "key_gap_finding": str,
+            "missed_by_s1": list,
+            "over_amplified_by_s1": list,
+            "adversary_only": list,
+            "silence_analysis": str,
+            "quality_score": (int, float),
+        },
+        "bounded_fields": {
+            "quality_score": (0.0, 1.0),
+        },
+        "enum_fields": {
+            "gap_severity": ["CRITICAL", "HIGH", "MODERATE", "LOW", "UNKNOWN"],
+        },
+        "min_lengths": {
+            "key_gap_finding": 10,
         },
     },
 
