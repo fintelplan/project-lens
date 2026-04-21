@@ -161,23 +161,41 @@ def fetch_system3_latest(sb) -> dict:
 
 
 def fetch_reference_pool(sb) -> list:
-    """All article references collected today.
+    """All article references within a 36-hour rolling window.
 
-    For Path B citations: pass ref_id + title + source_name + domain to the LLM
-    so it can cite REF IDs by semantic relevance. The validator (later) strips
-    any cited REF IDs that aren't in this pool.
+    LENS-018 I7b fix: use a two-day window (today + yesterday, by UTC date)
+    instead of "today only." The Forensic Report cron fires at 02:00 UTC
+    (09:00 Thai), but lens_ref_system.py writes collected_date=today_utc only
+    at 16:24 Thai (free tier) / 17:22 Thai (sonnet). So today's refs don't
+    exist yet when the forensic cron runs. The refs that SHOULD be cited are
+    the ones covering the 24h MA/S2/S3 evidence window — which live at
+    collected_date = today_utc - 1 after the ref-system's prior-day runs.
+
+    Path B citations: pass ref_id + title + source_name + domain to the LLM
+    so it can cite REF IDs by semantic relevance. Validator strips any cited
+    REF IDs that aren't in this pool.
     """
-    today = datetime.now(timezone.utc).date().isoformat()
+    today_utc = datetime.now(timezone.utc).date()
+    yesterday_utc = (today_utc - timedelta(days=1)).isoformat()
+    today_iso = today_utc.isoformat()
     try:
         r = (
             sb.table("lens_article_refs")
-              .select("ref_id,title,source_name,domain")
-              .eq("collected_date", today)
+              .select("ref_id,title,source_name,domain,collected_date")
+              .gte("collected_date", yesterday_utc)
+              .lte("collected_date", today_iso)
+              .order("collected_date", desc=True)
               .order("ref_id", desc=False)
               .execute()
         )
         rows = r.data or []
-        log.info(f"References: {len(rows)} articles collected today ({today})")
+        # Count split for operator visibility
+        today_count = sum(1 for row in rows if row.get("collected_date") == today_iso)
+        yesterday_count = len(rows) - today_count
+        log.info(
+            f"References: {len(rows)} articles in 36h window "
+            f"(today={today_count}, yesterday={yesterday_count})"
+        )
         return rows
     except Exception as e:
         log.warning(f"Reference pool fetch failed: {e}")
@@ -768,7 +786,7 @@ def run_forensic_report(dry_run: bool = False) -> dict:
 
     # ── Phase 4: Dry-run early exit ──
     if dry_run:
-        dry_path = f"/tmp/forensic_prompt_{today}.txt"
+        dry_path = os.path.join(tempfile.gettempdir(), f"forensic_prompt_{today}.txt")
         try:
             with open(dry_path, "w", encoding="utf-8") as f:
                 f.write(prompt)
