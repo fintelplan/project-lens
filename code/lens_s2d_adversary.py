@@ -3,7 +3,9 @@ lens_s2d_adversary.py — System 2 Position D: Adversary Narrative
 Project Lens | LENS-009
 Model: qwen/qwen3-32b (Groq)
 Input: lens_raw_articles — STATE tier adversarial sources directly
-       (CGTN, TASS, Global Times, Press TV, TRT, Xinhua, Kremlin)
+       (Chinese state-apparatus: Xinhua, CGTN, Global Times, SCMP, CASS;
+        Russian state-apparatus: TASS, RT, Valdai, Kremlin;
+        Iranian state-apparatus: Press TV)
 Output: injection_reports (analyst='S2-D')
 Key: reads raw articles, NOT processed lens_reports
 """
@@ -32,19 +34,27 @@ MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
-MAX_ARTICLES     = 30        # cap articles sent to model
+MAX_ARTICLES     = 60        # cap articles sent to model (B-2: bumped from 30 for source diversity)
 MAX_ARTICLE_CHARS = 800      # per article snippet
 MAX_TOTAL_CHARS  = 20000     # total prompt cap
 
-# Adversarial STATE source IDs — updated with LENS-009 additions
+# Adversarial STATE-APPARATUS source IDs — LENS-017 B-2 widened
+# Per PHI-003: these are state-apparatus organs, NOT the peoples of those countries.
+# SRC-IDs verified live in Supabase lens_raw_articles (LENS-017 SQL audit).
 ADVERSARIAL_SOURCE_IDS = [
-    "SRC-003",   # Xinhua
-    "SRC-004",   # Kremlin
-    "SRC-044",   # CGTN
-    "SRC-045",   # TASS
+    # Chinese state-apparatus (Xi Office / CCP Politburo)
+    "SRC-003",   # Xinhua World News
     "SRC-046",   # Global Times
-    "SRC-047",   # Press TV
-    "SRC-048",   # TRT World
+    "SRC-056",   # South China Morning Post (Hong Kong, CCP-influenced since 2016)
+    "SRC-071",   # CGTN (China Global Television Network)
+    "SRC-077",   # CASS Institute of World Economics and Politics
+    # Russian state-apparatus (Putin Office / Kremlin apparatus)
+    "SRC-004",   # Kremlin News
+    "SRC-045",   # TASS — Russian News Agency
+    "SRC-061",   # Valdai Discussion Club (Kremlin-aligned think tank)
+    "SRC-074",   # RT (Russia Today) English
+    # Iranian state-apparatus (Khamenei Office / IRGC)
+    "SRC-073",   # Press TV
 ]
 
 SYSTEM_PROMPT = """You are S2-D Adversary Narrative Analyst for Project Lens, an OSINT intelligence system.
@@ -142,26 +152,49 @@ def get_groq() -> Groq:
 
 
 def fetch_adversarial_articles(sb: Client, cycle: Optional[str] = None) -> list[dict]:
-    """Fetch recent articles from adversarial STATE sources."""
+    """Fetch recent articles from adversarial STATE-APPARATUS sources.
+
+    LENS-017 B-2: per-source round-robin. Previous behavior sorted all rows by
+    collected_at desc and LIMIT 30, which caused TASS to monopolize output
+    (20/30 rows = 67% of analysis input). Round-robin gives each live source
+    up to per_source_cap slots, so diverse state-apparatus narratives surface.
+    """
+    per_source_cap = max(6, MAX_ARTICLES // max(1, len(ADVERSARIAL_SOURCE_IDS)))
+    collected: list[dict] = []
+    by_source: dict[str, int] = {}
+
     try:
-        query = sb.table("lens_raw_articles") \
-            .select("id, source_id, title, content, url, collected_at") \
-            .in_("source_id", ADVERSARIAL_SOURCE_IDS) \
-            .order("collected_at", desc=True) \
-            .limit(MAX_ARTICLES)
+        for src_id in ADVERSARIAL_SOURCE_IDS:
+            try:
+                result = sb.table("lens_raw_articles") \
+                    .select("id, source_id, title, content, url, collected_at") \
+                    .eq("source_id", src_id) \
+                    .order("collected_at", desc=True) \
+                    .limit(per_source_cap) \
+                    .execute()
+                rows = result.data or []
+                collected.extend(rows)
+                by_source[src_id] = len(rows)
+            except Exception as inner:
+                log.warning(f"Source {src_id} fetch failed: {inner}")
+                by_source[src_id] = 0
 
-        result = query.execute()
-        articles = result.data or []
-        log.info(f"Fetched {len(articles)} adversarial articles")
+        # Re-sort combined pool by recency for prompt-building determinism
+        collected.sort(key=lambda r: r.get("collected_at") or "", reverse=True)
 
-        # Show source breakdown
-        by_source = {}
-        for a in articles:
-            sid = a.get("source_id", "unknown")
-            by_source[sid] = by_source.get(sid, 0) + 1
+        # Overall cap (prompt-size safety)
+        if len(collected) > MAX_ARTICLES:
+            collected = collected[:MAX_ARTICLES]
+
+        log.info(f"Fetched {len(collected)} adversarial articles (round-robin, per_source_cap={per_source_cap})")
         log.info(f"Source breakdown: {by_source}")
 
-        return articles
+        # Flag silent sources for operator visibility (PHI-003 absence-is-evidence)
+        silent = [s for s, n in by_source.items() if n == 0]
+        if silent:
+            log.info(f"Sources with zero articles this cycle: {silent} (forensically significant absence)")
+
+        return collected
     except Exception as e:
         log.error(f"Failed to fetch adversarial articles: {e}")
         return []
