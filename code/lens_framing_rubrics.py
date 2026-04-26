@@ -3,7 +3,7 @@ lens_framing_rubrics.py v2 — S2-F Operations-Based Pretense Detection
 Project Lens | LENS-019.5
 
 CHANGE FROM v1: Operations-based detection replaces 5-axis scoring as primary
-unit. Catalog of 29 operations loaded from data/lens-OPS-001_catalog_v3.json
+unit. Catalog of 29 operations loaded from data/lens-OPS-001_catalog_v3_1.json
 (versioned filename per LR-088 discipline).
 
 Each detection: operation present in article (true/false), evidence phrase
@@ -42,7 +42,7 @@ Dependencies:
   - groq SDK (already in requirements.txt)
   - no supabase client here (this is a pure detector)
   - Env: GROQ_S2F_API_KEY (preferred) or GROQ_API_KEY (fallback)
-  - Data: data/lens-OPS-001_catalog_v3.json must be present at module init
+  - Data: data/lens-OPS-001_catalog_v3_1.json must be present at module init
 """
 
 import os
@@ -72,7 +72,7 @@ ARTICLE_BODY_CHARS = 4500      # Slightly larger than v1 — operations need mor
 MIN_BODY_CHARS = 400
 REQUEST_TIMEOUT_SEC = 45       # Larger than v1 — bigger prompt + bigger output
 
-CATALOG_PATH = "data/lens-OPS-001_catalog_v3.json"
+CATALOG_PATH = "data/lens-OPS-001_catalog_v3_1.json"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
