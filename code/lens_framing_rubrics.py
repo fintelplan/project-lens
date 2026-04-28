@@ -70,7 +70,7 @@ MAX_TOKENS = 6000              # Larger than v1 — operations output is more ve
 TEMPERATURE = 0.1              # Deterministic detection
 ARTICLE_BODY_CHARS = 4500      # Slightly larger than v1 — operations need more context
 MIN_BODY_CHARS = 400
-REQUEST_TIMEOUT_SEC = 45       # Larger than v1 — bigger prompt + bigger output
+REQUEST_TIMEOUT_SEC = 600       # Larger than v1 — bigger prompt + bigger output
 
 CATALOG_PATH = "data/lens-OPS-001_catalog_v3_1.json"
 
@@ -316,9 +316,69 @@ def _get_llm_client():
         if not key:
             log.error("S2F_PROVIDER=cerebras but CEREBRAS_API_KEY not set")
             return None, None, None
-        log.info("Using Cerebras provider (model: qwen-3-235b-a22b-instruct-2507)")
-        return Cerebras(api_key=key), "qwen-3-235b-a22b-instruct-2507", "cerebras"
+        cerebras_model = os.environ.get("CEREBRAS_MODEL", "qwen-3-235b-a22b-instruct-2507")
+        log.info(f"Using Cerebras provider (model: {cerebras_model})")
+        return Cerebras(api_key=key), cerebras_model, "cerebras"
 
+    if provider == "openrouter":
+        try:
+            from openai import OpenAI
+        except ImportError:
+            log.error("openai SDK not installed — pip install openai")
+            return None, None, None
+        key = os.environ.get("OPENROUTER_API_KEY", "")
+        if not key:
+            log.error("S2F_PROVIDER=openrouter but OPENROUTER_API_KEY not set")
+            return None, None, None
+        # OpenRouter uses OpenAI-compatible API at custom base URL.
+        # Llama 4 Maverick free variant: meta-llama/llama-4-maverick:free
+        # Free tier limits: 20 RPM, 50 req/day (1000/day with $10 balance)
+        client = OpenAI(
+            api_key=key,
+            base_url="https://openrouter.ai/api/v1",
+        )
+        model = "openai/gpt-oss-120b:free"
+        log.info(f"Using OpenRouter provider (model: {model})")
+        return client, model, "openrouter"
+
+    if provider == "ollama":
+        try:
+            from openai import OpenAI
+        except ImportError:
+            log.error("openai SDK not installed — pip install openai")
+            return None, None, None
+        model = os.environ.get("OLLAMA_MODEL", "")
+        if not model:
+            log.error("S2F_PROVIDER=ollama but OLLAMA_MODEL not set")
+            log.error("Set OLLAMA_MODEL to a tag ollama has pulled (e.g. 'llama3:8b', 'qwen3.5:9b')")
+            return None, None, None
+        host = os.environ.get("OLLAMA_HOST", "localhost:11434")
+        # Ollama OpenAI-compatible endpoint. API key is not validated but must be non-empty.
+        client = OpenAI(
+            api_key="ollama",  # Ollama ignores this but openai SDK requires non-empty
+            base_url=f"http://{host}/v1",
+        )
+        log.info(f"Using Ollama provider (model: {model}, host: {host})")
+        return client, model, "ollama"
+
+    if provider == "cloudflare":
+        try:
+            from openai import OpenAI
+        except ImportError:
+            log.error("openai SDK not installed — pip install openai")
+            return None, None, None
+        token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+        account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+        if not token or not account_id:
+            log.error("S2F_PROVIDER=cloudflare but CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID not set")
+            return None, None, None
+        cf_model = os.environ.get("CLOUDFLARE_MODEL", "@cf/openai/gpt-oss-120b")
+        client = OpenAI(
+            api_key=token,
+            base_url=f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+        )
+        log.info(f"Using Cloudflare Workers AI provider (model: {cf_model})")
+        return client, cf_model, "cloudflare"
     # Default: groq
     try:
         from groq import Groq
