@@ -29,3 +29,9 @@
 ---
 
 **Rule update**: ~02:00 Thai, Apr 29 2026
+
+## RATIFICATION RECORD
+
+LR-085: RATIFIED by operator Apr 29 2026
+LR-086: RATIFIED by operator Apr 29 2026
+LR-087: RATIFIED by operator Apr 29 2026
