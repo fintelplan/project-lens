@@ -31,9 +31,9 @@ log = logging.getLogger("S3-E")
 SUPABASE_URL  = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY  = os.environ.get("SUPABASE_SERVICE_KEY")
 OLLAMA_HOST   = os.environ.get("OLLAMA_HOST", "localhost:11434")
-MODEL         = "llama3.1:70b"
+MODEL         = "llama3:8b"
 LOOKBACK_DAYS = 7
-MAX_REPORTS   = 15
+MAX_REPORTS   = 5
 TIMEOUT_SEC   = 600   # 70B is slow on RAM — allow 10 min per call
 
 SYSTEM_PROMPT = """You are S3-E: Self-Check Auditor for Project Lens.
@@ -144,7 +144,7 @@ def check_ollama_available() -> bool:
         if r.status_code != 200:
             return False
         models = [m["name"] for m in r.json().get("models", [])]
-        available = any("llama3.1" in m and "70b" in m for m in models)
+        available = any("llama3" in m and "8b" in m for m in models)
         if not available:
             log.warning(f"llama3.1:70b not in Ollama models: {models}")
         return available
@@ -262,6 +262,7 @@ def run_s3e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     # Parse JSON
     try:
+        raw = raw[raw.find("{"):] if "{" in raw else raw
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
