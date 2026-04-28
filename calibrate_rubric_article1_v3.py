@@ -43,7 +43,9 @@ import time
 from dataclasses import asdict
 
 # Force Cerebras for this calibration run (Option R per LENS-019.5)
-os.environ["S2F_PROVIDER"] = "cerebras"
+# PATCHED: honor pre-existing S2F_PROVIDER (allows ollama/openrouter override)
+if "S2F_PROVIDER" not in os.environ:
+    os.environ["S2F_PROVIDER"] = "cerebras"  # default
 
 sys.path.insert(0, "code")
 from dotenv import load_dotenv
