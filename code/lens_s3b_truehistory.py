@@ -26,7 +26,7 @@ log = logging.getLogger("S3-B")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-GEMINI_KEY   = os.environ.get("GEMINI_API_KEY")
+GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY") or os.environ.get("GEMINI_API_KEY")
 MODEL        = "gemini-2.0-flash"
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 28
