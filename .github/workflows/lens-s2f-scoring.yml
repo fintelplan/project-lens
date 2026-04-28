@@ -1,0 +1,67 @@
+name: Lens S2-F Scoring Pipeline
+# Project Lens — S2-F operations-based pretense detection
+# LENS-020 | PHI-004 cognitive sovereignty cadence
+#
+# Runs AFTER collection (offset by 30min from lens-collect.yml)
+# Schedule: 13:30, 17:30, 21:30, 04:30 UTC
+# - Scores new articles from last 2 hours via ensemble detector
+# - Runs Watch aggregator to detect emerging patterns
+# - Writes results to lens_operation_detections + lens_drift_findings
+#
+# Provider architecture (DECISION-009):
+#   Primary:   qwen-3-235b on Cerebras
+#   Secondary: gpt-oss-120b on Cloudflare Workers AI
+#   Sequential, 2s sleep between models, union of ops
+
+on:
+  schedule:
+    - cron: '30 13 * * *'   # 30min after morning collection
+    - cron: '30 17 * * *'   # 30min after midday collection
+    - cron: '30 21 * * *'   # 30min after afternoon collection
+    - cron: '30 4  * * *'   # 30min after midnight collection
+  workflow_dispatch:         # Manual trigger for testing
+
+jobs:
+  s2f_scoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            supabase \
+            python-dotenv \
+            cerebras-cloud-sdk \
+            openai \
+            groq
+
+      - name: Run S2-F ensemble scoring
+        run: python code/lens_s2f_scoring_cron.py
+        env:
+          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CEREBRAS_API_KEY:         ${{ secrets.CEREBRAS_API_KEY }}
+          CLOUDFLARE_API_TOKEN:     ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID:    ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_ACTIONS:           "true"
+          S2F_LENSES:               "xi_office,trump_office,khamenei_office"
+          S2F_LOOKBACK_HOURS:       "3"
+          S2F_MAX_ARTICLES:         "20"
+
+      - name: Run Watch aggregator
+        run: python code/lens_s2f_watch_aggregator.py
+        env:
+          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
+          WATCH_WINDOW_DAYS:        "10"
+          WATCH_MIN_ARTICLES:       "3"
+          GITHUB_ACTIONS:           "true"
