@@ -53,7 +53,7 @@ jobs:
           GITHUB_ACTIONS:           "true"
           S2F_LENSES:               "xi_office,trump_office,khamenei_office"
           S2F_LOOKBACK_HOURS:       "3"
-          S2F_MAX_ARTICLES:         "20"
+          S2F_MAX_ARTICLES:         "8"
 
       - name: Stage 1 — Watch aggregator
         run: python code/lens_s2f_watch_aggregator.py
