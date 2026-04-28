@@ -2,29 +2,26 @@ name: Lens S2-F Scoring Pipeline
 # Project Lens — S2-F operations-based pretense detection
 # LENS-020 | PHI-004 cognitive sovereignty cadence
 #
-# Runs AFTER collection (offset by 30min from lens-collect.yml)
+# Runs AFTER collection (offset 30min from lens-collect.yml)
 # Schedule: 13:30, 17:30, 21:30, 04:30 UTC
-# - Scores new articles from last 2 hours via ensemble detector
-# - Runs Watch aggregator to detect emerging patterns
-# - Writes results to lens_operation_detections + lens_drift_findings
 #
-# Provider architecture (DECISION-009):
-#   Primary:   qwen-3-235b on Cerebras
-#   Secondary: gpt-oss-120b on Cloudflare Workers AI
-#   Sequential, 2s sleep between models, union of ops
+# Stage 1 (Watch)        — scores new articles, detects emerging patterns
+# Stage 2 (Clarity)      — checks if Watch patterns persisted (daily)
+# Stage 3 (Verification) — HIGH confidence findings (daily)
+# Direction B            — delivers HIGH findings to operator via Telegram
 
 on:
   schedule:
-    - cron: '30 13 * * *'   # 30min after morning collection
-    - cron: '30 17 * * *'   # 30min after midday collection
-    - cron: '30 21 * * *'   # 30min after afternoon collection
-    - cron: '30 4  * * *'   # 30min after midnight collection
-  workflow_dispatch:         # Manual trigger for testing
+    - cron: '30 13 * * *'
+    - cron: '30 17 * * *'
+    - cron: '30 21 * * *'
+    - cron: '30 4  * * *'
+  workflow_dispatch:
 
 jobs:
   s2f_scoring:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
@@ -42,9 +39,10 @@ jobs:
             python-dotenv \
             cerebras-cloud-sdk \
             openai \
-            groq
+            groq \
+            requests
 
-      - name: Run S2-F ensemble scoring
+      - name: Stage 1 — Score new articles (Watch)
         run: python code/lens_s2f_scoring_cron.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
@@ -57,11 +55,32 @@ jobs:
           S2F_LOOKBACK_HOURS:       "3"
           S2F_MAX_ARTICLES:         "20"
 
-      - name: Run Watch aggregator
+      - name: Stage 1 — Watch aggregator
         run: python code/lens_s2f_watch_aggregator.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
-          WATCH_WINDOW_DAYS:        "10"
-          WATCH_MIN_ARTICLES:       "3"
+          GITHUB_ACTIONS:           "true"
+
+      - name: Stage 2 — Clarity aggregator
+        run: python code/lens_s2f_clarity_aggregator.py
+        env:
+          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GITHUB_ACTIONS:           "true"
+
+      - name: Stage 3 — Verification aggregator
+        run: python code/lens_s2f_verification_aggregator.py
+        env:
+          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GITHUB_ACTIONS:           "true"
+
+      - name: Direction B — Deliver HIGH findings to operator
+        run: python code/lens_s2f_direction_b.py
+        env:
+          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:       ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:         ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_ACTIONS:           "true"
