@@ -160,6 +160,32 @@ def fetch_system3_latest(sb) -> dict:
     return out
 
 
+
+def fetch_s2f_findings(sb) -> list:
+    """Recent S2-F Watch/Clarity/Verification findings (last 45 days).
+    Returns HIGH and MEDIUM confidence findings for forensic context.
+    Empty list if table doesn't exist or no findings yet.
+    """
+    try:
+        from datetime import timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
+        rows = (
+            sb.table("lens_drift_findings")
+              .select("state_actor_lens,finding_confidence,finding_phrasing,"
+                      "sample_size,evidence_article_ids,created_at,rubric_version")
+              .in_("finding_confidence", ["HIGH", "MEDIUM"])
+              .gte("created_at", cutoff)
+              .order("finding_confidence", desc=True)
+              .order("created_at", desc=True)
+              .limit(10)
+              .execute()
+        ).data or []
+        log.info(f"S2-F: {len(rows)} Watch/Clarity/Verification findings in last 45d")
+        return rows
+    except Exception as e:
+        log.warning(f"S2-F findings fetch failed (non-critical): {e}")
+        return []
+
 def fetch_reference_pool(sb) -> list:
     """All article references within a 36-hour rolling window.
 
@@ -234,7 +260,8 @@ def _truncate(s: str, n: int) -> str:
 # ── Prompt builder ────────────────────────────────────────────────────────────
 
 def build_prompt(macros: list, injections: list, lens_reports: list,
-                 s3_latest: dict, references: list) -> str:
+                 s3_latest: dict, references: list,
+                 s2f_findings: list = None) -> str:
     """Build the forensic report prompt per LENS-016 spec.
 
     Structure: Part 1 Detection (formal) / Part 2 Recovery (formal) /
@@ -372,6 +399,25 @@ def build_prompt(macros: list, injections: list, lens_reports: list,
                 s3_text += f"  First domino: {_truncate(fd, 200)}\n"
     else:
         s3_text += "(no S3 reports available — long-horizon context limited)\n"
+
+
+    # ── S2-F Pretense Operation Findings (Watch/Clarity/Verification) ──
+    if s2f_findings:
+        s2f_text = "S2-F PRETENSE OPERATION FINDINGS (Watch/Clarity/Verification cadence):\n"
+        s2f_text += "These are multi-article pattern findings from the operations-based detector.\n"
+        s2f_text += "HIGH confidence = 30-45 day verified pattern. MEDIUM = developing pattern.\n\n"
+        for f in s2f_findings:
+            lens = f.get("state_actor_lens", "unknown")
+            conf = f.get("finding_confidence", "?")
+            phrasing = (f.get("finding_phrasing") or "")[:400]
+            sample = f.get("sample_size", 0)
+            created = (f.get("created_at") or "")[:10]
+            s2f_text += f"[{conf}] {lens} | {sample} articles | {created}\n"
+            s2f_text += f"{phrasing}\n\n"
+        parts.append(s2f_text)
+    else:
+        parts.append("S2-F PRETENSE OPERATION FINDINGS: No Watch/Clarity/Verification findings yet "
+                     "(S2-F pipeline is new — findings will accumulate over 7-45 days).\n")
 
     # ── Reference pool (Path B) ──
     ref_text = (
@@ -775,6 +821,7 @@ def run_forensic_report(dry_run: bool = False) -> dict:
     injections = fetch_injection_reports(sb)
     lens_reports = fetch_lens_reports(sb)
     s3_latest = fetch_system3_latest(sb)
+    s2f_findings = fetch_s2f_findings(sb)
     references = fetch_reference_pool(sb)
 
     if not macros and not injections:
@@ -782,7 +829,7 @@ def run_forensic_report(dry_run: bool = False) -> dict:
         return {"status": "SKIP", "reason": "no_evidence_in_window"}
 
     # ── Phase 3: Build prompt ──
-    prompt = build_prompt(macros, injections, lens_reports, s3_latest, references)
+    prompt = build_prompt(macros, injections, lens_reports, s3_latest, references, s2f_findings)
 
     # ── Phase 4: Dry-run early exit ──
     if dry_run:
