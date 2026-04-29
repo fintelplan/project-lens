@@ -1,11 +1,8 @@
 name: Lens Forensic Report
 
 on:
-  schedule:
-    # Daily at 02:00 UTC = 09:00 Thai
-    # Runs AFTER overnight orchestrator cycle (01:00 UTC) so MA/S2/S3 evidence is fresh.
-    - cron: '0 2 * * *'
   workflow_dispatch:
+  # schedule disabled — paid run (Opus), re-enable when budget allows
     inputs:
       dry_run:
         description: 'Dry-run mode (no Anthropic API call, no Telegram send)'
