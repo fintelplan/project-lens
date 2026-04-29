@@ -1,8 +1,9 @@
 name: Lens Forensic Report
 
 on:
+  schedule:
+    - cron: '0 2 * * *'  # 10:00 PM DC EDT
   workflow_dispatch:
-  # schedule disabled — paid run (Opus), re-enable when budget allows
     inputs:
       dry_run:
         description: 'Dry-run mode (no Anthropic API call, no Telegram send)'

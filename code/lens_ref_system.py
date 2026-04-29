@@ -2,7 +2,7 @@
 lens_ref_system.py v2
 Project Lens — Article Reference System
 
-FREE TIER (4x/day):  20260417_ProjectLens_Refs_40f1.xlsx
+FREE TIER (2x/day):  20260417_ProjectLens_Refs_40f1.xlsx
 SONNET  (2x/day):   20260417_ProjectLens_Refs_20f1.xlsx
 
 Each Excel has 2 sheets:
@@ -317,7 +317,7 @@ def build_excel(all_refs: list, selected: list,
     ws3 = wb.create_sheet("Summary")
     ws3["A1"] = f"Project Lens — Article References"
     ws3["A2"] = f"Date: {date_str}"
-    ws3["A3"] = f"Mode: {'Free Tier 4x/day' if mode=='free' else 'Sonnet 4.6 2x/day'}"
+    ws3["A3"] = f"Mode: {'Free Tier 2x/day' if mode=='free' else 'Sonnet 4.6 2x/day'}"
     ws3["A4"] = f"Slot: {slot}"
     ws3["A5"] = f"Total collected: {len(all_refs)}"
     ws3["A6"] = f"Total selected: {len(selected)}"
@@ -355,7 +355,7 @@ def send_telegram(path: str, filename: str, date_str: str,
     chat_id = os.environ.get("TELEGRAM_CHAT_ID","")
     if not token or not chat_id: return False
     try:
-        tier = "Free Tier 4x" if mode == "free" else "Sonnet 4.6 2x"
+        tier = "Free Tier 2x" if mode == "free" else "Sonnet 4.6 2x"
         caption = (
             f"📊 {filename}\n"
             f"{date_str} | {tier} | {slot}\n\n"
