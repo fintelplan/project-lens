@@ -72,7 +72,7 @@ ARTICLE_BODY_CHARS = 4500      # Slightly larger than v1 — operations need mor
 MIN_BODY_CHARS = 400
 REQUEST_TIMEOUT_SEC = 600       # Larger than v1 — bigger prompt + bigger output
 
-CATALOG_PATH = "data/lens-OPS-001_catalog_v3_1.json"
+CATALOG_PATH = "data/lens-OPS-001_catalog_v4_0.json"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -186,16 +186,23 @@ THE CATALOG (operations to detect):
 """
 
 
-def _build_catalog_block(catalog: dict, stage_filter: str) -> str:
+def _build_catalog_block(catalog: dict, stage_filter: str, article_chars: int = 99999) -> str:
     """Build the part of the prompt that describes each operation.
 
     stage_filter:
       'early_warning' -> only score the 26 early_warning operations (Watch mode)
       'all'           -> score all 29 operations (Clarity/Verification mode)
+    article_chars: length of article body — used to filter genre-specific ops (v4)
     """
     lines = []
     for op in catalog["operations"]:
         if stage_filter == "early_warning" and op["detection_stage"] != "early_warning":
+            continue
+        # v4 genre filter: steno ops only for short articles
+        if op.get("genre_context") == "stenographic" and article_chars > 3000:
+            continue
+        max_chars = op.get("max_article_chars")
+        if max_chars and article_chars > max_chars:
             continue
         lines.append(f"\n--- {op['id']}: {op['name']} ---")
         lines.append(f"Detection stage: {op['detection_stage']}")
@@ -248,11 +255,11 @@ If not_applicable is true, operations_detected may be empty and confidence shoul
 food_for_thought is always required (per LENS-004 SHARED_RULES)."""
 
 
-def _build_system_prompt(stage_filter: str) -> str:
+def _build_system_prompt(stage_filter: str, article_chars: int = 99999) -> str:
     """Construct the full system prompt for the given stage filter."""
     catalog = _load_catalog()
     head = _PROMPT_HEAD
-    catalog_block = _build_catalog_block(catalog, stage_filter)
+    catalog_block = _build_catalog_block(catalog, stage_filter, article_chars)
     tail = _PROMPT_TAIL_TEMPLATE.format(
         catalog_version=catalog["catalog_version"],
         stage_filter=stage_filter,
@@ -525,7 +532,7 @@ def detect_operations_in_article(
     legitimacy = OFFICE_LEGITIMACY.get(state_actor_lens, "unknown")
 
     # ── Build prompt ──
-    system_prompt = _build_system_prompt(stage_filter)
+    system_prompt = _build_system_prompt(stage_filter, article_chars=len(body))
     user_msg = (
         f"VOICE TO ANALYZE:\n"
         f"  Name: {voice_name}\n"
