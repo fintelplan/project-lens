@@ -1,0 +1,63 @@
+name: Lens Regular Report (Free)
+# Project Lens — Free daily intelligence report
+# Model: mistral-small-latest → Cerebras fallback → Groq fallback
+# Schedule: 1x daily at 02:10 UTC = 10:10 PM Washington DC (EDT)
+# Fires AFTER Opus Report (02:00 UTC) so both use same DB window
+# Cost: $0/run
+# Guard: preflight + retry (3x) + provider fallback + failure alert
+
+on:
+  schedule:
+    - cron: '10 2 * * *'  # 10:10 PM Washington DC (EDT)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run mode (no API call, no Telegram)'
+        required: false
+        default: 'false'
+
+jobs:
+  regular-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            supabase \
+            python-dotenv \
+            requests \
+            python-docx==1.1.2 \
+            openai \
+            groq
+
+      - name: Install Cerebras SDK
+        run: pip install cerebras-cloud-sdk
+        continue-on-error: true
+
+      - name: Run Regular Report
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          python code/lens_regular_report.py $DRY_RUN_FLAG
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          MISTRAL_API_KEY:      ${{ secrets.MISTRAL_API_KEY }}
+          CEREBRAS_API_KEY:     ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}
+          GITHUB_ACTIONS:       "true"
