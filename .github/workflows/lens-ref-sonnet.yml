@@ -1,10 +1,8 @@
 name: Lens Ref Export (Sonnet)
 
 on:
-  schedule:
-    - cron: '58 3  * * *'   # after 03:28 sonnet cron
-    - cron: '58 15 * * *'   # after 15:28 sonnet cron
   workflow_dispatch:
+  # schedule disabled — orphaned from old 2x Sonnet cron (removed)
 
 jobs:
   ref-export-sonnet:
