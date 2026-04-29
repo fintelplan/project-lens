@@ -31,7 +31,16 @@ def fetch_latest(run_id=None):
     s2  = sb.table("injection_reports").select("analyst,injection_type,confidence_score").eq("run_id",rid).order("confidence_score",desc=True).limit(5).execute().data or []
     s3  = (sb.table("lens_system3_reports").select("summary,first_domino,patterns_found,position,generated_at").eq("position","S3-A").order("generated_at",desc=True).limit(1).execute().data or [{}])[0]
     s1  = sb.table("lens_reports").select("summary,quality_score,cycle,generated_at").order("generated_at",desc=True).limit(4).execute().data or []
-    return {"ma":ma,"s2":s2,"s3":s3,"s1":s1}
+    # S2-F: latest detections
+    from datetime import timedelta
+    cutoff_24h = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    s2f = sb.table("lens_operation_detections").select("state_actor_lens,operation_count,confidence,scored_at").gte("scored_at",cutoff_24h).eq("not_applicable",False).order("confidence",desc=True).limit(5).execute().data or []
+    # Top entity
+    top_entity = (sb.table("lens_entities").select("canonical_name,total_mentions").order("total_mentions",desc=True).limit(1).execute().data or [{}])[0]
+    # 7-day threat trend
+    cutoff_7d = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    trend = sb.table("lens_macro_reports").select("threat_level,created_at").gte("created_at",cutoff_7d).order("created_at",desc=True).limit(7).execute().data or []
+    return {"ma":ma,"s2":s2,"s3":s3,"s1":s1,"s2f":s2f,"top_entity":top_entity,"trend":trend}
 
 def format_daily_brief(data):
     ma,s2,s3,s1 = data["ma"],data["s2"],data["s3"],data["s1"]
@@ -58,9 +67,32 @@ def format_daily_brief(data):
     ]
     if s3.get("first_domino"):
         lines += ["", f"⚠️ <b>First Domino:</b> {s3['first_domino'][:150]}"]
+    # S2-F status line
+    s2f = data.get("s2f", [])
+    if s2f:
+        top_s2f = s2f[0]
+        s2f_line = f"Operations: {sum(d.get('operation_count',0) for d in s2f)} detected | Top: {top_s2f.get('state_actor_lens','?')} conf={top_s2f.get('confidence',0):.2f}"
+    else:
+        s2f_line = "No detections yet (pipeline accumulating)"
+    # Top entity
+    top_entity = data.get("top_entity", {})
+    entity_line = f"{top_entity.get('canonical_name','No data')} ({top_entity.get('total_mentions',0)} mentions)" if top_entity.get("canonical_name") else "Accumulating..."
+    # 7-day trend
+    trend = data.get("trend", [])
+    if trend:
+        levels = [t.get("threat_level","?") for t in trend[:3]]
+        trend_str = " → ".join(levels)
+    else:
+        trend_str = "Accumulating..."
     lines += ["","<b>━━ MISSION ANALYST ━━</b>",
         (ma.get("executive_summary") or "No macro report yet")[:300],"",
-        f"<i>Quality: {ma.get('quality_score',0):.2f} | Run: {ma.get('run_id','?')}</i>"]
+        f"<i>Quality: {ma.get('quality_score',0):.2f} | Run: {ma.get('run_id','?')}</i>","",
+        "<b>━━ S2-F ━━</b>",
+        s2f_line,"",
+        "<b>━━ ENTITIES ━━</b>",
+        f"Most active: {entity_line}","",
+        "<b>━━ 7-DAY TREND ━━</b>",
+        f"Threat: {trend_str}"]
     return "\n".join(lines)
 
 def format_critical_alert(reason, signal, threat):
