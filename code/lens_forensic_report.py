@@ -186,6 +186,102 @@ def fetch_s2f_findings(sb) -> list:
         log.warning(f"S2-F findings fetch failed (non-critical): {e}")
         return []
 
+
+def fetch_s2f_full_detail(sb) -> dict:
+    """Fetch full S2-F intelligence: drift findings + per-article operation detail.
+
+    Returns dict with:
+      drift_findings: list of HIGH/MEDIUM drift findings (last 45 days)
+      detections_24h: list of all article detections (last 24h) with full ops
+      cross_lens_ops: dict of op_id -> list of lenses that detected it
+      phi003_scores:  dict of lens -> count of OP-024/025/026 (apparatus-people ops)
+    """
+    from datetime import timedelta
+    result = {
+        "drift_findings": [],
+        "detections_24h": [],
+        "cross_lens_ops": {},
+        "phi003_scores": {},
+    }
+    try:
+        # A: Drift findings last 45 days
+        cutoff_45d = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
+        rows = sb.table("lens_drift_findings") \
+            .select("state_actor_lens,finding_confidence,finding_phrasing,"
+                    "sample_size,evidence_article_ids,created_at,rubric_version") \
+            .in_("finding_confidence", ["HIGH", "MEDIUM"]) \
+            .gte("created_at", cutoff_45d) \
+            .order("finding_confidence", desc=True) \
+            .order("created_at", desc=True) \
+            .limit(20) \
+            .execute().data or []
+        result["drift_findings"] = rows
+        log.info(f"S2-F drift: {len(rows)} HIGH/MEDIUM findings in last 45d")
+    except Exception as e:
+        log.warning(f"S2-F drift fetch failed: {e}")
+
+    try:
+        # B: Article detections last 24h with full operation detail
+        cutoff_24h = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        rows = sb.table("lens_operation_detections") \
+            .select("raw_article_id,voice_name,voice_type,state_actor_lens,"
+                    "stage_filter,operations_detected,operation_count,"
+                    "early_warning_count,post_suspect_count,confidence,"
+                    "food_for_thought,provider,scored_at") \
+            .gte("scored_at", cutoff_24h) \
+            .eq("not_applicable", False) \
+            .order("confidence", desc=True) \
+            .order("operation_count", desc=True) \
+            .limit(50) \
+            .execute().data or []
+        result["detections_24h"] = rows
+        log.info(f"S2-F detections: {len(rows)} article detections in last 24h")
+
+        # C: Cross-lens intersection — which ops appear across multiple lenses
+        cross_lens = {}
+        for det in rows:
+            lens = det.get("state_actor_lens", "")
+            ops = det.get("operations_detected") or []
+            if isinstance(ops, str):
+                import json as _json
+                try:
+                    ops = _json.loads(ops)
+                except Exception:
+                    ops = []
+            for op in ops:
+                op_id = op.get("id", "")
+                if op_id:
+                    if op_id not in cross_lens:
+                        cross_lens[op_id] = set()
+                    cross_lens[op_id].add(lens)
+        # Keep only ops that appear in 2+ lenses
+        result["cross_lens_ops"] = {
+            k: sorted(v) for k, v in cross_lens.items() if len(v) >= 2
+        }
+
+        # D: PHI-003 scores — count of apparatus-people ops per lens
+        phi003_ops = {"OP-024", "OP-025", "OP-026"}
+        phi003 = {}
+        for det in rows:
+            lens = det.get("state_actor_lens", "")
+            ops = det.get("operations_detected") or []
+            if isinstance(ops, str):
+                import json as _json
+                try:
+                    ops = _json.loads(ops)
+                except Exception:
+                    ops = []
+            count = sum(1 for op in ops if op.get("id") in phi003_ops)
+            if lens not in phi003:
+                phi003[lens] = 0
+            phi003[lens] += count
+        result["phi003_scores"] = phi003
+
+    except Exception as e:
+        log.warning(f"S2-F detection fetch failed: {e}")
+
+    return result
+
 def fetch_reference_pool(sb) -> list:
     """All article references within a 36-hour rolling window.
 
@@ -261,7 +357,8 @@ def _truncate(s: str, n: int) -> str:
 
 def build_prompt(macros: list, injections: list, lens_reports: list,
                  s3_latest: dict, references: list,
-                 s2f_findings: list = None) -> str:
+                 s2f_findings: list = None,
+                 s2f_detail: dict = None) -> str:
     """Build the forensic report prompt per LENS-016 spec.
 
     Structure: Part 1 Detection (formal) / Part 2 Recovery (formal) /
@@ -401,22 +498,69 @@ def build_prompt(macros: list, injections: list, lens_reports: list,
         s3_text += "(no S3 reports available — long-horizon context limited)\n"
 
 
-    # ── S2-F Pretense Operation Findings (Watch/Clarity/Verification) ──
-    if s2f_findings:
-        s2f_text = "S2-F PRETENSE OPERATION FINDINGS (Watch/Clarity/Verification cadence):\n"
-        s2f_text += "These are multi-article pattern findings from the operations-based detector.\n"
-        s2f_text += "HIGH confidence = 30-45 day verified pattern. MEDIUM = developing pattern.\n\n"
-        for f in s2f_findings:
+    # ── S2-F Full Intelligence (A+B+C+D) ──
+    import json as _s2f_json
+    s2f_text = "S2-F PRETENSE OPERATION INTELLIGENCE:\n"
+    s2f_text += "=" * 60 + "\n\n"
+    detail = s2f_detail or {}
+    drift = detail.get("drift_findings", [])
+    detections = detail.get("detections_24h", [])
+    cross_lens = detail.get("cross_lens_ops", {})
+    phi003 = detail.get("phi003_scores", {})
+    if drift:
+        s2f_text += f"PART A — PATTERN FINDINGS ({len(drift)} HIGH/MEDIUM confirmed, last 45d):\n\n"
+        for f in drift:
             lens = f.get("state_actor_lens", "unknown")
             conf = f.get("finding_confidence", "?")
-            phrasing = (f.get("finding_phrasing") or "")[:400]
+            phrasing = (f.get("finding_phrasing") or "")
             sample = f.get("sample_size", 0)
             created = (f.get("created_at") or "")[:10]
-            s2f_text += f"[{conf}] {lens} | {sample} articles | {created}\n"
-            s2f_text += f"{phrasing}\n\n"
-        pass  # s2f_text already set above
+            s2f_text += f"[{conf}] {lens} | {sample} articles | {created}\n{phrasing}\n\n"
     else:
-        s2f_text = "S2-F PRETENSE OPERATION FINDINGS: No Watch/Clarity/Verification findings yet (S2-F pipeline is new — findings will accumulate over 7-45 days).\n"
+        s2f_text += "PART A — PATTERN FINDINGS: None yet (pipeline accumulates over 7-45 days).\n\n"
+    if detections:
+        s2f_text += f"PART B — OPERATION DETAIL ({len(detections)} article detections, last 24h):\n\n"
+        for det in detections:
+            lens = det.get("state_actor_lens", "")
+            voice = det.get("voice_name", "")
+            stage = det.get("stage_filter", "")
+            conf = det.get("confidence", 0)
+            ops = det.get("operations_detected") or []
+            fft = det.get("food_for_thought", "")
+            if isinstance(ops, str):
+                try: ops = _s2f_json.loads(ops)
+                except Exception: ops = []
+            s2f_text += f"DETECTION: {lens} | {voice} | {stage} | conf={conf:.2f} | {len(ops)} ops\n"
+            for op in ops:
+                op_id = op.get("id", "")
+                op_name = op.get("name", "")
+                evidence = (op.get("evidence_phrase") or "")[:200]
+                reasoning = (op.get("reasoning") or "")[:300]
+                alts = op.get("alternative_hypotheses_considered") or []
+                alt = alts[0][:150] if alts and isinstance(alts[0], str) else ""
+                s2f_text += f"  {op_id}: {op_name}\n"
+                s2f_text += f"    EVIDENCE: {evidence}\n"
+                s2f_text += f"    REASONING: {reasoning}\n"
+                if alt:
+                    s2f_text += f"    ALT: {alt}\n"
+            if fft:
+                s2f_text += f"  FOOD FOR THOUGHT: {fft}\n"
+            s2f_text += "\n"
+    else:
+        s2f_text += "PART B — OPERATION DETAIL: No article detections in last 24h yet.\n\n"
+    if cross_lens:
+        s2f_text += f"PART C — CROSS-LENS OPERATIONS ({len(cross_lens)} ops across multiple lenses):\n"
+        for op_id, lenses in sorted(cross_lens.items()):
+            s2f_text += f"  {op_id}: detected in {', '.join(lenses)}\n"
+        s2f_text += "\n"
+    else:
+        s2f_text += "PART C — CROSS-LENS: No cross-lens patterns yet.\n\n"
+    if phi003:
+        s2f_text += "PART D — PHI-003 APPARATUS-PEOPLE SEPARATION (OP-024/025/026 per lens):\n"
+        for lens, count in sorted(phi003.items()):
+            flag = " WARNING HIGH" if count >= 3 else ""
+            s2f_text += f"  {lens}: {count} apparatus-collapse detections{flag}\n"
+        s2f_text += "\n"
 
     # ── Reference pool (Path B) ──
     ref_text = (
@@ -823,6 +967,7 @@ def run_forensic_report(dry_run: bool = False) -> dict:
     lens_reports = fetch_lens_reports(sb)
     s3_latest = fetch_system3_latest(sb)
     s2f_findings = fetch_s2f_findings(sb)
+    s2f_detail = fetch_s2f_full_detail(sb)
     references = fetch_reference_pool(sb)
 
     if not macros and not injections:
@@ -830,7 +975,7 @@ def run_forensic_report(dry_run: bool = False) -> dict:
         return {"status": "SKIP", "reason": "no_evidence_in_window"}
 
     # ── Phase 3: Build prompt ──
-    prompt = build_prompt(macros, injections, lens_reports, s3_latest, references, s2f_findings)
+    prompt = build_prompt(macros, injections, lens_reports, s3_latest, references, s2f_findings, s2f_detail)
 
     # ── Phase 4: Dry-run early exit ──
     if dry_run:
