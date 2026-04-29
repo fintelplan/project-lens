@@ -12,7 +12,7 @@ name: Lens S2-F Scoring Pipeline
 
 on:
   schedule:
-    - cron: '30 13 * * *'
+    - cron: '0 14 * * *'
     - cron: '30 17 * * *'
     - cron: '30 21 * * *'
     - cron: '30 4  * * *'
