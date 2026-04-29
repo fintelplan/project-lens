@@ -379,6 +379,23 @@ def _get_llm_client():
         )
         log.info(f"Using Cloudflare Workers AI provider (model: {cf_model})")
         return client, cf_model, "cloudflare"
+    if provider == "mistral":
+        try:
+            from openai import OpenAI
+        except ImportError:
+            log.error("openai SDK not installed — pip install openai")
+            return None, None, None
+        key = os.environ.get("MISTRAL_API_KEY", "")
+        if not key:
+            log.error("S2F_PROVIDER=mistral but MISTRAL_API_KEY not set")
+            return None, None, None
+        mistral_model = os.environ.get("MISTRAL_MODEL", "mistral-medium-latest")
+        client = OpenAI(
+            api_key=key,
+            base_url="https://api.mistral.ai/v1",
+        )
+        log.info(f"Using Mistral provider (model: {mistral_model})")
+        return client, mistral_model, "mistral"
     # Default: groq
     try:
         from groq import Groq
