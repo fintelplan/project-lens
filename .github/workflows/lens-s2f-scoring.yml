@@ -52,7 +52,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID:    ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GITHUB_ACTIONS:           "true"
           S2F_LENSES:               "xi_office,trump_office,khamenei_office"
-          S2F_LOOKBACK_HOURS:       "3"
+          S2F_LOOKBACK_HOURS:       "6"
           S2F_MAX_ARTICLES:         "8"
 
       - name: Stage 1 — Watch aggregator
