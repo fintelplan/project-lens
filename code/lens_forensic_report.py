@@ -807,7 +807,7 @@ def send_telegram(docx_path: str, caption: str, filename: str) -> bool:
 
 def run_forensic_report(dry_run: bool = False) -> dict:
     start = time.time()
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
     log.info(f"=== FORENSIC REPORT START | {today} | dry_run={dry_run} ===")
 
     # ── Phase 1: Connect to Supabase only (Anthropic deferred until needed) ──
