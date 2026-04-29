@@ -1,0 +1,773 @@
+{
+  "catalog_id": "lens-OPS-001",
+  "catalog_version": "v4.0",
+  "session_origin": "LENS-019.5",
+  "session_date": "2026-04-25",
+  "source": "v3 adds detection_stage field separating early-warning operations from post-suspect operations. Per operator: country-as-apparatus collapse (OP-024) is industry baseline noise; firing on it as Watch trigger would flag every news article. Country-as-apparatus is meaningful only as confirmatory evidence on voices already flagged for other operations.",
+  "lens_architecture_reference": "LENS-004 SHARED_RULES — 4 Lenses",
+  "lenses": {
+    "1": "Expanding/contracting rights — Are people's rights to grow, think, envision broadly expanding or contracting?",
+    "2": "Cui Bono — Who benefits when rights contract or when narrative shifts?",
+    "3": "Sectarian Trap — Is division between people organic or engineered?",
+    "4": "Sovereignty check — Does this serve the people or pretend to serve while serving someone else?"
+  },
+  "philosophy_anchors": [
+    "PHI-001 — Information sovereignty",
+    "PHI-002 — Pro-people and anti-pretense",
+    "PHI-003 — Apparatus-people separation, asymmetric legitimacy",
+    "PHI-004 — Cognitive sovereignty cadence"
+  ],
+  "discipline_rules": [
+    "LR-083 — Investigation not research-paper: detect candidates with evidence chains, never conclude intent",
+    "Every operation must include alternative_hypotheses — coercion, editorial constraint, coincidence",
+    "Operation detection requires evidence_phrase quoted from article — no detection without text anchor",
+    "Detection stage discipline: post_suspect operations are NEVER counted toward Watch Alert thresholds. They are evaluated only on voices already flagged by early_warning operations. Mixing stages would collapse signal-to-noise ratio because industry-baseline operations are everywhere."
+  ],
+  "operations": [
+    {
+      "id": "OP-001",
+      "name": "Distract from important issue",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "Article presents itself as analyzing question X but the actual analytical content is at a different level than X — the question raised is decoy, the question answered is shallower or differently-scoped. NOT to be confused with: incomplete coverage, missing topics, or article scope limits. Detection requires identifying what the article CLAIMS to be about (often in the headline or thesis statement) and showing the body shifts away from that claim.",
+      "evidence_pattern": "Mismatch between the question framed by the headline/lede and the question actually engaged in the body. Look for: thesis-as-headline that the body does not substantiate; questions raised that the body does not answer; analytical scope shifts from claimed subject to adjacent-but-different subject. DO NOT FIRE if the article is simply not covering Topic Z — articles cannot cover everything; missing coverage is not the same as distraction.",
+      "example": {
+        "article": "Article 1 — Reuters 'Trump's China policy drifts'",
+        "passage": "Headline + opening lede frame the question as 'is Trump's policy working' rather than 'what is happening to peoples affected by US-China trade dynamics'.",
+        "operator_annotation": "distract public attention for important issue, instead of pushing to make analysis"
+      },
+      "alternative_hypotheses": [
+        "Editorial style of wire service genre constrains depth",
+        "Word count limits forced surface-level framing",
+        "Author attempted depth but editor cut it"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-002",
+      "name": "Shock-start attention capture",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "description": "Opening with dramatic framing that captures reader attention through alarm rather than earning it through evidence. Reader's emotional response is engaged before cortical analysis can begin.",
+      "evidence_pattern": "Headline or opening uses high-alarm vocabulary, urgent verb tense, dramatic declarative structure that bypasses analytical preparation.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'With tariffs stalled, Trump's China policy drifts' — passive verb 'drifts' carries unease without naming agent; 'stalled' implies failure-of-mechanism rather than failure-of-premise.",
+        "operator_annotation": "push shock start to capture public attention"
+      },
+      "alternative_hypotheses": [
+        "Standard wire-service headline conventions favor declarative framing",
+        "SEO/reader-engagement metrics drive headline style independent of editorial intent",
+        "Author intended neutral description; reader's interpretation imports drama"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-003",
+      "name": "Unverified premise treated as established fact",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "Article accepts a foundational claim as the starting point for analysis without examining whether the claim itself is accurate or contested.",
+      "evidence_pattern": "Premise stated in opening paragraph as if reader already accepts it; no sentence questions the premise; subsequent analysis builds on the premise as if proven.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'he vowed to use tariffs to reset relations with China, which he said was killing the United States with its trade policies' — premise (China is killing US) accepted as entry point; not examined.",
+        "operator_annotation": "no verification is there any long term trade imbalance between US and China, and is there any consequence to US People"
+      },
+      "alternative_hypotheses": [
+        "The premise is widely accepted in the readership and verification would be redundant",
+        "Article assumes background knowledge from prior coverage",
+        "Verification would extend article length beyond format constraints"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-004",
+      "name": "Subject-of-policy erased from article-about-policy",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "An article ostensibly about a policy affecting peoples discusses the policy at apparatus level only, with the affected peoples absent or marginalized.",
+      "evidence_pattern": "Count paragraphs about apparatus actors vs paragraphs about people-level outcomes. Severe imbalance with apparatus dominant indicates this operation.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Article devotes ~20 paragraphs to apparatus commentary (Trump, Beijing, expert quotes); ~1-2 sentences to actual American workers ('lost 91,000 manufacturing jobs') and ~0 sentences to Chinese workers, consumers, or affected populations.",
+        "operator_annotation": "is there any consequence to US People"
+      },
+      "alternative_hypotheses": [
+        "Article scope was deliberately limited to policy-level analysis",
+        "People-level coverage exists in a separate companion article",
+        "Author lacked access to people-level sources"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-005",
+      "name": "Single-side analysis presented as bilateral",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "Article evaluates one party in a multi-party interaction in isolation, without analyzing the counterparty's actual reactions and how those reactions shape outcomes. Appearance of comprehensive analysis without its substance.",
+      "evidence_pattern": "Policy effectiveness scored against goals without showing counterparty's specific responses, decisions, and pressures that shaped the result.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Trump's tariff policy evaluated for 'not fundamentally altering Beijing's trade or military actions' — but Xi Office's actual specific reactions, decisions, and counter-pressures are not described in detail. The response side of action-response is missing.",
+        "operator_annotation": "no review about Xi reaction, Xi positively react or not, to judge be effective or no, there should be proper secondary force based on Xi's reaction"
+      },
+      "alternative_hypotheses": [
+        "Counterparty information is not publicly available",
+        "Article focuses on US-side accountability deliberately",
+        "Counterparty analysis is in a separate piece"
+      ],
+      "additional_lenses": [
+        3
+      ],
+      "additional_lens_reasons": {
+        "3": "Single-side analysis often presented through country-frame rather than apparatus-frame, so the missing counterparty analysis is doubly missing — both apparatus-detail missing AND people-vs-apparatus distinction missing on the counterparty side."
+      },
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-006",
+      "name": "Blind labeling without cause-analysis",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "Article applies an evaluative label (erratic, chaotic, irrational, masterful, strategic, etc.) without surfacing the internal logic that would make the labeled actions either coherent or incoherent from the actor's perspective.",
+      "evidence_pattern": "Conclusion-words appear without preceding evidence chain. Multiple decisions described as exemplifying the label without any decision examined for its specific cause.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'erratic moves', 'contradictory decisions', 'improvisational dealmaking style' — labels applied to specific events (blacklist withdrawal, semiconductor reversal) without analysis of which faction pushed each decision and why.",
+        "operator_annotation": "every movement has relative cause(s), without proper making analysis to movement, shouldn't label the movement blindly"
+      },
+      "alternative_hypotheses": [
+        "Cause analysis would require speculation the article wishes to avoid",
+        "Internal administration sources unavailable",
+        "Author considers the chaos itself to be the cause"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-007",
+      "name": "Publication-as-intelligence-aid",
+      "primary_lens": 2,
+      "secondary_lens": 4,
+      "description": "Detailed observations about a scrutinized actor's vulnerabilities, decision patterns, factional dynamics, or upcoming negotiation positions are published in venues monitored by the actor's adversaries, transferring strategic information to those adversaries regardless of authorial intent.",
+      "evidence_pattern": "Article publishes specific behavioral analysis of one party shortly before that party engages with a counterparty in a high-stakes interaction; publication venue is known to be monitored by the counterparty's intelligence operations.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Detailed catalog of Trump's improvisational style, internal contradictions, factional displacement (Bessent/Greer over Rubio) published 3 weeks before May 14-15 Trump-Xi summit, in a wire service Beijing's MFA analysts certainly monitor.",
+        "operator_annotation": "if Xi exactly know how the way Trump, it will be Trump's weakness, so, questioning to Trump indirectly is like spying to Trump from Xi"
+      },
+      "alternative_hypotheses": [
+        "Public accountability journalism inherently provides such information; this is unavoidable cost of free press",
+        "Article timing was determined by news cycle, not strategic considerations",
+        "Adversary already has this information from other sources"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-008",
+      "name": "Quote-context stripping with tone preservation",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "description": "Selected quote fragments are presented without disclosing what question prompted them, what other sentences accompanied them in the original response, or why these particular fragments were chosen. Tone of selected fragments is editorially preserved.",
+      "evidence_pattern": "Multiple short quotes from same speaker without contextual setup. Reader cannot evaluate whether quotes represent speaker's full position or are tonally cherry-picked.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Two consecutive Ratner quotes ('departments and agencies acting on their own accord' / 'feels like the policy can zigzag') with no information about what was asked or whether other sentences qualified these.",
+        "operator_annotation": "for what question he remarked, is it only one sentence remark or is it one of the sentences from a group of his remark? we don't know, why author make this way, but the tone is not positive"
+      },
+      "alternative_hypotheses": [
+        "Standard journalism practice does not disclose interview question structure",
+        "Speaker approved final quote selection",
+        "Quote is verbatim from a public speech where context is available elsewhere"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-009",
+      "name": "Asymmetric framing-verb assignment to paid voices",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "description": "Different paid speakers (former officials, spokespeople, experts) are introduced with framing verbs that categorize them differently as analytical-voice vs reactive-voice, despite all being paid for their positions. The framing verb does the editorial work invisibly.",
+      "evidence_pattern": "Some speakers introduced with neutral analytical verbs ('said', 'argued', 'told reporters'); others introduced with reactive verbs ('responded to questions', 'defended', 'pushed back'). Pattern correlates with which positions the article favors.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Ratner: 'said' (neutral). Kennedy: 'said' (neutral). Cooper: 'said' (neutral). Czin: 'said' (neutral). Desai: 'Responding to Reuters questions on the administration's approach to China, White House spokesperson Kush Desai said' (reactive framing).",
+        "operator_annotation": "why not like two previous remarks, why not original remark, why not with reasoning facts"
+      },
+      "alternative_hypotheses": [
+        "Desai actually responded to questions while others spoke proactively",
+        "The framing verbs accurately reflect different interview modalities",
+        "Editorial style dictates contextualizing official spokespersons"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-010",
+      "name": "Section header as conclusion-disguised-as-description",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "description": "Section headers that are structurally navigational (signaling topic) are written as conclusions instead. The reader processes the conclusion as a fact about the section's content rather than as a claim requiring evidence.",
+      "evidence_pattern": "Section headers contain evaluative or conclusive language ('NO PLAN B', 'TAKING PAWNS') rather than descriptive topical labels ('Tariff strategy review', 'Strategic positioning').",
+      "example": {
+        "article": "Article 1",
+        "passage": "Headers 'NO PLAN B' and 'TAKING PAWNS' are conclusions presented as section labels. Reader internalizes the conclusion before reading the section's evidence.",
+        "operator_annotation": "push by force (pretended reasonable force)"
+      },
+      "alternative_hypotheses": [
+        "Wire service style guide favors short evocative headers",
+        "Headers were added by editors, not authors",
+        "Reader processing of headers as factual is reader-side, not article-side, issue"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-011",
+      "name": "Quantity-without-justification framing",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "Specific numbers are reported as facts without the reasoning behind them — what calculation produced the number, what alternatives were considered, what threshold logic applies. The number floats free of justification, supporting whatever framing the surrounding text imposes.",
+      "evidence_pattern": "Specific quantities (percentages, dollar amounts, counts) appear in narrative without source-of-calculation, comparison-baseline, or methodology footnote.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'initially hiking tariffs on Chinese goods to around 145%' — number sounds extreme; no information about why 145%, what calculation produced it, what comparable historical tariffs were, how it compared to China's effective tariff rate on US goods.",
+        "operator_annotation": "There is no reason why Trump started with 145%"
+      },
+      "alternative_hypotheses": [
+        "The number's justification was published elsewhere",
+        "Methodology disclosure exceeds article scope",
+        "Number is widely known and treated as background"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-012",
+      "name": "Frame substitution from moral question to political contest",
+      "primary_lens": 4,
+      "secondary_lens": 1,
+      "description": "An underlying question of justice or harm to peoples is reframed as a contest between political entities. Reader's analytical mode shifts from moral evaluation (who is harmed, who is served) to spectator mode (who is winning).",
+      "evidence_pattern": "Moral or structural language ('fair', 'just', 'harm to workers') is absent or rare; political-contest language ('compete', 'win', 'pressure', 'concession', 'leverage') dominates.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Trade conflict framed as 'Beijing did not back down', 'retaliated with tariff increases' — bilateral political contest framing. Underlying questions of fairness in trade, harm to workers, structural justice are not the analytical frame.",
+        "operator_annotation": "push between Beijing and Washington not between fair and unfair"
+      },
+      "alternative_hypotheses": [
+        "Political-contest framing is standard in trade journalism",
+        "Moral framing would require the article to take a position the outlet wishes to avoid",
+        "Reader can supply moral framing themselves"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-013",
+      "name": "Layer-confusion in causal chain",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "A surface-level event is described without connecting it to the deeper layer that produced it. Solutions at the deeper layer would address both, but the article keeps the reader at the surface where blame can be allocated to current actors rather than to long-built structural conditions.",
+      "evidence_pattern": "Current event described in detail; no paragraph connects current event to longer-term structural conditions that enabled it; no reference to actors or decisions at the deeper layer.",
+      "example": {
+        "article": "Article 1",
+        "passage": "China's rare-earth leverage described as the cause of US backing down (surface). Article does not connect this leverage to the decades of US policy that allowed rare earth processing to consolidate in one country (deep). The deep layer would implicate many actors over many administrations; surface layer implicates Trump.",
+        "operator_annotation": "show only the second level but not show the solution of this second level case is only root of first level case"
+      },
+      "alternative_hypotheses": [
+        "Deep-layer analysis exceeds article scope",
+        "Background piece on rare-earth dependency exists separately",
+        "Article assumes reader knows the structural context"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-014",
+      "name": "Selective institutional disclosure that flattens asymmetric realities",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "When two parallel actors have structurally different institutional contexts (one constrained, one unconstrained), the article notes the constraint on one without the parallel non-constraint on the other. The asymmetric reality is flattened by selective disclosure.",
+      "evidence_pattern": "Constraints on one party noted (courts, opposition, press); equivalent absence-of-constraints on counterparty not noted, even when contextually relevant.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Supreme Court ruling against Trump noted as constraint. Article does not note Xi Office faces no comparable constitutional check — exactly the PHI-003 legitimacy distinction that would have been most relevant to the article's stated subject.",
+        "operator_annotation": "but not showing there is no check and balance in Xi's administration, why?"
+      },
+      "alternative_hypotheses": [
+        "Article assumes reader knows the asymmetry",
+        "Drawing the comparison would be considered editorializing",
+        "The omission is space-driven, not framing-driven"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-015",
+      "name": "Dramaticization of structural questions into personal-contest narrative",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "Complex multi-decade structural-economic questions are reframed as a sporting event between two leaders. Drama replaces structural analysis. Reader's mind is moved from slow analysis to fast spectatorship.",
+      "evidence_pattern": "Vocabulary borrowed from sports, war, or chess (broadside, ran aground, taking pawns, chess match, zigzag); leader-vs-leader framing dominates over structural-vs-structural framing.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Kennedy quote 'their entire original strategy was centered around using tariffs to pressure China into major concessions. That effort quickly ran aground.' Frame is contest-of-strategies. Original question (decades of US-China trade structure) is invisible.",
+        "operator_annotation": "not focus to original trade unbalance more than decade, push to boxing playground"
+      },
+      "alternative_hypotheses": [
+        "Sports metaphors are standard analytical shorthand",
+        "Reader engagement requires drama",
+        "Structural analysis is in companion pieces"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-016",
+      "name": "Personal-attribution framing of structural-national outcomes",
+      "primary_lens": 1,
+      "secondary_lens": 2,
+      "description": "Multi-factor OUTCOME (deficit reductions, job changes, market movements, national competitiveness) attributed entirely to one named individual's intent or decisions, suppressing analysis of corporate decisions, market dynamics, multi-decade trends, or institutional inertia. NOT to be confused with: factually attributing a specific policy ACTION to its decision-maker (Trump signing executive order X is correctly attributed to Trump per PHI-003). Detection requires identifying an OUTCOME (consequence, result) attributed to one person, not an ACTION (decision, signature, statement) which is correctly attributed.",
+      "evidence_pattern": "Outcomes/consequences attributed to one named individual: 'Trump's tariffs caused the recession,' 'Xi's policy hollowed out manufacturing.' DO NOT FIRE on simple factual attribution of decisions: 'Trump signed the order,' 'Xi launched the program' — these are correct apparatus-naming per PHI-003. The operation requires CONSEQUENCE attribution to a single person where multi-factor analysis would be appropriate.",
+      "example": {
+        "article": "Article 1",
+        "passage": "32% trade deficit reduction framed as 'one result Trump has sought' produced by 'the tariffs' — single-cause attribution for a multi-factor outcome. National-interest analysis (does this serve American workers, manufacturers, consumers?) absent.",
+        "operator_annotation": "the result is forcely labeled to Trump, but in actual it is about National interest"
+      },
+      "alternative_hypotheses": [
+        "The article is about Trump's policy specifically; attribution is appropriate",
+        "Multi-factor analysis is too complex for the format",
+        "National-interest framing would require politically risky positions"
+      ],
+      "additional_lenses": [
+        3
+      ],
+      "additional_lens_reasons": {
+        "3": "Personal-attribution framing of structural-national outcomes often happens at country-collapse level — \"Trump did X\" frames national-level economic outcomes as one-person decisions, hiding both the structural causes AND erasing the American people whose conditions are the actual subject. Mirror operation on the counterparty side: \"China did Y\" frames Xi Office decisions as Chinese-people decisions."
+      },
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-017",
+      "name": "People-impact reported without causal analysis",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "A fact about people-level outcomes (jobs, livelihoods, deaths, displacement) is reported as a number without analyzing what specifically caused the outcome. Reader is left to fit the number to whatever frame they brought.",
+      "evidence_pattern": "Statistics about human impact (X jobs lost, Y people affected) appear without paragraphs analyzing causes (was it tariffs themselves? tariff uncertainty? automation? sectoral shifts? specific industries?).",
+      "example": {
+        "article": "Article 1",
+        "passage": "'The U.S. lost 91,000 manufacturing jobs from February to December of last year.' Standalone sentence. No causal analysis. Reader assumes whatever fits their existing frame.",
+        "operator_annotation": "no advice to make analysis the root cause of 91000 manufacturing jobs lost"
+      },
+      "alternative_hypotheses": [
+        "Causal complexity exceeds article scope",
+        "Definitive causal attribution is genuinely uncertain",
+        "Author considers the number self-explanatory in context"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-018",
+      "name": "Counterparty negative actions unsurfaced",
+      "primary_lens": 2,
+      "secondary_lens": 4,
+      "description": "When analyzing one side's policy outcomes, the article does not surface the specific actions the counterparty took that contributed to those outcomes — particularly when the counterparty's actions were harmful to the populations the article ostensibly serves.",
+      "evidence_pattern": "Counterparty mentioned at strategic-posture level ('did not back down', 'sought to portray') without specific actions ('dumped products at $X price', 'subsidized industry Y', 'manipulated currency Z') that affected populations.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'Beijing did not back down' — strategic posture noted. What specific Xi Office actions hurt American workers? Subsidies? Currency? Dumping? IP theft? Not surfaced in detail.",
+        "operator_annotation": "no point out Xi's negative reaction"
+      },
+      "alternative_hypotheses": [
+        "Counterparty actions are documented in separate articles",
+        "Specifics are classified or unverifiable",
+        "Article scope intentionally focuses on US-side accountability"
+      ],
+      "additional_lenses": [
+        3
+      ],
+      "additional_lens_reasons": {
+        "3": "When counterparty negative actions ARE surfaced, they are typically attributed at country-level (\"Beijing dumped products\") rather than apparatus-level (\"Xi Office subsidized exports\"). This collapses Chinese-people identity into Xi Office identity, recruiting reader against the people while appearing to criticize only the apparatus."
+      },
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-019",
+      "name": "Chronicle without solution-direction",
+      "primary_lens": 1,
+      "secondary_lens": 4,
+      "description": "Article describes a problem at length without pointing toward solutions, next steps, or directions for inquiry. Serves resignation rather than agency. Reader leaves with no place to direct attention or action.",
+      "evidence_pattern": "No paragraph in concluding portion of article suggests what could improve the situation, what questions remain to investigate, what readers or institutions could do, what historical analogs offer guidance.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Article ends with Wang Dong quote 'inconsistency erodes US credibility' — pessimistic conclusion with no forward direction. No paragraph addresses what continued search for solution to multi-decade trade imbalance might look like.",
+        "operator_annotation": "no point out to continue search solution for trade unbalanced more then decades"
+      },
+      "alternative_hypotheses": [
+        "Solution-direction would be considered editorializing",
+        "Solutions are genuinely unclear",
+        "Article is a status report, not a strategy piece"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-020",
+      "name": "Person-naming-as-fact without evidence chain",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "Article asserts as fact that specific persons are doing specific things (running policy, displacing rivals, making decisions) without providing sources, timeline, or specific evidence. Naming is presented as established when it is actually claim-requiring-validation.",
+      "evidence_pattern": "Statements like 'X has run policy instead of Y', 'A and B have lowered expectations', 'C now controls D' without source attribution, timeline, or specific evidence.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'Treasury Secretary Scott Bessent and U.S. Trade Representative Jamieson Greer, who have run China policy instead of hawkish Secretary of State Marco Rubio' — no source, no timeline of how this happened, no evidence of the displacement.",
+        "operator_annotation": "i see only force labeling to persons without related evidences, we need to check within 7-14 days any preset articles from same authors same channel or other channels"
+      },
+      "alternative_hypotheses": [
+        "Authors have inside sources that cannot be named",
+        "The arrangement is widely known in Washington",
+        "The phrasing reflects collective administration evolution rather than discrete event"
+      ],
+      "watch_protocol": "Per operator: cross-channel/cross-time validation within 7-14 days. If same claim repeats from different authors/outlets, narrative-laundering likely. If only this article makes the claim, one-off speculation.",
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-021",
+      "name": "Subordinate-stated commitments treated as principal-binding when authority chain is unstable",
+      "primary_lens": 4,
+      "secondary_lens": 1,
+      "description": "When a subordinate (cabinet member, spokesperson, ambassador) states a commitment in an environment where the principal (head of state, decision-maker) is known to change positions rapidly, treating the subordinate's statement as binding policy without flagging the principal's volatility creates false stability for the reader.",
+      "evidence_pattern": "Subordinate quoted stating policy goal as if permanent; no caveat about principal's known reversal pattern; no exploration of conditions under which the stated commitment would or would not hold.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Greer quoted: 'We want relations to be stable. We want our trade to be more balanced. We want it to be in non-sensitive goods.' Reported as if permanent commitment. No caveat about Trump's documented reversal patterns within the same article.",
+        "operator_annotation": "according to Trump's rapid changing target style, we have to know we should avoid keeping the words permanently, if someone holding the words, we have to find behind the curtain conditions of these holding words"
+      },
+      "alternative_hypotheses": [
+        "Greer speaks for actual current administration position",
+        "Standard reporting does not require flagging principal volatility",
+        "Reader is expected to integrate this caveat themselves"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-022",
+      "name": "Narrator-voice strategic-attribution without sourcing",
+      "primary_lens": 4,
+      "secondary_lens": 3,
+      "description": "Article in its narrator voice (not via quoted experts) attributes strategic intent to a major actor without sourcing the attribution. Reader processes the attribution as factual rather than as opinion.",
+      "evidence_pattern": "Sentences in the article's own voice making claims like 'X has sought to portray itself as Y', 'A is positioning for B', 'C is signaling D' without 'according to', 'analysts say', or other attribution markers.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'In the face of Trump's turmoil, China has sought to portray itself as the responsible power.' Narrator-voice claim about Xi Office strategic intent. No source for this characterization.",
+        "operator_annotation": "author is telling without showing proof"
+      },
+      "alternative_hypotheses": [
+        "The characterization is widely accepted and requires no specific source",
+        "The Wang Dong quote later in article serves as implicit support",
+        "Editorial style permits narrator attribution of broad strategic posture"
+      ],
+      "secondary_lens_reason": "Narrator-voice strategic-attribution typically uses country-as-actor vocabulary (\"China has sought to portray itself\") which assigns strategic intent to Chinese people rather than to Xi Office specifically. Same pattern applied to \"Russia,\" \"Iran,\" \"United States\" creates systematic apparatus-people conflation across narrator voice.",
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-023",
+      "name": "Boilerplate quote published without follow-up validation",
+      "primary_lens": 4,
+      "secondary_lens": 2,
+      "description": "An institutional spokesperson's boilerplate statement is published as if it were substantive response. No follow-up question is reported. No verification of whether the institution's actions match the boilerplate's stated posture.",
+      "evidence_pattern": "Single quote from official spokesperson presented standalone; no companion sentence asking 'what specific actions demonstrate this?' or 'how does this match observable behavior?'.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Chinese MFA quote 'We stay committed to acting as a positive and stable force for good' — published standalone with no follow-up question reported, no verification step against observable Xi Office actions.",
+        "operator_annotation": "need confirmation next step question"
+      },
+      "alternative_hypotheses": [
+        "Follow-up was attempted but not received",
+        "MFA boilerplate is standard and reader is expected to discount",
+        "Article scope did not include verification of foreign ministry claims"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-024",
+      "name": "Country-as-apparatus collapse",
+      "primary_lens": 3,
+      "secondary_lens": 4,
+      "description": "Article uses country names ('China', 'Russia', 'Iran', 'United States') as if they are unitary actors making decisions, when in fact the decisions are made by specific apparatus (Xi Office, Putin Office, Khamenei Office, Trump Office). The collapse silently equates apparatus actions with people's actions, recruiting reader sentiment against peoples while appearing to criticize only apparatus.",
+      "evidence_pattern": "Sentences attribute strategic actions, decisions, intent to country names. 'China did X', 'Beijing decided Y', 'Russia threatened Z', 'America responded with W'. Apparatus name (Xi Office, Putin Office, Trump Office) is rare or absent. PHI-003 vocabulary discipline violated systematically.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Throughout the article: 'China did not back down', 'Beijing's mercantilist trade policies', 'China has sought to portray itself', 'China voices concern' — country-as-actor framing dominates. Xi Office is rarely named as the specific apparatus; 'Beijing' or 'China' substitutes silently. Same pattern applied to 'United States' / 'Washington' for Trump Office actions.",
+        "operator_annotation": "the way the author(s) using China US EU (to point out related government) — collapses apparatus into people"
+      },
+      "alternative_hypotheses": [
+        "Standard journalistic shorthand uses country names for governments — convention, not malice",
+        "Wire service style guides explicitly require country-name shorthand for brevity",
+        "Reader is expected to mentally translate country-names to apparatus-names",
+        "Author has insufficient access to specific apparatus details and falls back on country-level reporting"
+      ],
+      "detection_stage": "post_suspect",
+      "detection_stage_rationale": "Country-as-apparatus collapse (\"China did X\" instead of \"Xi Office did X\") is journalistic industry baseline. Most news articles use country-names as actors by default convention. Firing Watch Alerts on this operation alone would flag essentially every news article ever written, collapsing signal-to-noise. This operation is meaningful only as deepening analysis on voices already flagged for other (non-baseline) operations.",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-025",
+      "name": "On-behalf-of-people pretense",
+      "primary_lens": 3,
+      "secondary_lens": 4,
+      "description": "Apparatus actions are framed or accepted as if performed on behalf of, in service of, or with mandate from the peoples the apparatus governs. The framing silently transfers people-mandate to apparatus that may not have it (PHI-003 unelected-indefinite or hybrid-contested), or assumes mandate where none was given.",
+      "evidence_pattern": "Phrases like 'China's interests', 'Russia's position', 'America's response' presented as if peoples and apparatus share a single interest set. No distinction between what apparatus claims to want and what peoples might want if asked. Apparatus speech reported as if it speaks for peoples.",
+      "example": {
+        "article": "Article 1",
+        "passage": "MFA quote 'We stay committed to acting as a positive and stable force for good' — reported without bracketing that 'we' here means Xi Office's MFA, not the Chinese people whose voices are not in the article. Trump Office spokesperson similarly speaks as 'America' without bracketing that the American people did not directly authorize this specific framing.",
+        "operator_annotation": "trying to distract Xi's movement to pretend on behalves of China People silently"
+      },
+      "alternative_hypotheses": [
+        "Treating governments as legitimate speakers for peoples is standard international relations convention",
+        "Distinguishing apparatus-from-people in every quote would render articles unreadable",
+        "The pretense is the apparatus's, not the article's — article merely reports the pretense"
+      ],
+      "detection_stage": "post_suspect",
+      "detection_stage_rationale": "On-behalf-of-people pretense most often manifests through country-name vocabulary (\"China's interests\"). While the deep meaning is unmandated speech-for-peoples regardless of vocabulary, in practice this operation depends on the same industry-baseline country-naming convention as OP-024. Marked post_suspect to avoid firing on industry-baseline phrasing.",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-026",
+      "name": "Apparatus-criticism weaponized into people-targeting",
+      "primary_lens": 3,
+      "secondary_lens": 1,
+      "description": "Article criticizes apparatus actions in language that, by virtue of country-as-apparatus collapse, recruits reader sentiment against the peoples. Reader experiences the article as 'bad China' rather than 'bad Xi Office'. The criticism may be valid against apparatus AND simultaneously harmful to people-image. The article makes no effort to separate.",
+      "evidence_pattern": "Negative framings of apparatus consistently use country-name as subject. 'China is mercantilist', 'Russia is the aggressor', 'Iran is destabilizing'. Reader internalizes negative attribution against the peoples. PHI-003 protective discipline (apparatus-people separation) absent precisely where it is most needed — during criticism.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'Beijing's mercantilist trade policies', 'China would not be diverted from its strategic course', 'Beijing did not back down' — every criticism of trade policy aimed at country-name. Xi Office never named as the specific responsible apparatus. Reader carries impression that mercantilism is Chinese-people characteristic rather than Xi Office policy choice.",
+        "operator_annotation": "author is telling every Xi's office movements as behalves of China people, it is not true, it can be said using sectarian trap"
+      },
+      "alternative_hypotheses": [
+        "Reader is sophisticated enough to translate country-criticism to apparatus-criticism",
+        "Repetition of country-name does not create people-targeting in modern readership",
+        "Article structurally separates discussion of apparatus from discussion of peoples elsewhere"
+      ],
+      "detection_stage": "post_suspect",
+      "detection_stage_rationale": "Apparatus-criticism weaponized into people-targeting depends on country-name being used as criticism subject (\"China is mercantilist\"). This is industry-baseline phrasing. Operation remains valid pretense detection but only as confirmatory evidence on voices already flagged for distinctive operations.",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-027",
+      "name": "Asymmetric apparatus-naming across actors",
+      "primary_lens": 3,
+      "secondary_lens": 4,
+      "description": "When the article DOES distinguish apparatus from country, it does so for one actor but not for the other. Trump and Trump Office may be named specifically; Xi may be named while 'China' carries the apparatus-actions. The asymmetry produces a perception that one country has identifiable leaders making decisions while the other country IS its decisions — that is, has no separable people.",
+      "evidence_pattern": "Compare frequency of specific-apparatus naming across actors in the article. 'Trump declared', 'the Trump administration', 'Trump's Pentagon' (specific to apparatus) vs 'China retaliated', 'Beijing's mercantilist policies' (country as apparatus). Asymmetric specificity reveals selective application of PHI-003 discipline.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Specific Trump-Office naming throughout: 'Trump declared', 'the Trump administration', 'Trump's Pentagon', 'Trump's Justice Department', 'Trump's Commerce Department'. Equivalent specificity for Xi Office side absent: 'Beijing did', 'China would', 'China voices' — country-name carries apparatus-actions. Reader perceives America as 'people governed by Trump' but China as 'a country that does things'.",
+        "operator_annotation": "We need to see the way the author(s) using China US EU (to point out related government)"
+      },
+      "alternative_hypotheses": [
+        "Trump-Office is named specifically because of high US news familiarity; less familiar foreign apparatus referred to by country shorthand",
+        "Editorial guidelines differ for domestic vs foreign coverage",
+        "Naming asymmetry reflects access asymmetry — authors have detailed insider knowledge of one administration, less of the other"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-028",
+      "name": "Tribal frame substitution for structural frame",
+      "primary_lens": 3,
+      "secondary_lens": 1,
+      "description": "Conflict that has structural causes (economic policy, apparatus-level decision-making, oligarchic capture) is reframed as tribal/ethnic/civilizational/national conflict between peoples. Readers are positioned as members of one tribe against another tribe rather than as workers, citizens, or affected parties confronting structural forces.",
+      "evidence_pattern": "Vocabulary of national rivalry, civilizational competition, us-vs-them framing where the actual conflict is between specific apparatus or specific economic structures. 'American competition with Beijing' rather than 'Trump Office tariff policy intersecting with Xi Office trade policy'. Reader recruited into 'side' rather than into structural analysis.",
+      "example": {
+        "article": "Article 1",
+        "passage": "'have undermined the U.S. in its competition with Beijing', 'push back against China's actions on the global stage' — frames trade-policy disputes as US-vs-China civilizational competition. Original structural questions (decades of trade dependency, rare-earth processing concentration, manufacturing job loss causes) reframed as which-country-wins. Reader processes themselves as American tribe member vs Chinese tribe member.",
+        "operator_annotation": "author is telling every Xi's office movements as behalves of China people — and reader is invited to respond as a member of the opposing 'side'"
+      },
+      "alternative_hypotheses": [
+        "International relations vocabulary inherently includes nation-vs-nation framing",
+        "Reader is sophisticated enough to read past the framing",
+        "Some conflicts are genuinely between national interests at structural level and tribal vocabulary reflects this accurately"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-029",
+      "name": "People absent from their own story",
+      "primary_lens": 3,
+      "secondary_lens": 1,
+      "description": "An article written about events affecting peoples never includes the voices of those peoples. Apparatus speakers, expert analysts, and journalists speak; the affected peoples (workers, consumers, dissidents, ordinary citizens) are absent from the source list. Their conditions may be mentioned as statistics but their perspectives are not heard. This is Sectarian Trap by exclusion — peoples are framed (as 'Americans', 'Chinese', 'Iranians') without being given voice to define themselves.",
+      "evidence_pattern": "Source list audit: count quoted voices. Categorize each as (apparatus official) / (paid analyst) / (journalist) / (affected ordinary person). When the last category is empty or near-empty in articles purportedly about peoples-affecting events, this operation is present.",
+      "example": {
+        "article": "Article 1",
+        "passage": "Quoted voices: Ely Ratner (former DoD official), Kush Desai (White House spokesperson), Scott Kennedy (CSIS analyst), Jamieson Greer (US Trade Rep), Chinese MFA spokesperson, Zack Cooper (AEI), Alex Gray (former Trump-1 NSC), Jonathan Czin (Brookings), Wang Dong (Peking University). Zero American workers. Zero Chinese workers. Zero American consumers. Zero affected small-business owners. Article is about a trade policy affecting hundreds of millions of peoples and includes no peoples-voices.",
+        "operator_annotation": "Implicit in the apparatus-people separation insight: peoples never speak for themselves in this article"
+      },
+      "alternative_hypotheses": [
+        "Wire-service analytical pieces conventionally quote experts not affected parties",
+        "Affected-persons coverage exists in companion human-interest pieces",
+        "Article scope was deliberately limited to apparatus-level analysis"
+      ],
+      "detection_stage": "early_warning",
+      "genre_context": "universal",
+      "max_article_chars": null
+    },
+    {
+      "id": "OP-030",
+      "name": "Absent counterparty in stenographic report",
+      "detection_stage": "early_warning",
+      "primary_lens": 1,
+      "secondary_lens": null,
+      "genre_context": "stenographic",
+      "max_article_chars": 3000,
+      "description": "In a short wire report about a bilateral interaction, only one side's actions and statements are represented. The other party is referenced by name only with no specific actions quoted.",
+      "evidence_pattern": "Article <3000 chars reports an interaction between two actors. Actor A has specific quotes, actions, or positions. Actor B is mentioned by name only with no specific quote, action, or position stated.",
+      "watch_protocol": "Fire when article <3000 chars and bilateral topic but only one side has quoted statements or specific named actions."
+    },
+    {
+      "id": "OP-031",
+      "name": "Unsourced state claim in brief format",
+      "detection_stage": "early_warning",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "genre_context": "stenographic",
+      "max_article_chars": 3000,
+      "description": "A short wire report makes a strategic-level claim about a state actor's intent in the article's own narrative voice, with no attribution to any analyst, official, or document.",
+      "evidence_pattern": "Article <3000 chars contains a sentence NOT in a quote block asserting what a state actor 'seeks to', 'aims to', 'is attempting to', 'wants to' or 'is positioning for' — without attribution phrase.",
+      "watch_protocol": "Fire on single unattributed intent-claim sentence in brief format."
+    },
+    {
+      "id": "OP-032",
+      "name": "Spokesperson quote as sole evidence in brief",
+      "detection_stage": "early_warning",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "genre_context": "stenographic",
+      "max_article_chars": 3000,
+      "description": "A short wire report's only substantive content is a single official spokesperson quote, with no independent verification, no analyst comment, and no observable evidence cited.",
+      "evidence_pattern": "Article <3000 chars contains only one or two quotes, both from official spokesperson(s) of the same side. No independent source, no observable fact cited to verify the claim.",
+      "watch_protocol": "Fire when article is >60% official quote content with no independent verification."
+    },
+    {
+      "id": "OP-033",
+      "name": "Label-only framing in headline-brief",
+      "detection_stage": "early_warning",
+      "primary_lens": 4,
+      "secondary_lens": null,
+      "genre_context": "stenographic",
+      "max_article_chars": 2000,
+      "description": "A very short wire report uses a loaded evaluative label as its primary framing device, with no cause-chain supporting the label in the body.",
+      "evidence_pattern": "Article <2000 chars. Title or first sentence contains evaluative label (threat, aggression, provocation, escalation, stability). Body contains no explanation of what actions constitute the labeled behavior.",
+      "watch_protocol": "Fire when label appears in headline and body contains <50 words of supporting evidence."
+    },
+    {
+      "id": "OP-034",
+      "name": "Single-source verb asymmetry in brief",
+      "detection_stage": "early_warning",
+      "primary_lens": 1,
+      "secondary_lens": null,
+      "genre_context": "stenographic",
+      "max_article_chars": 3000,
+      "description": "A short report with only 2-3 quoted sources assigns reactive or defensive introduction verbs to one side and neutral or active verbs to the other.",
+      "evidence_pattern": "Article <3000 chars. One source introduced with active verb (said, stated, announced, declared). Different source from opposing side introduced with reactive verb (responded, pushed back, denied, defended, rejected).",
+      "watch_protocol": "Fire on minimum-context articles where verb asymmetry IS the framing."
+    },
+    {
+      "id": "OP-035",
+      "name": "Action-to-outcome causation extension",
+      "detection_stage": "early_warning",
+      "primary_lens": 1,
+      "secondary_lens": null,
+      "genre_context": "universal",
+      "max_article_chars": null,
+      "description": "An article correctly attributes a decision to a named actor, then extends that attribution to claim the actor caused a structural outcome — conflating decision-making with structural causation.",
+      "evidence_pattern": "Sentence 1 correctly attributes: '[Actor] decided/launched/signed/ordered X.' Sentence 2 extends: '[Actor]'s X caused/produced/resulted in [large structural outcome].' Causal chain not explained.",
+      "watch_protocol": "Fire when action-attribution is immediately followed by structural-outcome attribution without explaining intervening causal chain."
+    }
+  ],
+  "changelog": {
+    "v1": "Initial catalog from Article 1 forensic annotation. 23 operations. Lens 3 not populated.",
+    "v2": "6 new Lens 3 operations added (OP-024 through OP-029) from operator insight: country-as-apparatus collapse weaponizes apparatus criticism into anti-people sentiment. Lens 3 secondary mappings added to existing operations OP-005, OP-016, OP-018, OP-022. v2 lens distribution: Lens 1 primary 8, Lens 2 primary 2, Lens 3 primary 6, Lens 4 primary 13.",
+    "v3": "Added detection_stage field to every operation. Three operations marked post_suspect because they depend on country-name-as-apparatus convention which is journalistic industry baseline: OP-024 (Country-as-apparatus collapse), OP-025 (On-behalf-of-people pretense), OP-026 (Apparatus-criticism weaponized into people-targeting). Firing Watch Alerts on these would flag essentially every news article ever written. They become confirmatory evidence on voices already flagged for early_warning operations. All other 26 operations marked early_warning — they involve specific framing choices not industry conventions. v3 also corrects the same-filename mistake from v1->v2 transition: this version uses explicit version in filename (lens-OPS-001_catalog_v3.json) per LR-088 discipline. OP-027 (Asymmetric apparatus-naming) stays early_warning because asymmetry of naming is distinctive even within country-name convention. OP-028 (Tribal frame substitution) and OP-029 (People absent) pass independence test — distinctive even without country-name vocabulary."
+  },
+  "field_definitions": {
+    "detection_stage": {
+      "early_warning": "Operation can fire Watch Alert by itself (Day 7-10). Used by Watch aggregator (LENS-020) to count operation frequency for early-warning candidate selection.",
+      "post_suspect": "Operation only meaningful AFTER voice is flagged by early_warning operations. Used by Clarity aggregator (LENS-020 Day 14-21) and Verification aggregator (LENS-020 Day 30-45) for deepening analysis on already-suspected voices."
+    }
+  },
+  "v3_independence_check": {
+    "description": "v3 self-check ran during build: do Lens 3 operations OP-025 through OP-029 stand independently of OP-024 (post_suspect)? Operator decisions applied where dependency was real.",
+    "results_with_operator_decisions": [
+      "OP-025: vocabulary similarity to OP-024 confirmed by operator → marked post_suspect",
+      "OP-026: explicit dependency on country-name-as-criticism-subject → marked post_suspect",
+      "OP-027: PASS — asymmetry of naming is the signal, not the country-name use itself → early_warning",
+      "OP-028: PASS — tribal frame substitution distinctive without country-name dependency → early_warning",
+      "OP-029: PASS — source-list audit purely structural, distinctive without vocabulary dependency → early_warning"
+    ],
+    "final_post_suspect_operations": [
+      "OP-024",
+      "OP-025",
+      "OP-026"
+    ],
+    "final_early_warning_count": 26
+  },
+  "revision_history": [
+    {
+      "version": "v3.1",
+      "date": "2026-04-26",
+      "changes": [
+        "OP-001 description tightened to distinguish DECOY-SUBJECT pretense from incomplete coverage",
+        "OP-001 evidence_pattern adds explicit DO-NOT-FIRE guidance for missing-coverage cases",
+        "OP-016 description tightened to distinguish CONSEQUENCE-attribution (operation) from ACTION-attribution (correct PHI-003 naming)",
+        "OP-016 evidence_pattern adds explicit DO-NOT-FIRE guidance for factual decision attribution"
+      ],
+      "rationale": "LENS-019.5 calibration rounds 3+4 showed OP-001 over-firing on all 6 Article 2 runs (Groq) and on multiple Article 3 runs (Cerebras). OP-016 over-fires on opinion genre. Both are catalog clarity issues, not LLM defects. Boundary cases now explicitly named in descriptions."
+    }
+  ]
+}

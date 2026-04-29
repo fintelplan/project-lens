@@ -117,7 +117,7 @@ def assign_refs(sb, hours_back: int = 6) -> list:
             "ref_id":         f"REF-{today}-{seq:04d}",
             "collected_date": today_iso,
             "domain":         (art.get("domain") or "GENERAL").upper(),
-            "source_name":    source_map.get(art.get("source_id"), "Unknown"),
+            "source_name":    source_map.get(art.get("source_id")) or art.get("source_name") or "Unknown",
             "title":          (art.get("title") or "")[:300],
             "url":            art.get("url", ""),
             "raw_article_id": art.get("id"),
