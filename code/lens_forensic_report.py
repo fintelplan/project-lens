@@ -414,10 +414,9 @@ def build_prompt(macros: list, injections: list, lens_reports: list,
             created = (f.get("created_at") or "")[:10]
             s2f_text += f"[{conf}] {lens} | {sample} articles | {created}\n"
             s2f_text += f"{phrasing}\n\n"
-        parts.append(s2f_text)
+        pass  # s2f_text already set above
     else:
-        parts.append("S2-F PRETENSE OPERATION FINDINGS: No Watch/Clarity/Verification findings yet "
-                     "(S2-F pipeline is new — findings will accumulate over 7-45 days).\n")
+        s2f_text = "S2-F PRETENSE OPERATION FINDINGS: No Watch/Clarity/Verification findings yet (S2-F pipeline is new — findings will accumulate over 7-45 days).\n"
 
     # ── Reference pool (Path B) ──
     ref_text = (
@@ -469,6 +468,8 @@ EVIDENCE INPUT FOLLOWS — analyze it forensically:
 {s1_text}
 
 {s3_text}
+
+{s2f_text}
 
 {ref_text}
 
