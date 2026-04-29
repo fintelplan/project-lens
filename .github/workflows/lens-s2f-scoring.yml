@@ -75,6 +75,9 @@ jobs:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
           GITHUB_ACTIONS:           "true"
+          S2F_PROVIDER:             "mistral"
+          MISTRAL_API_KEY:          ${{ secrets.MISTRAL_API_KEY }}
+          MISTRAL_MODEL:            "mistral-small-latest"
 
       - name: Direction B — Deliver HIGH findings to operator
         run: python code/lens_s2f_direction_b.py
