@@ -30,6 +30,7 @@ jobs:
             requests \
             supabase \
             python-dotenv \
+            groq \
             tzdata
       - name: Run collection + injection detection
         run: |
@@ -40,3 +41,4 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GITHUB_ACTIONS: "true"
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
