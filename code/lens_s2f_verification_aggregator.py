@@ -35,6 +35,7 @@ VERIFICATION_RECUR_MIN    = int(os.environ.get("VERIFICATION_RECUR_MIN",    "3")
 def _get_supabase_client():
     try:
         from supabase import create_client
+from lens_s2f_helpers import get_state_office_entity_id
     except ImportError:
         log.error("supabase SDK not installed")
         return None
@@ -205,7 +206,7 @@ def _write_findings(client, findings: list[dict]):
     for f in findings:
         try:
             row = {
-                "entity_id":             None,
+                "entity_id":               get_state_office_entity_id(client, f["state_actor_lens"]),
                 "state_actor_lens":       f["state_actor_lens"],
                 "window_start":           (datetime.now(timezone.utc) - timedelta(days=45)).date().isoformat(),
                 "window_end":             datetime.now(timezone.utc).date().isoformat(),
