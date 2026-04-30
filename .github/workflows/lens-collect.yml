@@ -1,11 +1,11 @@
 name: Lens Collection Pipeline
-# Project Lens — 4x daily collection
-# Runs at: 13:00, 17:00, 21:00, 04:00 UTC (Washington D.C. EDT primary)
-# 09:00 AM D.C. | 01:00 PM D.C. | 05:00 PM D.C. | 12:00 AM D.C.
-# Collects from 32 public sources (STATE 7 + TIER1 7 + TIER2 9 + TIER3 6 + 1 arXiv)
-# Matches 46 indicators across 7 domains
+# Project Lens — 2x daily collection
+# Runs at: 13:00 + 01:00 UTC (Washington D.C. EDT primary)
+# 09:00 AM D.C. | 09:00 PM D.C.
+# Collects from 77 sources (STATE + TIER1-3 + TIER_B + TIER_A)
+# Matches indicators across 7 domains
 # Ethics: public data only (LR-014(E))
-# Session: LENS-005 — updated 32 sources + injection detection
+# Updated: LENS-022
 on:
   schedule:
     - cron: '0 13 * * *'   # 9:00 AM Washington D.C. (EDT)

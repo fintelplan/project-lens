@@ -1,7 +1,6 @@
 # Project Lens — Python dependencies
-# Used by 3 workflows with cache: pip
-#   lens-sonnet.yml      (Opus 4.7 adaptive thinking report)
-# merged into lens-manage-analyze.yml (LENS-022)
+# Used by lens-forensic-report.yml (Anthropic API, python-docx)
+# LENS-022: ref system merged into lens-manage-analyze.yml
 
 #
 # Other workflows (lens-collect, lens-gdelt, lens-manage-analyze)
