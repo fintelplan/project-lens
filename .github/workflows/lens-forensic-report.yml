@@ -1,8 +1,9 @@
 name: Lens Forensic Report
 
 on:
-  schedule:
-    - cron: '0 2 * * *'  # 10:00 PM DC EDT
+  workflow_run:
+    workflows: ["Lens Manager + Analyze"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       dry_run:
