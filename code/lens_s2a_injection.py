@@ -134,6 +134,25 @@ def get_groq() -> Groq:
     return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
 
 
+def get_mistral():
+    """Mistral-small fallback client (European lineage, PHI-002, architecture v4)."""
+    try:
+        from openai import OpenAI
+    except ImportError:
+        log.error("openai SDK not installed — pip install openai")
+        return None
+    key = os.environ.get("MISTRAL_API_KEY", "")
+    if not key:
+        log.warning("MISTRAL_API_KEY not set — Mistral fallback unavailable")
+        return None
+    return OpenAI(
+        api_key=key,
+        base_url="https://api.mistral.ai/v1",
+    )
+
+MISTRAL_MODEL = "mistral-small-latest"
+
+
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
     try:
         q = sb.table("lens_reports").select(
@@ -430,6 +449,22 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         report["_sanitized_summary"] = san["sanitized_text"]
 
         analysis = call_injection_tracer(client, report, replaced_phrases)
+
+        # Mistral fallback — European lineage, PHI-002 (LENS-022 T5)
+        if analysis is None:
+            log.warning(f"S2-A Groq failed for {report.get('domain_focus','?')} — trying Mistral fallback")
+            mistral_client = get_mistral()
+            if mistral_client is not None:
+                try:
+                    import openai as _oai
+                    # Reuse call_injection_tracer with Mistral client
+                    # (OpenAI-compatible — same interface as Groq)
+                    analysis = call_injection_tracer(mistral_client, report, replaced_phrases)
+                    if analysis is not None:
+                        log.info(f"S2-A Mistral fallback succeeded for {report.get('domain_focus','?')}")
+                except Exception as _me:
+                    log.warning(f"S2-A Mistral fallback failed: {_me}")
+
         if analysis is None:
             log.warning(f"S2-A: no result for {report.get('domain_focus', '?')}")
             continue
