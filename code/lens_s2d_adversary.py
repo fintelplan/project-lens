@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from groq import Groq
+from lens_quota_guard import guard_check_with_fallback
 from supabase import create_client, Client
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -359,6 +360,20 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     try:
         sb     = get_supabase()
+
+    # ── Pre-flight quota guard (LENS-022 T4) ─────────────────────────────────
+    try:
+        from supabase import create_client
+        _sb_guard = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+        quota_guard = guard_check_with_fallback(positions=["S2-D"], run_id=run_id, sb=_sb_guard)
+        skip_result = next((r for r in quota_guard if r.decision == "SKIP" and "S2-D" in r.positions), None)
+        if skip_result:
+            log.warning(f"S2-D SKIPPED by quota guard: {skip_result.reason}")
+            return {"status": "SKIP", "reason": skip_result.reason}
+    except Exception as _guard_err:
+        log.warning(f"S2-D guard check failed (non-fatal): {_guard_err}")
+    # ─────────────────────────────────────────────────────────────────────────
+
         client = get_groq()
     except Exception as e:
         log.error(f"Client init failed: {e}")

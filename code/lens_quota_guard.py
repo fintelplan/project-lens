@@ -89,7 +89,7 @@ POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {
     "S3-B":   ("gemini",    "gemini-2.0-flash",              1),
     "S3-C":   ("cohere",    "command-r-plus",                1),
     "S3-D":   ("cerebras",  "qwen-3-235b",               6_000),
-    "S3-E":   ("sambanova", "llama-3.3-70b",             3_000),
+    # S3-E: Ollama LOCAL — no quota, no guard needed (W-010, restored LENS-022)
 }
 
 # Decision thresholds (headroom percent)
