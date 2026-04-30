@@ -358,13 +358,9 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     log.info(f"=== S2-D Adversary Narrative START | run_id={run_id} | cycle={cycle} ===")
 
+    # ── Pre-flight quota guard (LENS-022 T4) ─────────────────────────────
     try:
-        sb     = get_supabase()
-
-    # ── Pre-flight quota guard (LENS-022 T4) ─────────────────────────────────
-    try:
-        from supabase import create_client
-        _sb_guard = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+        _sb_guard = get_supabase()
         quota_guard = guard_check_with_fallback(positions=["S2-D"], run_id=run_id, sb=_sb_guard)
         skip_result = next((r for r in quota_guard if r.decision == "SKIP" and "S2-D" in r.positions), None)
         if skip_result:
@@ -373,7 +369,8 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     except Exception as _guard_err:
         log.warning(f"S2-D guard check failed (non-fatal): {_guard_err}")
     # ─────────────────────────────────────────────────────────────────────────
-
+    try:
+        sb     = get_supabase()
         client = get_groq()
     except Exception as e:
         log.error(f"Client init failed: {e}")
