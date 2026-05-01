@@ -1070,6 +1070,16 @@
       ],
       "ethics_verified": true,
       "notes": "Chinese Academy of Social Sciences international arm. Elite Chinese economic and strategic think-tank. Previews PBSC economic framing before state media. Divergence from Western economic analysis IS the signal."
+    },
+    {
+      "id": "SRC-078",
+      "name": "China Daily (English)",
+      "rss_url": "https://www.chinadaily.com.cn/rss/world_rss.xml",
+      "feed_type": "rss",
+      "domain": "NARRATIVE",
+      "tier": "TIER_A",
+      "max_articles": 5,
+      "note": "CCP official English-language newspaper. Softer tone than Global Times — diplomatic framing. Reveals Beijing's preferred international image vs Global Times nationalist framing. Key complement to CGTN/GT for full Chinese state narrative picture."
     }
   ]
 }
