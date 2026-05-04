@@ -132,6 +132,11 @@ def main():
     try:
         from lens_telegram import send_s3_intelligence
         send_s3_intelligence(run_id=RUN_ID)
+        try:
+            from lens_s3_step_report import run_s3_report
+            run_s3_report()
+        except Exception as _s3r:
+            print(f"[S3-ORC] S3 step report failed (non-fatal): {_s3r}")
     except Exception as _te:
         print(f"[S3-ORC] Telegram step report failed (non-fatal): {_te}")
 

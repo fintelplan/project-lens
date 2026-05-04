@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx mistralai openai tzdata openpyxl cohere
+          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx mistralai openai tzdata openpyxl cohere python-docx
 
       - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:
@@ -45,6 +45,7 @@ jobs:
           LENS_DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
         run: |
           python code/lens_orchestrator.py
+          python code/lens_s1_report.py || true
           echo "System 1 complete — proceeding to System 2"
 
       - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)

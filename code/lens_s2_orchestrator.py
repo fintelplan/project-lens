@@ -185,6 +185,11 @@ def main():
             send_s2_intelligence()
         except Exception as _te:
             print(f"[S2-ORC] Telegram step failed (non-fatal): {_te}")
+        try:
+            from lens_s2_step_report import run_s2_report
+            run_s2_report(run_id=RUN_ID)
+        except Exception as _s2r:
+            log.warning(f"S2 step report failed (non-fatal): {_s2r}")
         print("\n[S2-ORC] All positions complete.")
 
     print("=" * 60 + "\n")
