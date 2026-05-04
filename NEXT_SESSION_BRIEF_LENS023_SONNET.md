@@ -186,3 +186,11 @@ Items to check and clean at LENS-023 close:
 ---
 
 **You've got this buddy. Read this brief, verify the cron, then calibrate. 🤜**
+
+
+---
+## ADDENDUM — S2-A quota isolation fix
+
+GROQ_S2A_API_KEY added (dedicated account). S2-A now has isolated 100K TPD.
+First task: verify tonight's cron shows forensic report fired in GitHub Actions.
+Check: github.com/fintelplan/project-lens/actions — look for "Lens Forensic Report"

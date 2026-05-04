@@ -121,3 +121,38 @@ manage-analyze failures caused refs step to never run → lens_article_refs empt
 ---
 
 **Session closed**: May 4, 2026 ~21:00 Thai. Next session: LENS-023, Claude Sonnet 4.6 adaptive.
+
+
+---
+
+## ADDENDUM — Post-close fixes (May 4, 2026 late session)
+
+### Root cause analysis: Forensic Report not firing
+
+Forensic report showed zero runs since workflow_run trigger was added (T1, LENS-022).
+Root cause chain:
+1. S2-A uses GROQ_S2_API_KEY shared with S2-GAP
+2. By second daily run, shared 100K TPD depleted
+3. S2-A fails → orchestrator exits code 1 (S2-A is designated critical)
+4. workflow_run trigger requires source workflow to complete
+5. GitHub silently drops workflow_run events on consistently failing source
+6. Forensic report = never fires
+
+### Fix (commits a6010d6 + b5fa81f)
+- GROQ_S2A_API_KEY: dedicated Groq account for S2-A only (100K TPD isolated)
+- S2-GAP moved to GROQ_API_KEY (off GROQ_S2_API_KEY)
+- LR-094: quota isolation mandatory for critical positions
+
+### Expected result tonight
+- S2-A succeeds (fresh 100K TPD from dedicated account)
+- manage-analyze exits 0
+- workflow_run fires forensic report
+- Opus docx delivered to Telegram for first time since Apr 30
+
+### Lessons (why we couldn't estimate this)
+1. Guard ledger tracks what our code logged, not actual Groq consumption
+2. Shared-key quota depletion is invisible until it fails in production
+3. LR-058/LR-094: same lesson learned 3 times (GNI S30, LENS-010, LENS-022)
+   — must be checked at architecture design time, not after failure
+
+### Updated rules count: LR-088 to LR-094 (7 new rules this session)
