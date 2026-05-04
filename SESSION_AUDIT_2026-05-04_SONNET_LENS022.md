@@ -156,3 +156,23 @@ Root cause chain:
    — must be checked at architecture design time, not after failure
 
 ### Updated rules count: LR-088 to LR-094 (7 new rules this session)
+
+
+---
+
+## ADDENDUM 2 — Quota isolation complete (May 5, 2026 ~02:30 Thai)
+
+### Full key distribution locked
+- GROQ_API_KEY (mail a): S1-L1 only
+- GROQ_S2_API_KEY (mail b): Entity extract + GROQ_MANAGER
+- GROQ_S2E_API_KEY (mail c): S2-E only
+- GROQ_S3_API_KEY (mail d): S3-A only (key regenerated)
+- GROQ_MA_API_KEY (mail e): Mission Analyst only
+- GROQ_S2A_API_KEY (mail f): S2-A only
+- GROQ_S2DGCOM_API_KEY (mail g): S2-D + S2-GAP + Compendium
+
+### Additional fixes
+- S3 orchestrator UnboundLocalError fixed (failed var outside try/except)
+- GEMINI_S3B_API_KEY wired into S3 step
+- cohere added to manage-analyze pip install (S3-C)
+- S3-C was silently failing: cohere SDK not installed
