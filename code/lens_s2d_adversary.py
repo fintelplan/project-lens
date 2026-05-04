@@ -37,7 +37,7 @@ MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
 MAX_ARTICLES     = 60        # cap articles sent to model (B-2: bumped from 30 for source diversity)
 MAX_ARTICLE_CHARS = 800      # per article snippet
-MAX_TOTAL_CHARS  = 20000     # total prompt cap
+MAX_TOTAL_CHARS  = 9000      # per batch — fits qwen3-32b 6000 TPM
 
 # Adversarial STATE-APPARATUS source IDs — LENS-017 B-2 widened
 # Per PHI-003: these are state-apparatus organs, NOT the peoples of those countries.
@@ -382,9 +382,58 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         return {"status": "NO_ARTICLES", "articles_analyzed": 0}
 
     guard = TPMGuard(tpm_limit=6000)  # GROQ_S2_API_KEY
-    analysis = call_adversary_analyst(client, articles, guard)
-    if analysis is None:
-        return {"status": "ANALYSIS_FAILED", "articles_analyzed": len(articles)}
+
+    # -- Token-aware batch processing (LENS-022) --------------------------
+    # qwen3-32b free tier: 6000 TPM hard ceiling.
+    # Measure token cost per article, fill batches greedily,
+    # use TPMGuard.wait_if_needed() before each call -- no fixed sleep.
+    TOKEN_BUDGET = 4500  # safe under 6000 (system prompt ~800 + response ~700)
+
+    def _art_cost(art):
+        sid  = art.get('source_id', '')
+        ttl  = art.get('title', '') or ''
+        body = (art.get('content', '') or '')[:MAX_ARTICLE_CHARS]
+        return max(1, len('[' + sid + '] ' + ttl + '\n' + body + '\n---\n') // 4)
+
+    def _split_batches(arts, budget):
+        batches, cur, cur_tok = [], [], 0
+        for art in arts:
+            cost = _art_cost(art)
+            if cur and cur_tok + cost > budget:
+                batches.append(cur)
+                cur, cur_tok = [], 0
+            cur.append(art)
+            cur_tok += cost
+        if cur:
+            batches.append(cur)
+        return batches
+
+    batches = _split_batches(articles, TOKEN_BUDGET)
+    log.info('S2-D: %d articles -> %d token-aware batches', len(articles), len(batches))
+
+    analyses = []
+    for batch_num, batch in enumerate(batches, 1):
+        b_tok = sum(_art_cost(a) for a in batch)
+        log.info('S2-D batch %d/%d: %d articles (~%d tokens)', batch_num, len(batches), len(batch), b_tok)
+        guard.wait_if_needed(b_tok, label='S2-D batch ' + str(batch_num))
+        result = call_adversary_analyst(client, batch, guard)
+        if result is not None:
+            guard.log_usage(b_tok + 800)
+            analyses.append(result)
+        else:
+            log.warning('S2-D batch %d failed -- continuing', batch_num)
+
+    if not analyses:
+        return {'status': 'ANALYSIS_FAILED', 'articles_analyzed': len(articles)}
+
+    # Merge: highest consistency as primary, pool all key_claims
+    analysis = max(analyses, key=lambda a: a.get('narrative_consistency_score', 0))
+    if len(analyses) > 1:
+        all_claims = []
+        for a in analyses:
+            all_claims.extend(a.get('key_claims', []))
+        analysis['key_claims'] = all_claims
+        log.info('S2-D %d batches merged: %d total claims', len(analyses), len(all_claims))
 
     saved = save_adversary_report(sb, articles, analysis, run_id, cycle)
 

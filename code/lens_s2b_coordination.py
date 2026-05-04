@@ -82,7 +82,8 @@ def get_supabase() -> Client:
 
 
 def get_gemini():
-    return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    key = os.environ.get("GEMINI_S2B_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    return genai.Client(api_key=key)
 
 
 # ── Data fetch ────────────────────────────────────────────────────────────────
