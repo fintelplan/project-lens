@@ -62,14 +62,13 @@ def count_s1_runs_legacy(sb: Client) -> int:
 def count_s1_runs_new(sb: Client) -> int:
     """Count S1 production runs from the NEW era (at or after DAY_1_UTC).
 
-    New era uses canonical cycle labels: 2of1 / 2of2. All rows after
-    Day 1 (April 17, 2026 UTC) should carry canonical labels per
-    LENS-014 O1 (lens_cycle.py).
+    LENS-022 Option C: count ALL rows after Day 1 regardless of cycle label.
+    cycle=manual is emitted by workflow_dispatch — real production runs that
+    must count toward S4-E maturity. Cycle label filtering caused stuck counter.
     """
     try:
         r = sb.table("lens_reports") \
             .select("id", count="exact") \
-            .in_("cycle", CANONICAL_CYCLES) \
             .gte("generated_at", DAY_1_UTC.isoformat()) \
             .execute()
         return r.count or len(r.data or [])

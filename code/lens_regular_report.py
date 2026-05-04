@@ -164,7 +164,7 @@ def fetch_s3_reports(sb) -> dict:
 def fetch_references(sb) -> list:
     """Article references for citation pool."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
     try:
         r = sb.table("lens_article_refs") \
             .select("ref_id,title,source_name,domain,collected_date") \
