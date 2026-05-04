@@ -56,3 +56,26 @@ Origin: Smoke test entity 'professor john smith' persisted in lens_entities
 for 13 days (Apr 21 -> May 4) because it was noted but never added to
 any explicit cleanup list. It appeared as 'most active entity' in every
 Daily Brief during that period, polluting operator intelligence.
+
+
+---
+
+## LR-094 — Quota isolation for critical positions (LENS-022)
+
+**Type**: Architecture | **Added**: LENS-022 | **Status**: RATIFIED
+
+Any position designated CRITICAL (sys.exit(1) on failure) MUST have its own
+dedicated API key from a separate provider account.
+
+Origin: S2-A was designated critical but shared GROQ_S2_API_KEY with S2-GAP.
+By second daily run, shared quota was depleted -> S2-A failed -> manage-analyze
+exit(1) -> workflow_run for forensic report never fired -> 0 Opus docx for days.
+
+Pattern: Same lesson as GNI S30 (LR-058), LENS-010 S2-A/E isolation, LENS-022
+GEMINI_S2B_API_KEY. Same-account keys share quota. Critical positions need
+guaranteed headroom = dedicated account.
+
+Rule: Before designating any position as sys.exit(1) critical, verify:
+1. It has its own API key from a separate account
+2. No other position shares that key
+3. The key is added to all relevant yml env sections
