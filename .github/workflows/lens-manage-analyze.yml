@@ -53,6 +53,7 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GROQ_S2_API_KEY: ${{ secrets.GROQ_S2_API_KEY }}
           GROQ_S2A_API_KEY: ${{ secrets.GROQ_S2A_API_KEY }}
+          GROQ_S2DGCOM_API_KEY: ${{ secrets.GROQ_S2DGCOM_API_KEY }}
           GROQ_MA_API_KEY: ${{ secrets.GROQ_MA_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_S2B_API_KEY: ${{ secrets.GEMINI_S2B_API_KEY }}

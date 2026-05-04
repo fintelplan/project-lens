@@ -63,7 +63,8 @@ def get_supabase():
 
 def get_groq():
     from groq import Groq
-    return Groq(api_key=os.environ["GROQ_API_KEY"])
+    key = os.environ.get("GROQ_S2DGCOM_API_KEY") or os.environ["GROQ_API_KEY"]
+    return Groq(api_key=key)
 
 
 # ── Section 1: HOW THE INFORMATION IS BEING SHAPED ───────────────────────────

@@ -149,7 +149,8 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_API_KEY"])
+    key = os.environ.get("GROQ_S2DGCOM_API_KEY") or os.environ["GROQ_API_KEY"]
+    return Groq(api_key=key)
 
 
 def fetch_adversarial_articles(sb: Client, cycle: Optional[str] = None) -> list[dict]:
