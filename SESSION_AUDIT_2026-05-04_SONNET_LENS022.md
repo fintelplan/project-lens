@@ -176,3 +176,32 @@ Root cause chain:
 - GEMINI_S3B_API_KEY wired into S3 step
 - cohere added to manage-analyze pip install (S3-C)
 - S3-C was silently failing: cohere SDK not installed
+
+
+---
+
+## ADDENDUM 3 — Final session additions (May 5, 2026 ~05:00 Thai)
+
+### S1/S2/S3 Intelligence Docx Reports (3 new files)
+- code/lens_s1_report.py — S1 Canary Intelligence Report (Mistral-small)
+  Parts: Collection Landscape | Lens Findings | Convergence | Entities | Verdict
+- code/lens_s2_step_report.py — S2 Information Shaping Report (Mistral-small)
+  Parts: Injection Architecture | Adversary Narrative | Coordination |
+         Legitimacy Gap | S2-F Operations | Mission Analyst Synthesis
+- code/lens_s3_step_report.py — S3 Strategic Pattern Report (Cerebras)
+  Parts: 7-day Patterns | First Domino | Historical Parallel |
+         Structural Change | Drift Check | Strategic Verdict
+
+### Philosophy
+S1 report = raw signal (what canary detected uncontaminated)
+S2 report = shaped signal (how that picture was manipulated)
+Operator compares S1 vs S2 = manipulation delta visible
+S3 report = long-horizon strategic picture
+
+### Wired into
+- lens_s2_orchestrator.py: after send_s2_intelligence()
+- lens_s3_orchestrator.py: after send_s3_intelligence()
+- lens-manage-analyze.yml: lens_s1_report.py after S1 step
+- python-docx added to pip install
+
+### Commit: 3d56327
