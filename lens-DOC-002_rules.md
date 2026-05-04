@@ -37,3 +37,22 @@ Rule: After any patch, verify ALL modified Python files:
   python -m py_compile code/file1.py && echo OK
   python -m py_compile code/file2.py && echo OK
 Never commit until ALL modified Python files pass py_compile.
+
+
+---
+
+## LR-093 — Explicit cleanup tracking in session close docs (LENS-022)
+
+**Type**: Process | **Added**: LENS-022 | **Status**: RATIFIED
+
+Every session close doc must include a CLEANUP section listing:
+- Test/smoke data to delete from production DB
+- Stale references to remove from code/docs
+- Temporary files to delete from repo root
+
+These items are BLOCKING for the next session — not optional backlog.
+
+Origin: Smoke test entity 'professor john smith' persisted in lens_entities
+for 13 days (Apr 21 -> May 4) because it was noted but never added to
+any explicit cleanup list. It appeared as 'most active entity' in every
+Daily Brief during that period, polluting operator intelligence.
