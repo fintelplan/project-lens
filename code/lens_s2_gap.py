@@ -106,7 +106,7 @@ def get_supabase() -> Client:
 
 
 def get_groq():
-    key = os.environ.get("GROQ_S2_API_KEY") or os.environ.get("GROQ_API_KEY", "")
+    key = os.environ.get("GROQ_API_KEY") or os.environ.get("GROQ_S2_API_KEY", "")
     if not key:
         raise RuntimeError("GROQ_S2_API_KEY missing")
     return Groq(api_key=key)

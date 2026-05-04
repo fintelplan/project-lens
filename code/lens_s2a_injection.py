@@ -131,7 +131,10 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_S2_API_KEY"])
+    # GROQ_S2A_API_KEY = dedicated S2-A account (isolated quota, LENS-022)
+    # Falls back to GROQ_S2_API_KEY if not set
+    key = os.environ.get("GROQ_S2A_API_KEY") or os.environ["GROQ_S2_API_KEY"]
+    return Groq(api_key=key)
 
 
 def get_mistral():
