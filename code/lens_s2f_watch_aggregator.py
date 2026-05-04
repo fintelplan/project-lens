@@ -20,6 +20,7 @@ import logging
 from datetime import datetime, timezone
 from collections import Counter
 from typing import Optional
+from lens_s2f_helpers import get_state_office_entity_id
 
 log = logging.getLogger("s2f_watch")
 
@@ -33,7 +34,6 @@ WATCH_DIFF_OPS_MIN  = int(os.environ.get("WATCH_DIFF_OPS_MIN",  "3"))   # ≥N d
 def _get_supabase_client():
     try:
         from supabase import create_client
-from lens_s2f_helpers import get_state_office_entity_id
     except ImportError:
         log.error("supabase SDK not installed")
         return None

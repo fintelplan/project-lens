@@ -23,6 +23,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from collections import Counter
 from typing import Optional
+from lens_s2f_helpers import get_state_office_entity_id
 
 log = logging.getLogger("s2f_verification")
 
@@ -35,7 +36,6 @@ VERIFICATION_RECUR_MIN    = int(os.environ.get("VERIFICATION_RECUR_MIN",    "3")
 def _get_supabase_client():
     try:
         from supabase import create_client
-from lens_s2f_helpers import get_state_office_entity_id
     except ImportError:
         log.error("supabase SDK not installed")
         return None

@@ -177,7 +177,7 @@ def truncate_report(text: str) -> str:
 
 
 # ── Core analysis ─────────────────────────────────────────────────────────────
-def call_injection_tracer(client: Groq, report: dict, replaced_phrases: list[str]) -> Optional[dict]:
+def call_injection_tracer(client, report: dict, replaced_phrases: list[str], model: str = None) -> Optional[dict]:
     """Call llama-3.3-70b on sanitized report text to trace injection patterns."""
     report_id = report.get("id", "unknown")
     lens_name = report.get("domain_focus", "unknown")
@@ -209,7 +209,7 @@ def call_injection_tracer(client: Groq, report: dict, replaced_phrases: list[str
         try:
             log.info(f"S2-A calling model for {lens_name} (attempt {attempt})")
             response = client.chat.completions.create(
-                model=MODEL,
+                model=model or MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_message},
@@ -459,7 +459,7 @@ def run_s2a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                     import openai as _oai
                     # Reuse call_injection_tracer with Mistral client
                     # (OpenAI-compatible — same interface as Groq)
-                    analysis = call_injection_tracer(mistral_client, report, replaced_phrases)
+                    analysis = call_injection_tracer(mistral_client, report, replaced_phrases, model=MISTRAL_MODEL)
                     if analysis is not None:
                         log.info(f"S2-A Mistral fallback succeeded for {report.get('domain_focus','?')}")
                 except Exception as _me:
