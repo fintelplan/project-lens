@@ -185,7 +185,8 @@ def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[di
         log.warning("groq SDK not available — skipping LLM extraction")
         return []
 
-    api_key = os.environ.get("GROQ_API_KEY_2") or os.environ.get("GROQ_API_KEY", "")
+    # GROQ_S2_API_KEY: mail b, dedicated, ~96K headroom (entity extract isolated)
+    api_key = os.environ.get("GROQ_S2_API_KEY") or os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         log.warning("GROQ_API_KEY missing — skipping LLM extraction")
         return []
