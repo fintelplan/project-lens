@@ -16,3 +16,24 @@ When testing LOCAL models for S2-F rubric calibration or S3-E self-check:
 7. **No rate limits locally** — can run full 6-lens calibration in one pass, unlike cloud providers
 8. **S3-E air-gap requirement**: S3-E self-check MUST use LOCAL model (Ollama). Remote API defeats the epistemic independence purpose (W-010)
 
+
+
+---
+
+## LR-092 — Post-patch syntax verification on ALL affected files (LENS-022)
+
+**Type**: Process | **Added**: LENS-022 | **Status**: RATIFIED
+
+After ANY patch that touches multiple files, run python -m py_compile on
+ALL modified files before committing — not just the file you intended to fix.
+
+Pattern that caused two production outages (S2-D + 3 S2F aggregators):
+- Patch script found insertion point correctly in one file
+- Same broken import pattern existed in sibling files (same LENS-021 origin)
+- Only the primary file was syntax-checked
+- All sibling files broke silently on next cron
+
+Rule: After any patch, verify ALL modified Python files:
+  python -m py_compile code/file1.py && echo OK
+  python -m py_compile code/file2.py && echo OK
+Never commit until ALL modified Python files pass py_compile.
