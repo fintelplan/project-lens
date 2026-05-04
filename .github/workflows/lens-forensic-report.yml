@@ -4,6 +4,8 @@ on:
   workflow_run:
     workflows: ["Lens Manager + Analyze"]
     types: [completed]
+  schedule:
+    - cron: '30 3 * * *'  # Backup: 03:30 UTC daily (after manage-analyze completes)
   workflow_dispatch:
     inputs:
       dry_run:
