@@ -553,7 +553,7 @@ def run(mode: str = "s1") -> dict:
                 .gte("created_at", cutoff).execute()
             for row in (tc.data or []):
                 sheet1.append({
-                    "ref_id":        f"TIERCD-{row['id'][:8]}",
+                    "ref_id":        f"TIERCD-{str(row['id'])[:8]}",
                     "collected_date": row.get("fetch_date", ""),
                     "domain":        "GENERAL",
                     "source_id":     "",
@@ -562,7 +562,7 @@ def run(mode: str = "s1") -> dict:
                     "also_s1_pool":  "NO",
                     "title":         (row.get("title") or "")[:300],
                     "url":           row.get("url", ""),
-                    "raw_article_id": row["id"],
+                    "raw_article_id": str(row["id"]),
                 })
             log.info(f"TierCD rows appended: {len(tc.data or [])}")
         except Exception as e:
