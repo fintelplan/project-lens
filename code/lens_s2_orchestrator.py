@@ -8,10 +8,10 @@ Called by GitHub Actions lens-manage-analyze.yml.
 All positions built in LENS-009. Orchestrator updated in LENS-010.
 
 Positions:
-  S2-A  lens_s2a_injection.py    run_s2a()           llama-3.3-70b  GROQ_S2_API_KEY
+  S2-A  lens_s2a_injection.py    run_s2a()           llama-3.3-70b  GROQ_S2A_API_KEY (dedicated)
   S2-B  lens_s2b_coordination.py run_s2b()           gemini-1.5-flash GEMINI_API_KEY
   S2-C  lens_s2c_emotion.py      run_s2c()           mistral-small  MISTRAL_API_KEY
-  S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_S2_API_KEY
+  S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_API_KEY
   S2-E  lens_s2e_legitimacy.py   run_s2e()           llama-3.3-70b  GROQ_S2E_API_KEY
   MA    lens_mission_analyst.py  run_mission_analyst() llama-3.3-70b GROQ_MA_API_KEY
 
@@ -113,8 +113,13 @@ def main():
 
     results = {}
 
-    # ── Pre-flight: Groq S2 quota check ──────────────────────────────────────
-    if not check_groq_tpd('GROQ_S2_API_KEY', 8000, 'S2'):
+    # -- Pre-flight: Groq quota check per key (LENS-022 LR-094)
+    # S2-A: dedicated GROQ_S2A_API_KEY (isolated 100K TPD)
+    # S2-E/GAP: shared GROQ_S2_API_KEY
+    s2a_ok = check_groq_tpd('GROQ_S2A_API_KEY', 8000, 'S2-A dedicated')
+    s2_shared_ok = check_groq_tpd('GROQ_S2_API_KEY', 8000, 'S2 shared')
+    if not s2a_ok and not s2_shared_ok:
+        print('[PRE-FLIGHT] Both keys exhausted -- clean skip')
         sys.exit(0)
 
     # ── S2-A: Injection Tracer ────────────────────────────────────────────────
