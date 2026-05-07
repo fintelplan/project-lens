@@ -66,7 +66,7 @@ PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = {
     ("cerebras",  "qwen-3-235b"):              {"TPD": 1_000_000},
     ("mistral",   "mistral-small"):            {"RPD": 2_000},
     ("sambanova", "llama-3.3-70b"):            {"TPD": 500_000},
-    ("cohere",    "command-r-plus"):           {"RPD": 1_000},
+    ("cohere",    "command-r-plus-08-2024"):   {"RPD": 1_000},
 }
 
 # Per-position consumption estimates per cron run, based on Run #29 telemetry.
@@ -87,7 +87,7 @@ POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {
     "MA":     ("groq",      "llama-3.3-70b-versatile",   6_000),
     "S3-A":   ("groq",      "llama-3.3-70b-versatile",   7_000),
     "S3-B":   ("gemini",    "gemini-2.0-flash",              1),
-    "S3-C":   ("cohere",    "command-r-plus",                1),
+    "S3-C":   ("cohere",    "command-r-plus-08-2024",        1),
     "S3-D":   ("cerebras",  "qwen-3-235b",               6_000),
     # S3-E: Ollama LOCAL — no quota, no guard needed (W-010, restored LENS-022)
 }

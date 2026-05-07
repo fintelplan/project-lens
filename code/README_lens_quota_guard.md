@@ -135,7 +135,7 @@ PROVIDER_LIMITS = {
     ("cerebras",  "qwen-3-235b"):              {"TPD": 1_000_000},
     ("mistral",   "mistral-small"):            {"RPD": 2_000},
     ("sambanova", "llama-3.3-70b"):            {"TPD": 500_000},
-    ("cohere",    "command-r-plus"):           {"RPD": 1_000},
+    ("cohere",    "command-r-plus-08-2024"):   {"RPD": 1_000},
 }
 ```
 
