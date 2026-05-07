@@ -103,7 +103,7 @@ LENS REPORTS (4 lenses):
 """
     for r in s1:
         prompt += f"""
-Lens: {r.get('domain_focus', 'UNKNOWN')} | Quality: {r.get('quality_score', 0)}/10 | Articles used: {r.get('articles_used', '?')}
+Lens: {r.get('domain_focus', 'UNKNOWN')} | Quality: {r.get('quality_score', 0)}/10 | Articles used: {(lambda au: len(__import__('json').loads(au).get('selected', au if not isinstance(au, str) else [])) if au and isinstance(au, str) and au.startswith('{') else au)(r.get('articles_used', '?'))}
 Summary: {r.get('summary', 'No summary')}
 """
 
