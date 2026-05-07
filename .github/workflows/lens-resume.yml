@@ -1,0 +1,67 @@
+name: Lens Resume (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID to resume (format: YYYY-MM-DD-HHMM, from lens_run_checkpoints table)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry-run mode (no AI calls, no DB writes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+concurrency:
+  group: lens-manage-analyze
+  cancel-in-progress: false
+
+jobs:
+  resume:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Resume Lens Orchestrator
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY:       ${{ secrets.GEMINI_API_KEY }}
+          CEREBRAS_API_KEY:     ${{ secrets.CEREBRAS_API_KEY }}
+          MISTRAL_API_KEY:      ${{ secrets.MISTRAL_API_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          LENS_RUN_ID:          ${{ github.event.inputs.run_id }}
+          LENS_DRY_RUN:         ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
+          LENS_FORCE:           '1'
+        run: |
+          echo "Resuming run_id: $LENS_RUN_ID"
+          python code/lens_orchestrator.py
+
+      - name: Run S1 Report
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MISTRAL_API_KEY:      ${{ secrets.MISTRAL_API_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python code/lens_s1_report.py || true
+          echo "S1 report complete"

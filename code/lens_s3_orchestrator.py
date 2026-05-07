@@ -90,7 +90,7 @@ def main():
     print("Project Lens — System 3 Orchestrator")
     print(f"  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"  run_id: {RUN_ID}")
-    print("  S3-A · S3-B · S3-C · S3-D · S3-E")
+    print("  S3-A · S3-B · S3-C · S3-D · S3-E · S3-F")
     print("=" * 60)
 
     results = {}
@@ -105,6 +105,7 @@ def main():
     from lens_s3c_biasdrift   import run_s3c
     from lens_s3d_longterm    import run_s3d
     from lens_s3e_selfcheck   import run_s3e
+    from lens_s3f_countercheck import run_s3f
 
     ok_a, _ = _run("S3-A Pattern Intelligence",  run_s3a, run_id=RUN_ID)
     results["S3-A"] = ok_a
@@ -120,6 +121,8 @@ def main():
 
     ok_e, _ = _run("S3-E Self-Check (SambaNova)", run_s3e, run_id=RUN_ID)
     results["S3-E"] = ok_e
+    ok_f, _ = _run("S3-F Counter-Check",          run_s3f, run_id=RUN_ID)
+    results["S3-F"] = ok_f  # SKIPPED = ok (cadence + data gate inside)
 
     print("\n" + "=" * 60)
     print("System 3 — Run Summary")
