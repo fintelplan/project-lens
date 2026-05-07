@@ -240,6 +240,9 @@ def run_s3e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.info("S3-E already ran this week — skipping")
         return {"status": "SKIPPED", "run_id": run_id}
 
+    if os.environ.get("GITHUB_ACTIONS"):
+        log.info("S3-E: GitHub Actions detected — LOCAL model unavailable, skipping (PHI-002 local-only)")
+        return {"status": "SKIPPED_CI", "run_id": run_id}
     if not check_ollama_available():
         log.error(f"Ollama not available at {OLLAMA_HOST} or {MODEL} not pulled")
         log.error("Run: ollama pull llama3.1:70b")
