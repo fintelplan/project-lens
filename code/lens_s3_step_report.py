@@ -205,7 +205,35 @@ def call_cerebras(prompt: str) -> Optional[str]:
             time.sleep(20 * attempt)
         except Exception as e:
             log.error(f"Cerebras call failed: {e}"); time.sleep(15)
+    log.warning("Cerebras exhausted - falling back to Mistral-small")
+    return call_mistral_fallback(prompt)
+
+
+def call_mistral_fallback(prompt: str):
+    import time as _t
+    api_key = os.environ.get("MISTRAL_API_KEY", "")
+    if not api_key:
+        log.error("MISTRAL_API_KEY not set - no fallback available"); return None
+    for attempt in range(1, 3):
+        try:
+            log.info(f"S3 report calling Mistral fallback (attempt {attempt})")
+            r = requests.post(
+                "https://api.mistral.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={"model": "mistral-small-latest",
+                      "messages": [{"role": "user", "content": prompt}],
+                      "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
+                timeout=120)
+            if r.status_code == 200:
+                text = r.json()["choices"][0]["message"]["content"].strip()
+                log.info(f"S3 report (Mistral fallback): {len(text)} chars generated")
+                return text
+            log.warning(f"Mistral fallback {r.status_code} attempt {attempt}: {r.text[:200]}")
+            _t.sleep(20 * attempt)
+        except Exception as e:
+            log.error(f"Mistral fallback failed attempt {attempt}: {e}"); _t.sleep(15)
     return None
+
 
 
 # ── Docx renderer ─────────────────────────────────────────────────────────────
