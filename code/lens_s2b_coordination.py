@@ -252,6 +252,41 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
                     time.sleep(RETRY_SLEEP)
 
     log.error(f"S2-B failed after {MAX_RETRIES} attempts")
+    log.warning("S2-B Gemini exhausted — falling back to Mistral-small")
+    import requests as _req
+    mistral_key = os.environ.get("MISTRAL_API_KEY", "")
+    if not mistral_key:
+        log.error("MISTRAL_API_KEY not set — no S2-B fallback available")
+        return None
+    full_content_for_mistral = SYSTEM_PROMPT + "\n\n" + user_prompt
+    for m_attempt in range(1, 3):
+        try:
+            log.info(f"S2-B Mistral fallback (attempt {m_attempt})")
+            mr = _req.post(
+                "https://api.mistral.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
+                json={"model": "mistral-small-latest",
+                      "messages": [{"role": "user", "content": full_content_for_mistral}],
+                      "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
+                timeout=120)
+            if mr.status_code == 200:
+                raw = mr.json()["choices"][0]["message"]["content"].strip()
+                if raw.startswith("```"):
+                    raw = raw.split("```")[1]
+                    if raw.startswith("json"):
+                        raw = raw[4:]
+                raw = raw.strip()
+                parsed = json.loads(raw)
+                findings = len(parsed.get("findings", []))
+                score = parsed.get("overall_coordination_score", 0)
+                log.info(f"S2-B Mistral fallback: {findings} findings, score={score}")
+                return parsed
+            log.warning(f"S2-B Mistral fallback {mr.status_code}: {mr.text[:200]}")
+            time.sleep(20 * m_attempt)
+        except Exception as me:
+            log.error(f"S2-B Mistral fallback failed attempt {m_attempt}: {me}")
+            time.sleep(15)
+    log.error("S2-B Mistral fallback also failed")
     return None
 
 

@@ -239,6 +239,37 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             if attempt < 2: time.sleep(20)
 
     if not analysis:
+        log.warning("Cerebras exhausted — falling back to Mistral-small for S3-D")
+        import requests as _req
+        mistral_key = os.environ.get("MISTRAL_API_KEY", "")
+        if mistral_key:
+            for m_attempt in range(1, 3):
+                try:
+                    log.info(f"S3-D Mistral fallback (attempt {m_attempt})")
+                    mr = _req.post(
+                        "https://api.mistral.ai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
+                        json={"model": "mistral-small-latest",
+                              "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                           {"role": "user", "content": prompt}],
+                              "max_tokens": 2500, "temperature": 0.3},
+                        timeout=120)
+                    if mr.status_code == 200:
+                        raw = mr.json()["choices"][0]["message"]["content"].strip()
+                        import re as _re
+                        raw = _re.sub(r"```json|```", "", raw).strip()
+                        analysis = json.loads(raw)
+                        log.info(f"S3-D Mistral fallback OK: {len(str(raw))} chars")
+                        break
+                    log.warning(f"S3-D Mistral {mr.status_code}: {mr.text[:200]}")
+                    time.sleep(20 * m_attempt)
+                except Exception as me:
+                    log.error(f"S3-D Mistral fallback attempt {m_attempt}: {me}")
+                    time.sleep(15)
+        else:
+            log.error("MISTRAL_API_KEY not set — no S3-D fallback available")
+
+    if not analysis:
         log.error("S3-D failed")
         return {"status": "ANALYSIS_FAILED", "run_id": run_id}
 
