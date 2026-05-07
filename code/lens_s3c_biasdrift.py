@@ -24,7 +24,7 @@ log = logging.getLogger("S3-C")
 SUPABASE_URL  = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY  = os.environ.get("SUPABASE_SERVICE_KEY")
 COHERE_KEY    = os.environ.get("COHERE_API_KEY")
-MODEL         = "command-r-plus"
+MODEL         = "command-r-plus-08-2024"
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 40
 
