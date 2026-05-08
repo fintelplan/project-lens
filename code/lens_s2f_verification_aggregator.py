@@ -221,6 +221,12 @@ def _write_findings(client, findings: list[dict]):
                 "rubric_version":         f["rubric_version"],
                 "reviewed_by_operator":   False,
             }
+            # Dedup check: skip if same voice×lens Verification finding already exists today
+            today = datetime.now(timezone.utc).date().isoformat()
+            existing = client.table("lens_drift_findings")                 .select("id")                 .eq("state_actor_lens", f["state_actor_lens"])                 .eq("finding_confidence", "HIGH")                 .gte("created_at", today)                 .ilike("finding_phrasing", f"VERIFICATION FINDING%{f['voice_name']}%")                 .limit(1).execute()
+            if existing.data:
+                log.info(f"Dedup skip: {f['voice_name']} × {f['state_actor_lens']} Verification already written today")
+                continue
             client.table("lens_drift_findings").insert(row).execute()
             log.info(f"Verification finding written: {f['voice_name']} × {f['state_actor_lens']}")
         except Exception as e:

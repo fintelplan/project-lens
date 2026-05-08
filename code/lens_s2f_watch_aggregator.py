@@ -168,9 +168,16 @@ def run_watch_aggregator(
 
 
 def _write_findings(client, findings: list[dict]):
-    """Write Watch findings to lens_drift_findings."""
+    """Write Watch findings to lens_drift_findings — skip if already wrote today."""
+    from datetime import timedelta
+    today = datetime.now(timezone.utc).date().isoformat()
     for f in findings:
         try:
+            # Dedup check: skip if same voice×lens Watch finding already exists today
+            existing = client.table("lens_drift_findings")                 .select("id")                 .eq("state_actor_lens", f["state_actor_lens"])                 .eq("finding_confidence", "LOW")                 .gte("created_at", today)                 .ilike("finding_phrasing", f"Watch alert%{f['voice_name']}%")                 .limit(1).execute()
+            if existing.data:
+                log.info(f"Dedup skip: {f['voice_name']} × {f['state_actor_lens']} Watch already written today")
+                continue
             row = {
                 "entity_id":               get_state_office_entity_id(client, f["state_actor_lens"]),
                 "state_actor_lens":         f["state_actor_lens"],

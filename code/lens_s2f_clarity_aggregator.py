@@ -85,8 +85,15 @@ def run_clarity_aggregator(
     if not client:
         return []
 
-    watch_voices = get_active_watch_voices(client, state_actor_lens)
-    log.info(f"Clarity aggregator: {len(watch_voices)} voices with Watch alerts")
+    watch_voices_raw = get_active_watch_voices(client, state_actor_lens)
+    # Deduplicate by (voice_name, state_actor_lens) — keep most recent
+    seen = {}
+    for v in watch_voices_raw:
+        key = (v["voice_name"], v["state_actor_lens"])
+        if key not in seen or v["watch_created_at"] > seen[key]["watch_created_at"]:
+            seen[key] = v
+    watch_voices = list(seen.values())
+    log.info(f"Clarity aggregator: {len(watch_voices)} unique voices ({len(watch_voices_raw)} raw) with Watch alerts")
 
     cutoff = (datetime.now(timezone.utc) - timedelta(days=CLARITY_WINDOW_DAYS)).isoformat()
     findings = []
