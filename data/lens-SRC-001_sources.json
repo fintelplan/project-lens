@@ -892,6 +892,38 @@
       "tier": "TIER_A",
       "max_articles": 5,
       "note": "CCP official English-language newspaper. Softer tone than Global Times — diplomatic framing. Reveals Beijing's preferred international image vs Global Times nationalist framing. Key complement to CGTN/GT for full Chinese state narrative picture."
+    },
+    {
+      "id": "SRC-079",
+      "name": "CNN World News",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "http://rss.cnn.com/rss/edition_world.rss",
+      "web_url": "https://edition.cnn.com/world",
+      "frequency": "continuous",
+      "tier_coverage": [
+        "TIER1"
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "CNN World RSS — 29 entries confirmed live. Western mainstream, US editorial perspective.",
+      "tier": "TIER1"
+    },
+    {
+      "id": "SRC-080",
+      "name": "CNN Business",
+      "domain": "POWER",
+      "actor": "US",
+      "rss_url": "http://rss.cnn.com/rss/money_news_international.rss",
+      "web_url": "https://edition.cnn.com/business",
+      "frequency": "continuous",
+      "tier_coverage": [
+        "TIER1"
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "CNN Business international RSS — 20 entries confirmed live. Finance and economic power lens.",
+      "tier": "TIER1"
     }
   ]
 }
