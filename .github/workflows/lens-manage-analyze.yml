@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx mistralai openai tzdata openpyxl cohere python-docx
+          pip install requests python-dotenv groq supabase google-genai cerebras-cloud-sdk httpx openai tzdata openpyxl cohere python-docx
 
       - name: Run Lens Orchestrator (pre-flight + sequential analysis)
         env:
