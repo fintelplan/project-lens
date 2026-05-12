@@ -1,0 +1,52 @@
+name: Lens Reference Export
+
+on:
+  schedule:
+    - cron: '30 2  * * *'   # 09:30 AM Thai (UTC+7) → 1of2
+    - cron: '30 14 * * *'   # 09:30 PM Thai (UTC+7) → 2of2
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Export mode: s1, s2, or both'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - s1
+          - s2
+
+jobs:
+  ref-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv supabase openpyxl tzdata
+
+      - name: Export S1 + S2 Reference xlsx
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'both' }}"
+          if [ "$MODE" = "s1" ]; then
+            python code/lens_ref_system.py s1
+          elif [ "$MODE" = "s2" ]; then
+            python code/lens_ref_system.py s2
+          else
+            python code/lens_ref_system.py s1
+            python code/lens_ref_system.py s2
+          fi
+          echo "Reference export complete"
