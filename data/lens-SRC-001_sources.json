@@ -924,6 +924,22 @@
       "language": "en",
       "notes": "CNN Business international RSS — 20 entries confirmed live. Finance and economic power lens.",
       "tier": "TIER1"
+    },
+    {
+      "id": "SRC-081",
+      "name": "NDTV World News",
+      "domain": "POWER",
+      "actor": "India",
+      "rss_url": "https://feeds.feedburner.com/ndtvnews-world-news",
+      "web_url": "https://www.ndtv.com/world-news",
+      "frequency": "continuous",
+      "tier_coverage": [
+        "TIER1"
+      ],
+      "ethics_verified": true,
+      "language": "en",
+      "notes": "NDTV World RSS — 20 entries confirmed live. India's major English news network, global geopolitics focus. Non-Western democratic perspective — important PHI-003 counterbalance.",
+      "tier": "TIER1"
     }
   ]
 }
