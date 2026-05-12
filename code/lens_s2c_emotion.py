@@ -1,7 +1,7 @@
 """
 lens_s2c_emotion.py — System 2 Position C: Emotion Decoder
 Project Lens | LENS-009
-Model: mistral-small-latest (Mistral free tier)
+Model: mistral-small-latest (Mistral free tier — via requests, no SDK)
 Input: lens_reports (latest cycle)
 Output: injection_reports (analyst='S2-C')
 Decodes: PRIME → TRIGGER → FRAME → DELIVER → ANCHOR sequence
@@ -11,10 +11,10 @@ import os
 import json
 import time
 import logging
+import requests as _mistral_requests
 from datetime import datetime, timezone
 from typing import Optional
 
-from mistralai.client import Mistral
 from supabase import create_client, Client
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -84,7 +84,6 @@ Format:
 }"""
 
 
-
 # ── TPMGuard ──────────────────────────────────────────────────────────────────
 class TPMGuard:
     """
@@ -125,8 +124,9 @@ def get_supabase() -> Client:
     return create_client(url, key)
 
 
-def get_mistral() -> Mistral:
-    return Mistral(api_key=os.environ["MISTRAL_API_KEY"])
+def get_mistral() -> str:
+    """Return Mistral API key — calls made via requests directly."""
+    return os.environ.get("MISTRAL_API_KEY", "")
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -161,10 +161,10 @@ def truncate_report(text: str) -> str:
     return text
 
 
-def call_emotion_decoder(client: Mistral, report: dict, guard: "TPMGuard") -> Optional[dict]:
-    """Call mistral-small to decode emotional sequence in one lens report."""
-    report_id  = report.get("id", "unknown")
-    lens_name  = report.get("domain_focus", "unknown")
+def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Optional[dict]:
+    """Call mistral-small via requests to decode emotional sequence in one lens report."""
+    report_id   = report.get("id", "unknown")
+    lens_name   = report.get("domain_focus", "unknown")
     report_text = truncate_report(report.get("summary", ""))
 
     if not report_text.strip():
@@ -183,17 +183,22 @@ def call_emotion_decoder(client: Mistral, report: dict, guard: "TPMGuard") -> Op
         try:
             guard.wait_if_needed(1500, label="S2-C")
             log.info(f"S2-C calling mistral for {lens_name} (attempt {attempt})")
-            response = client.chat.complete(
-                model=MODEL,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user",   "content": user_message},
-                ],
-                max_tokens=MAX_TOKENS,
-                temperature=TEMPERATURE,
-            )
 
-            raw = response.choices[0].message.content.strip()
+            resp = _mistral_requests.post(
+                "https://api.mistral.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {client}",
+                         "Content-Type": "application/json"},
+                json={"model": MODEL,
+                      "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                   {"role": "user",   "content": user_message}],
+                      "max_tokens": MAX_TOKENS,
+                      "temperature": TEMPERATURE},
+                timeout=120)
+
+            if resp.status_code != 200:
+                raise Exception(f"Mistral {resp.status_code}: {resp.text[:200]}")
+
+            raw = resp.json()["choices"][0]["message"]["content"].strip()
 
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
@@ -230,7 +235,6 @@ def call_emotion_decoder(client: Mistral, report: dict, guard: "TPMGuard") -> Op
 
     log.error(f"S2-C failed after {MAX_RETRIES} attempts for {lens_name}")
     return None
-
 
 
 def build_correction_to_ma(analysis: dict) -> dict:
@@ -276,6 +280,7 @@ def build_correction_to_ma(analysis: dict) -> dict:
         "mandatory": mandatory,
     }
 
+
 def save_emotion_report(
     sb: Client,
     report: dict,
@@ -301,7 +306,7 @@ def save_emotion_report(
         "cycle":           report.get("cycle"),
         "lens_report_id":  report.get("id"),
         "analyst":         "S2-C",
-        "source_id":       None,  # lens_reports has no source_id
+        "source_id":       None,
         "injection_type":  injection_type,
         "evidence": {
             "sequence":              sequence,
@@ -342,6 +347,10 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
 
+    if not client:
+        log.error("MISTRAL_API_KEY not set")
+        return {"status": "ERROR", "error": "MISTRAL_API_KEY not set"}
+
     reports = fetch_latest_reports(sb, cycle)
     if not reports:
         log.warning("No lens_reports found — S2-C cannot run")
@@ -350,7 +359,7 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     results      = []
     saved_count  = 0
     total_steps  = 0
-    guard = TPMGuard(tpm_limit=30000)  # MISTRAL_API_KEY — generous free tier
+    guard = TPMGuard(tpm_limit=30000)
 
     for i, report in enumerate(reports):
         log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
@@ -366,10 +375,10 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             saved_count += 1
 
         results.append({
-            "lens":              report.get("domain_focus"),
-            "status":            "OK",
-            "steps_found":       analysis.get("steps_found", 0),
-            "emotion_target":    analysis.get("emotion_target", "neutral"),
+            "lens":               report.get("domain_focus"),
+            "status":             "OK",
+            "steps_found":        analysis.get("steps_found", 0),
+            "emotion_target":     analysis.get("emotion_target", "neutral"),
             "manipulation_score": analysis.get("manipulation_score", 0),
         })
 
@@ -380,14 +389,14 @@ def run_s2c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     elapsed = round(time.time() - start, 1)
 
     summary = {
-        "status":           "COMPLETE",
-        "run_id":           run_id,
-        "cycle":            cycle,
-        "reports_analyzed": len(reports),
-        "reports_saved":    saved_count,
+        "status":            "COMPLETE",
+        "run_id":            run_id,
+        "cycle":             cycle,
+        "reports_analyzed":  len(reports),
+        "reports_saved":     saved_count,
         "total_steps_found": total_steps,
-        "elapsed_seconds":  elapsed,
-        "results":          results,
+        "elapsed_seconds":   elapsed,
+        "results":           results,
     }
 
     log.info(f"=== S2-C COMPLETE | {len(reports)} reports | "
