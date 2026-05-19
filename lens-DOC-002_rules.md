@@ -79,3 +79,61 @@ Rule: Before designating any position as sys.exit(1) critical, verify:
 1. It has its own API key from a separate account
 2. No other position shares that key
 3. The key is added to all relevant yml env sections
+
+---
+
+## LR-095 — HTTP Error Diagnosis Discipline (LENS-023)
+**Type**: Process | **Added**: LENS-023 | **Status**: RATIFIED
+Always log `r.text[:200]` on any HTTP error before diagnosing.
+Status code alone tells you nothing — 400/401/403/429 mean different
+things across Groq, Gemini, Cerebras, Mistral, Cohere, Supabase REST.
+Origin: LENS-023 — wrong fix applied twice because diagnosis was from
+status code only. Actual error was in r.text, not the status category.
+Rule: First line of any HTTP error handler must be:
+    print(f"Error {r.status_code}: {r.text[:200]}")
+Never write a diagnosis before reading the response body.
+
+---
+
+## LR-096 — Blob Column Size Gate (LENS-023)
+**Type**: Architecture | **Added**: LENS-023 | **Status**: RATIFIED
+Never pass raw blob DB columns into AI prompts without a size check.
+Check len(str(value)) first. If >1000 chars, extract metadata only.
+Origin: LENS-023 — full article body / large JSON blob passed directly
+into Groq prompt. Context ballooned, quota wasted, output degraded.
+LENS stores full article text, S2 findings, S3 pattern data, S2-F
+operation histories — any of these can be 50,000+ chars.
+Rule: Before any DB column enters an AI prompt:
+    if len(str(value)) > 1000:
+        value = str(value)[:500] + "..."  # metadata only
+Applies to: full_finding, article_body, operations, any jsonb column.
+
+---
+
+## LR-097 — yml Timeout Reality Check (LENS-023)
+**Type**: Process | **Added**: LENS-023 | **Status**: RATIFIED
+Before dismissing any operator concern about pipeline timeouts, read
+the actual yml timeout-minutes value. Never cite platform maximums
+without checking operator-set overrides.
+Origin: LENS-023 — dismissed timeout concern citing "GitHub max=360min"
+but lens-manage-analyze.yml had timeout-minutes: 35. Pipeline was being
+killed at 35 min. Platform maximum was irrelevant.
+Rule: When any timeout concern is raised:
+    grep "timeout-minutes" .github/workflows/<relevant>.yml
+The yml value is the real constraint. Platform maximum is a ceiling,
+not the operational limit.
+
+---
+
+## LR-098 — pip-vs-Code Consistency Check (LENS-024)
+**Type**: Process | **Added**: LENS-024 | **Status**: RATIFIED
+When removing a package from pip install in yml, always verify no code
+file still imports it before committing.
+Origin: LENS-024 — mistralai removed from pip install. lens_s2c_emotion.py
+still had "from mistralai.client import Mistral" on line 17. Pipeline
+failed again at S2-C import after pip was "fixed." Two failures, one root.
+Rule: Before any pip package removal commit:
+    grep -rn "from <package>\|import <package>" code/
+If any result found → fix those files FIRST, then remove from pip.
+Only commit when pip install yml AND all code imports are consistent.
+LR-092 (sibling check) applies to BOTH yml files AND code files.
