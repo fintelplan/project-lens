@@ -82,7 +82,7 @@ def get_lens3_avg_runtime():
     """
     rows = supabase_get(
         'lens_reports',
-        '?select=created_at&ai_model=eq.qwen-3-235b-a22b-instruct-2507'
+        '?select=created_at&ai_model=eq.gpt-oss-120b'
         '&order=created_at.desc&limit=6'
     )
     # Fallback if no history

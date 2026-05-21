@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S3-RPT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s3_report")
 
-MODEL       = "qwen-3-235b-a22b-instruct-2507"
+MODEL       = "gpt-oss-120b"
 TEMPERATURE = 0.3
 MAX_TOKENS  = 4500
 TELEGRAM_CAPTION_CAP = 950

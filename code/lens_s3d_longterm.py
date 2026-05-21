@@ -1,7 +1,7 @@
 """
 lens_s3d_longterm.py — System 3 Position D: Long-term Researcher
 Project Lens | LENS-010
-Model: qwen-3-235b-a22b-instruct-2507 (Cerebras — CEREBRAS_API_KEY)
+Model: gpt-oss-120b (Cerebras — CEREBRAS_API_KEY)
 Reads: lens_reports + injection_reports (last 30 days)
 Output: lens_system3_reports (position=S3-D, report_type=TYPE_A)
 
@@ -26,7 +26,7 @@ log = logging.getLogger("S3-D")
 SUPABASE_URL   = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY")
 CEREBRAS_KEY   = os.environ.get("CEREBRAS_API_KEY")
-MODEL          = "qwen-3-235b-a22b-instruct-2507"
+MODEL          = "gpt-oss-120b"
 LOOKBACK_DAYS  = 30
 MAX_S1_REPORTS = 30
 MAX_S2_REPORTS = 20

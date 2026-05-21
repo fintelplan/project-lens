@@ -63,7 +63,7 @@ PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = {
     ("groq",      "llama-3.3-70b-versatile"): {"TPD": 100_000},
     ("groq",      "qwen3-32b"):                {"TPD": 100_000},
     ("gemini",    "gemini-2.0-flash"):         {"RPD": 1_500},
-    ("cerebras",  "qwen-3-235b"):              {"TPD": 1_000_000},
+    ("cerebras",  "gpt-oss-120b"):              {"TPD": 1_000_000},
     ("mistral",   "mistral-small"):            {"RPD": 2_000},
     ("sambanova", "llama-3.3-70b"):            {"TPD": 500_000},
     ("cohere",    "command-r-plus-08-2024"):   {"RPD": 1_000},
@@ -76,8 +76,8 @@ PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = {
 POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {
     "S1-L1":  ("groq",      "qwen3-32b",                 4_000),
     "S1-L2":  ("gemini",    "gemini-2.0-flash",              1),
-    "S1-L3":  ("cerebras",  "qwen-3-235b",               5_000),
-    "S1-L4":  ("cerebras",  "qwen-3-235b",               5_000),
+    "S1-L3":  ("cerebras",  "gpt-oss-120b",               5_000),
+    "S1-L4":  ("cerebras",  "gpt-oss-120b",               5_000),
     "S2-A":   ("groq",      "llama-3.3-70b-versatile",   5_000),
     "S2-B":   ("gemini",    "gemini-2.0-flash",              1),
     "S2-C":   ("mistral",   "mistral-small",                 1),
@@ -88,7 +88,7 @@ POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {
     "S3-A":   ("groq",      "llama-3.3-70b-versatile",   7_000),
     "S3-B":   ("gemini",    "gemini-2.0-flash",              1),
     "S3-C":   ("cohere",    "command-r-plus-08-2024",        1),
-    "S3-D":   ("cerebras",  "qwen-3-235b",               6_000),
+    "S3-D":   ("cerebras",  "gpt-oss-120b",               6_000),
     # S3-E: Ollama LOCAL — no quota, no guard needed (W-010, restored LENS-022)
 }
 

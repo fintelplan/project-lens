@@ -53,7 +53,7 @@ PROVIDERS = [
     },
     {
         "name": "cerebras",
-        "model": "qwen-3-235b-a22b-instruct-2507",
+        "model": "gpt-oss-120b",
         "key_env": "CEREBRAS_API_KEY",
         "base_url": None,  # uses cerebras SDK
     },
