@@ -71,7 +71,7 @@ LENSES = [
     {
         "lens_id":    3,
         "lens_name":  "Causal Chain",
-        "model":      "qwen-3-235b-a22b-instruct-2507",
+        "model":      "gpt-oss-120b",
         "provider":   "cerebras",
         "api_key_env": "CEREBRAS_API_KEY",
         "perspective": "First Domino — what causes what across domains?",
@@ -80,7 +80,7 @@ LENSES = [
     {
         "lens_id":    4,
         "lens_name":  "Sovereignty Check",
-        "model":      "qwen-3-235b-a22b-instruct-2507",
+        "model":      "gpt-oss-120b",
         "provider":   "cerebras",
         "api_key_env": "CEREBRAS_API_KEY",
         "perspective": "From/of/for the people — who is pretending to serve the people?",

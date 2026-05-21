@@ -323,7 +323,7 @@ def _get_llm_client():
         if not key:
             log.error("S2F_PROVIDER=cerebras but CEREBRAS_API_KEY not set")
             return None, None, None
-        cerebras_model = os.environ.get("CEREBRAS_MODEL", "qwen-3-235b-a22b-instruct-2507")
+        cerebras_model = os.environ.get("CEREBRAS_MODEL", "gpt-oss-120b")
         log.info(f"Using Cerebras provider (model: {cerebras_model})")
         return Cerebras(api_key=key), cerebras_model, "cerebras"
 
@@ -682,7 +682,7 @@ def detect_operations_ensemble(
     original_model = os.environ.get("CEREBRAS_MODEL", "")
 
     os.environ["S2F_PROVIDER"] = "cerebras"
-    os.environ["CEREBRAS_MODEL"] = "qwen-3-235b-a22b-instruct-2507"
+    os.environ["CEREBRAS_MODEL"] = "gpt-oss-120b"
     log.info("[ENSEMBLE] Running primary: qwen-3-235b on Cerebras")
     result_primary = detect_operations_in_article(**args)
     log.info(f"[ENSEMBLE] Primary result: {result_primary.status} "
