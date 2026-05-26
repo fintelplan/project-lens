@@ -153,3 +153,19 @@ Rule: When adding any new env var or DB column:
     3. grep code/ for the name — does every reference use the same name?
 All three must match before committing. If in doubt, echo the var
 in the workflow to confirm it is loaded before any code runs.
+
+## LR-090 — 5-Session Schema Checkpoint (LENS-026)
+**Type**: Process | **Added**: LENS-026 | **Status**: RATIFIED
+Every 5 sessions, run a full schema cross-check to verify that DB columns
+and code references have not drifted apart silently.
+Origin: As Lens grows across sessions, columns get added in code but
+forgotten in DB, or renamed in DB but not updated in code. These cause
+silent failures that are hard to trace weeks later.
+Rule: At every 5th session (LENS-027, LENS-032, LENS-037...):
+    1. List all Supabase tables and columns (information_schema.columns)
+    2. grep code/ for every column name referenced in code
+    3. Flag: any column in code not in DB → missing column
+    4. Flag: any column in DB not referenced in code → orphaned column
+    5. Resolve all flags before closing the checkpoint session.
+Checkpoint sessions: LENS-027, LENS-032, LENS-037, LENS-042...
+Due next: LENS-027.
