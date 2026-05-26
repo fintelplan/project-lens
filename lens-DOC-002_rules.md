@@ -137,3 +137,19 @@ Rule: Before any pip package removal commit:
 If any result found → fix those files FIRST, then remove from pip.
 Only commit when pip install yml AND all code imports are consistent.
 LR-092 (sibling check) applies to BOTH yml files AND code files.
+
+## LR-099 — Env Var and Column Naming Consistency Check (LENS-026)
+**Type**: Process | **Added**: LENS-026 | **Status**: RATIFIED
+When adding a new environment variable or DB column, verify the name
+matches exactly across: the .env file, GitHub Actions secrets, and
+every code reference. Mismatches cause silent failures with no error
+message pointing to the real cause.
+Origin: LENS past sessions — SUPABASE_KEY vs SUPABASE_SERVICE_KEY caused
+silent failures across multiple sessions. The code checked one name,
+the secret was stored under another. Hours lost to tracing a one-word mismatch.
+Rule: When adding any new env var or DB column:
+    1. Check .env — does the name exist exactly as written?
+    2. Check GitHub Actions secrets — does the secret name match exactly?
+    3. grep code/ for the name — does every reference use the same name?
+All three must match before committing. If in doubt, echo the var
+in the workflow to confirm it is loaded before any code runs.
