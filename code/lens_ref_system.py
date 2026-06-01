@@ -461,6 +461,19 @@ def build_excel(sheet1_rows: list, sheet2_rows: list,
             ws3[f"D{i}"] = t
             ws3[f"E{i}"] = c
 
+    # -- Sheet 4: Unflagged Titles with Links (pool minus scored/flagged) --
+    scored_flagged_ids = {r.get("ref_id") for r in sheet2_rows if r.get("ref_id")}
+    unflagged_rows = [r for r in sheet1_rows
+                      if r.get("ref_id") and r.get("ref_id") not in scored_flagged_ids]
+    ws4 = wb.create_sheet("Unflagged Titles with Links")
+    make_sheet(ws4, unflagged_rows, [
+        ("REF ID",  "ref_id",      22),
+        ("Source",  "source_name", 24),
+        ("Title",   "title",       60),
+        ("URL",     "url",         60),
+    ])
+    ws3["A7"] = f"Sheet 4 (Unflagged titles+links): {len(unflagged_rows)}"
+
     out = os.path.join(tempfile.gettempdir(), filename)
     wb.save(out)
     log.info(f"Excel saved: {out}")
@@ -486,7 +499,8 @@ def send_telegram(path: str, filename: str, mode: str, slot: str,
             f"Sheet 2 ({sel_label}): {selected}\n\n"
             f"Sheet 1: Collection Pool\n"
             f"Sheet 2: {'Scored Articles' if mode == 's1' else 'Flagged Articles'}\n"
-            f"Sheet 3: Summary"
+            f"Sheet 3: Summary\n"
+            f"Sheet 4: Unflagged Titles with Links"
         )
         url = f"https://api.telegram.org/bot{token}/sendDocument"
         with open(path, "rb") as f:
