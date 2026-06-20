@@ -166,6 +166,29 @@ Rule: At every 5th session (LENS-027, LENS-032, LENS-037...):
     2. grep code/ for every column name referenced in code
     3. Flag: any column in code not in DB → missing column
     4. Flag: any column in DB not referenced in code → orphaned column
-    5. Resolve all flags before closing the checkpoint session.
+    5. Check pg_tables.rowsecurity for all lens% tables; flag any
+       rowsecurity=false, enable + canary-verify before closing. (LR-100)
+    6. Resolve all flags before closing the checkpoint session.
 Checkpoint sessions: LENS-027, LENS-032, LENS-037, LENS-042...
 Due next: LENS-027.
+
+---
+
+## LR-100 — RLS Does Not Inherit a Sweep (LENS-027)
+**Type**: Process | **Added**: LENS-027 | **Status**: RATIFIED
+New Supabase tables start RLS OFF (anon-exposed). A one-time sweep does not
+protect tables added afterward — each new table must be locked at creation.
+(a) ENABLE ROW LEVEL SECURITY on every new table at creation, matching the
+default-deny pattern (RLS on, no policy, service key bypasses).
+(b) Add an RLS-flag check to the LR-090 schema checkpoint: query
+pg_tables.rowsecurity for all lens% tables, flag any false.
+Origin: S34 swept 19 tables; 6 added later sat anon-exposed (~184k rows) until
+the June 12 Supabase advisory. Fixed this session: 17 tables RLS-enabled,
+canary-verified.
+Rule: On every new Supabase table:
+    1. ALTER TABLE <t> ENABLE ROW LEVEL SECURITY;  (at creation, default-deny)
+    2. At each LR-090 checkpoint, also run:
+       SELECT tablename, rowsecurity FROM pg_tables
+       WHERE schemaname='public' AND tablename LIKE 'lens%';
+    3. Flag any rowsecurity=false → enable + canary-verify (service R/W OK,
+       anon read blocked) before closing the checkpoint.
