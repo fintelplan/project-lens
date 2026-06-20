@@ -17,8 +17,8 @@ Positions:
 
 Architecture: LR-058 to LR-064.
   One-way flow. System 1 scripts FROZEN.
-  S2 reads lens_reports → writes lens_injection_reports.
-  MA reads lens_reports + lens_injection_reports → writes lens_macro_reports.
+  S2 reads lens_reports → writes injection_reports.
+  MA reads lens_reports + injection_reports → writes lens_macro_reports.
 
 Session: LENS-010 (orchestrator fix)
 """
