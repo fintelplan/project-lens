@@ -74,7 +74,8 @@ def query_gdelt(domain: str, query_info: dict, timespan: str = '24h') -> dict:
         try:
             r = requests.get(GDELT_API, params=params, timeout=20)
             if r.status_code == 429:
-                wait = 30 * (2 ** attempt)
+                wait = 8 + 4 * attempt   # LENS-027: 8/12/16s — matched to GDELT's
+                                          # "1 req / 5s" floor, not the old 30/60/120s
                 print(f'  429 rate limit — waiting {wait}s (attempt {attempt+1}/3)')
                 time.sleep(wait)
                 continue
@@ -171,7 +172,7 @@ def main():
             'timespan':      '24h',
         })
 
-        time.sleep(3)   # LENS-008: reduced 10s->3s (saves 49s/run, still polite)
+        time.sleep(8)   # LENS-027: 3s->8s, above GDELT's "one req / 5s" 429 floor
 
     print()
     save_enrichment(records)
