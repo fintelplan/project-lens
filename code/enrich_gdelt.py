@@ -27,31 +27,31 @@ GDELT_API    = 'https://api.gdeltproject.org/api/v2/doc/doc'
 # Each domain gets a focused keyword query for GDELT
 DOMAIN_QUERIES = {
     'POWER': {
-        'query': 'geopolitics OR "foreign policy" OR sanctions OR diplomacy',
+        'query': '(geopolitics OR "foreign policy" OR sanctions OR diplomacy)',
         'label': 'Geopolitical Signals'
     },
     'TECH': {
-        'query': '"artificial intelligence" OR semiconductor OR "export controls" OR surveillance',
+        'query': '("artificial intelligence" OR semiconductor OR "export controls" OR surveillance)',
         'label': 'Technology Signals'
     },
     'FINANCE': {
-        'query': '"sovereign debt" OR IMF OR "World Bank" OR "debt crisis" OR "central bank"',
+        'query': '("sovereign debt" OR IMF OR "World Bank" OR "debt crisis" OR "central bank")',
         'label': 'Financial Signals'
     },
     'MILITARY': {
-        'query': 'military OR "arms deal" OR conflict OR "defense spending" OR warship',
+        'query': '(military OR "arms deal" OR conflict OR "defense spending" OR warship)',
         'label': 'Military Signals'
     },
     'NARRATIVE': {
-        'query': 'disinformation OR propaganda OR "influence operation" OR censorship',
+        'query': '(disinformation OR propaganda OR "influence operation" OR censorship)',
         'label': 'Narrative Signals'
     },
     'NETWORK': {
-        'query': '"money laundering" OR "dark money" OR "shell company" OR corruption OR oligarch',
+        'query': '("money laundering" OR "dark money" OR "shell company" OR corruption OR oligarch)',
         'label': 'Network Signals'
     },
     'RESOURCE': {
-        'query': '"energy security" OR "critical minerals" OR "rare earth" OR "food security"',
+        'query': '("energy security" OR "critical minerals" OR "rare earth" OR "food security")',
         'label': 'Resource Signals'
     },
 }
@@ -89,19 +89,20 @@ def query_gdelt(domain: str, query_info: dict, timespan: str = '24h') -> dict:
         print(f'  FAILED {domain}: 3 attempts exhausted')
         return {'count': 0, 'avg_tone': None, 'top_themes': []}
     try:
-        # LENS-008 FIX: detect GitHub IP block before calling .json()
-        # GitHub runner IPs get silent-blocked — GDELT returns 200 with empty
-        # or non-JSON body. Check both empty body AND invalid JSON explicitly.
+        # GDELT can return a 200 with an empty or non-JSON body for several
+        # reasons (query-format rejection, error page, true IP block). Do NOT
+        # presume the cause — log the actual response so the real reason is
+        # visible next time (LR-095).
         if not r.text.strip():
-            print(f'  GDELT_BLOCKED {domain}: empty body (GitHub runner IP blocked)')
+            print(f'  GDELT_EMPTY {domain}: HTTP {r.status_code} empty body')
             return {'count': 0, 'avg_tone': None, 'top_themes': []}
 
         try:
             data = r.json()
         except (ValueError, json.JSONDecodeError):
-            # Non-JSON body = GitHub IP blocked (HTML error page or garbage)
-            preview = repr(r.text[:40])
-            print(f'  GDELT_BLOCKED {domain}: invalid body (GitHub IP blocked) — {preview}')
+            # Non-JSON body — report the actual text so the true cause shows
+            # (e.g. an OR-query rejection vs an HTML error page). LR-095.
+            print(f'  GDELT_NONJSON {domain}: HTTP {r.status_code} — {r.text[:200]!r}')
             return {'count': 0, 'avg_tone': None, 'top_themes': []}
 
         # TimelineVol returns timeline array of {date, value} — sum for total count
