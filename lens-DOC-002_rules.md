@@ -192,3 +192,80 @@ Rule: On every new Supabase table:
        WHERE schemaname='public' AND tablename LIKE 'lens%';
     3. Flag any rowsecurity=false → enable + canary-verify (service R/W OK,
        anon read blocked) before closing the checkpoint.
+
+---
+
+## LR-101 — Trust Calibration (LENS-028)
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+Trust is a function of verified-by-the-current-model-in-detail, NOT a function
+of runs-fine-routinely. "It's been green for weeks" is not evidence of
+correctness — it is evidence that nothing has forced the bug to surface.
+Confidence bands (calibrate every claim against these):
+    - Claude-verified THIS session, read in detail:  ~90-95% (never 100%)
+    - Unverified reasoning / plausible inference:     ~50-60%
+    - Earlier-session or earlier-model unread code:   ~30-40%
+    - Memory summaries / recollection:                ~40-50%
+Guards do not get tenure. A protection that has "always worked" is re-earned,
+not assumed — re-verify it like it shipped today.
+Lens example: GDELT ran green for ~2 months while silently writing zeros; the
+RLS tables "ran fine" the entire time they were anon-exposed (~184k rows). Both
+ran fine routinely AND were broken. Routine success masked both failures.
+
+---
+
+## LR-102 — Model-Change Re-Audit Ritual (LENS-028)
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+On ANY model change — a new session OR a new model version — prior verifications
+partially reset. The new model did not perform the old sign-offs and cannot
+inherit their confidence. A version upgrade is therefore a free, high-value
+re-audit opportunity, not a reason to assume continuity.
+Rule: On a model change, before resuming work:
+    1. Re-read the active guards, aggregators, and any code about to be trusted
+       with FRESH eyes — do not lean on the prior model's conclusions.
+    2. Downgrade trust on anything signed off by the previous model/session to
+       the "earlier-model unread code" band (~30-40%, per LR-101) until re-read.
+    3. Only then resume; treat the re-audit as the first task, not overhead.
+Lens example: when the daily-driver model changes, re-audit S2/S3 guards and the
+S2-F aggregators before trusting prior sign-off — the green history was earned by
+a different reasoner.
+
+---
+
+## LR-103 — Protections Are Guilty Until BEV'd (LENS-028)
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+Mechanism guesses ("what does this code do?") are usually right. Protection /
+blast-radius / "it's already handled" guesses are usually too optimistic — that
+is exactly where confident wrongness lives. Treat every claimed protection as
+guilty until BEV-verified.
+Before ANY fix, BEV must explicitly answer:
+    "What is SUPPOSED to protect against the bad case here —
+     and have I CONFIRMED, not assumed, that it actually does?"
+Discipline:
+    1. Move assumptions OUT of memory and INTO code as runtime assertions, so a
+       false assumption fails loud instead of riding along silently.
+    2. Tag every claim as verified-vs-assumed. Never let an assumed claim wear
+       the confidence of a verified one.
+Lens example (this weekend): "logs say the IP is blocked" was a lie, BEV'd false
+via curl; "dead file, safe to delete" needed the "dead != worthless" read before
+removal; RLS-enable was canary-proved (service R/W OK, anon read blocked) before
+it was trusted. Every "already-handled" claim that got checked was weaker than it
+sounded.
+
+---
+
+## LR-104 — Live-State Discipline (LENS-028)
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+Current work-state must live in a durable artifact (memory + registry), NOT only
+in Claude's transient context. It must be precise enough that a fresh session or
+a new model can resume WITHOUT re-derivation.
+A LENS LIVE STATE entry, updated every close, records:
+    1. SHIPPED + VERIFIED items, with commit hashes.
+    2. The active BLOCKER and its exact code location.
+    3. NEXT ACTIONS in order, with their gating dependencies.
+    4. Corrections to prior assumptions (so they don't get re-trusted).
+Begin session close at 80% context (LR-057) — do not wait until context is full,
+or the durable handoff gets truncated.
+Lens example: the false "ahead by 6" git-tracking scare came from trusting
+transient state instead of a durable record. Keep the LENS LIVE STATE entry
+current at every close — and record the fintelplan-scoped push URL there, since a
+fresh session that runs plain `git push` hits a 403.
