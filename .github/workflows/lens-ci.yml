@@ -1,0 +1,46 @@
+name: Lens CI
+# Project Lens — build gate
+# LENS-028 CC-1b
+#
+# Why this exists: TestRegistryAlignment (CC-1) can detect model-registry
+# drift, but a test nobody runs is not a gate. On 2026-07-27 the guard's
+# T25 test had been RED for weeks — asserting on ("cerebras","qwen-3-235b"),
+# a model the guard no longer used — and nothing was reading its exit code.
+# That is the same silent-corpse shape that let S2-D run dead for 10 days
+# under green checks. This workflow gives those assertions a jaw.
+#
+# Every step fails the job on a non-zero exit. No step may be made advisory.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            supabase \
+            python-dotenv
+
+      - name: Compile every module (LR-092)
+        run: python -m py_compile code/*.py
+
+      - name: Registry self-test (lens_models)
+        run: python code/lens_models.py
+
+      - name: Quota guard + registry alignment tests
+        run: python tests/test_lens_quota_guard.py
