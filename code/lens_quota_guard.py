@@ -43,6 +43,15 @@ from typing import Optional, NamedTuple
 from dotenv import load_dotenv
 load_dotenv()
 
+# LENS-028 D-001: the model registry is the single source of truth. No model
+# string, provider name, or limit is hand-written in this file any more.
+from lens_models import (
+    PROVIDER_LIMITS as REGISTRY_LIMITS,
+    LensModelRegistryError,
+    assert_model_known,
+    wire,
+)
+
 # Logging
 logging.basicConfig(
     level=logging.INFO,
@@ -56,41 +65,81 @@ log = logging.getLogger("quota_guard")
 # 1. Constants — provider limits and per-position consumption estimates
 # ─────────────────────────────────────────────────────────────────────────
 
-# Known daily limits per (provider, model). Conservative free-tier values.
-# Update when provider tiers change. Sourced from provider documentation
-# as of 2026-04-17.
-PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = {
-    ("groq",      "llama-3.3-70b-versatile"): {"TPD": 100_000},
-    ("groq",      "qwen3-32b"):                {"TPD": 100_000},
-    ("gemini",    "gemini-2.0-flash"):         {"RPD": 1_500},
-    ("cerebras",  "gpt-oss-120b"):              {"TPD": 1_000_000},
-    ("mistral",   "mistral-small"):            {"RPD": 2_000},
-    ("sambanova", "llama-3.3-70b"):            {"TPD": 500_000},
-    ("cohere",    "command-r-plus-08-2024"):   {"RPD": 1_000},
-}
+# Known daily limits per (provider, model) — imported wholesale from the
+# registry (code/lens_models.py). Pairs the registry marks LIMITS_UNKNOWN are
+# deliberately absent: the guard's fail-safe PROCEED path handles them, and we
+# never invent a number. Gemini/SambaNova/Cloudflare sit in that bucket as of
+# 2026-07-27 and therefore resolve to LIMITS_UNKNOWN here (LENS-028 F3).
+PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = REGISTRY_LIMITS
 
 # Per-position consumption estimates per cron run, based on Run #29 telemetry.
-# Format: position -> (provider, model, estimated_units_per_cron)
+# Format: position -> (registry role key, estimated_units_per_cron)
 # Units are TPD-tokens for Groq/Cerebras/SambaNova and RPD-requests for Gemini/
 # Mistral/Cohere, matching the quota_type of the provider's limit.
-POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {
-    "S1-L1":  ("groq",      "qwen3-32b",                 4_000),
-    "S1-L2":  ("gemini",    "gemini-2.0-flash",              1),
-    "S1-L3":  ("cerebras",  "gpt-oss-120b",               5_000),
-    "S1-L4":  ("cerebras",  "gpt-oss-120b",               5_000),
-    "S2-A":   ("groq",      "llama-3.3-70b-versatile",   5_000),
-    "S2-B":   ("gemini",    "gemini-2.0-flash",              1),
-    "S2-C":   ("mistral",   "mistral-small",                 1),
-    "S2-D":   ("groq",      "qwen3-32b",                 2_000),
-    "S2-E":   ("groq",      "llama-3.3-70b-versatile",  10_000),
-    "S2-GAP": ("groq",      "llama-3.3-70b-versatile",   3_000),
-    "MA":     ("groq",      "llama-3.3-70b-versatile",   6_000),
-    "S3-A":   ("groq",      "llama-3.3-70b-versatile",   7_000),
-    "S3-B":   ("gemini",    "gemini-2.0-flash",              1),
-    "S3-C":   ("cohere",    "command-r-plus-08-2024",        1),
-    "S3-D":   ("cerebras",  "gpt-oss-120b",               6_000),
+#
+# PROVISIONAL until post-migration recalibration (D-009): every number below
+# was measured on the OLD models (llama-3.3-70b / qwen3-32b / gemini-2.0-flash).
+# gpt-oss-120b is a reasoning model and burns ~1500-1600 tokens thinking before
+# it writes, so these are near-certainly UNDER-estimates. Recalibrate from 2-3
+# live billed runs on the new lineup — copying old estimates forward is the S63
+# stale-value trap.
+POSITION_ROLES: dict[str, tuple[str, int]] = {
+    "S1-L1":  ("lens1",             4_000),
+    "S1-L2":  ("lens2",                 1),
+    "S1-L3":  ("lens3",             5_000),
+    "S1-L4":  ("lens4",             5_000),
+    "S2-A":   ("s2a_injection",     5_000),
+    "S2-B":   ("s2b_coordination",      1),
+    "S2-C":   ("s2c_emotion",           1),
+    "S2-D":   ("s2d_adversary",     2_000),
+    "S2-E":   ("s2e_legitimacy",   10_000),
+    "S2-GAP": ("s2gap",             3_000),
+    "MA":     ("mission_analyst",   6_000),
+    "S3-A":   ("s3a_patterns",      7_000),
+    "S3-B":   ("s3b_history",           1),
+    "S3-C":   ("s3c_drift",             1),
+    "S3-D":   ("s3d_longterm",      6_000),
     # S3-E: Ollama LOCAL — no quota, no guard needed (W-010, restored LENS-022)
 }
+
+# Derived: position -> (provider, model, estimated_units_per_cron).
+# Built from the registry so a model migration is a one-line registry edit and
+# this file never drifts. The dead ("groq", "qwen3-32b") row is gone by
+# construction — it simply is not in the registry.
+POSITION_CONSUMPTION: dict[str, tuple[str, str, int]] = {}
+for _pos, (_role, _estimate) in POSITION_ROLES.items():
+    _provider, _model, _key_env, _max_out = wire(_role)
+    POSITION_CONSUMPTION[_pos] = (_provider, _model, _estimate)
+
+
+def verify_registry_alignment() -> list[str]:
+    """The D-001 vaccine, in the only form that is honest for THIS file.
+
+    The guard issues no HTTP requests, so there is no request chokepoint here —
+    the per-call assert_model_known() belongs at the real call sites. What this
+    file can do is refuse to model a position on a model the registry does not
+    know.
+
+    Returns a list of offender descriptions; empty means aligned. Deliberately
+    does NOT raise: guard_check_with_fallback() swallows every exception into a
+    fail-safe PROCEED, so a raise here would not stop the downstream call — it
+    would only convert a genuine quota SKIP into a PROCEED, and take six
+    production crons down with it (LR-075 Sacred Cron Inviolability). Loudness
+    lives in the log line below and in the unit test that asserts this is empty.
+    """
+    offenders: list[str] = []
+    for pos, (provider, model, _estimate) in POSITION_CONSUMPTION.items():
+        try:
+            assert_model_known(provider, model)
+        except LensModelRegistryError as e:
+            offenders.append(f"{pos}: {e}")
+    return offenders
+
+
+_MISALIGNED = verify_registry_alignment()
+if _MISALIGNED:
+    for _offender in _MISALIGNED:
+        log.error(f"REGISTRY_MISALIGNMENT {_offender}")
 
 # Decision thresholds (headroom percent)
 THRESHOLD_TIGHT    = 40.0   # below this: PROCEED_TIGHT
@@ -167,7 +216,8 @@ def decide(
 
     Args:
         provider:      'groq', 'gemini', etc.
-        model:         e.g. 'llama-3.3-70b-versatile'
+        model:         exact wire model ID from the registry,
+                       e.g. lens_models.GROQ_GPT_OSS_120B
         quota_type:    'TPD' or 'RPD'
         used_today:    sum from ledger since 00:00 UTC; None if read failed
         limit_value:   from PROVIDER_LIMITS; None if unknown

@@ -23,6 +23,22 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "code"))
 
 import lens_quota_guard as qg
+import lens_models as lm
+
+# LENS-028 D-001: never hard-code a wire model string in a test. Import the
+# registry constants so a model migration cannot leave green tests behind
+# asserting on a corpse (T25 asserted ("cerebras","qwen-3-235b") and was RED
+# on Jul 27 2026 while the guard had already moved to gpt-oss-120b).
+GROQ_MODEL     = lm.GROQ_GPT_OSS_120B
+GEMINI_MODEL   = lm.GEMINI_25_FLASH_LITE
+MISTRAL_MODEL  = lm.MISTRAL_SMALL
+CEREBRAS_MODEL = lm.CEREBRAS_GPT_OSS_120B
+
+# The Groq TPD the guard will actually apply, straight from the registry
+# (200_000 as of 2026-07-27 — double the old 70b tier, D-002). Tests that
+# exercise threshold behaviour derive their fixtures from this rather than
+# from a literal, so the next tier change does not silently invert them.
+GROQ_TPD = qg.PROVIDER_LIMITS[("groq", GROQ_MODEL)]["TPD"]
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -60,7 +76,7 @@ class TestDecideFunction:
 
     def test_T20_first_run_no_prior_usage(self):
         """T20: First run ever (ledger empty → used_today=0) returns PROCEED."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=0, limit_value=100_000,
                       estimated_use=31_000, positions=["S2-A", "MA"])
         assert r.decision == qg.Decision.PROCEED
@@ -69,7 +85,7 @@ class TestDecideFunction:
 
     def test_T21_headroom_exactly_zero(self):
         """T21: Headroom exactly 0 returns SKIP."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=69_000, limit_value=100_000,
                       estimated_use=31_000, positions=["S2-A", "MA"])
         # 100K - 69K = 31K remaining; 31K - 31K estimated = 0 headroom → 0.0%
@@ -78,7 +94,7 @@ class TestDecideFunction:
 
     def test_T22_headroom_negative(self):
         """T22: Over-limit returns SKIP with negative headroom."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=98_000, limit_value=100_000,
                       estimated_use=5_000, positions=["S2-A"])
         assert r.decision == qg.Decision.SKIP
@@ -88,14 +104,14 @@ class TestDecideFunction:
     def test_T23_headroom_equals_estimated(self):
         """T23: Headroom just matches estimated → PROCEED_TIGHT boundary."""
         # 60K used, 100K limit, 30K estimated → 10K headroom = 10% = below 20% threshold → DEGRADE
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=60_000, limit_value=100_000,
                       estimated_use=30_000, positions=["S2-A", "MA"])
         assert r.decision == qg.Decision.DEGRADE
 
     def test_T24_plenty_headroom(self):
         """T24: Plenty of headroom returns PROCEED cleanly."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=10_000, limit_value=100_000,
                       estimated_use=5_000, positions=["S2-A"])
         assert r.decision == qg.Decision.PROCEED
@@ -103,7 +119,7 @@ class TestDecideFunction:
 
     def test_T26_force_override(self):
         """T26: LENS_FORCE=1 always returns FORCE regardless of quota."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=99_999, limit_value=100_000,
                       estimated_use=10_000, positions=["S2-A"],
                       force=True)
@@ -112,7 +128,7 @@ class TestDecideFunction:
 
     def test_T30_test_mode(self):
         """T30: LENS_GUARD_TEST=1 returns TEST decision."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=99_999, limit_value=100_000,
                       estimated_use=10_000, positions=["S2-A"],
                       test_mode=True)
@@ -143,7 +159,7 @@ class TestEdgeCases:
 
     def test_T11_negative_used_clamped_to_zero(self):
         """T11: Negative used value (provider bug) clamped to 0."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=-500, limit_value=100_000,
                       estimated_use=5_000, positions=["S2-A"])
         assert r.decision == qg.Decision.PROCEED
@@ -151,7 +167,7 @@ class TestEdgeCases:
 
     def test_T13_used_clamped_if_wildly_over(self):
         """T13: Used value far above limit clamped to 2x limit for sanity."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=500_000,  # 5x limit — must be bug
                       limit_value=100_000,
                       estimated_use=5_000, positions=["S2-A"])
@@ -160,7 +176,7 @@ class TestEdgeCases:
 
     def test_T16_ledger_read_failed(self):
         """T16: used_today=None (Supabase unreachable) returns PROCEED fail-safe."""
-        r = qg.decide("groq", "llama-3.3-70b-versatile", "TPD",
+        r = qg.decide("groq", GROQ_MODEL, "TPD",
                       used_today=None, limit_value=100_000,
                       estimated_use=5_000, positions=["S2-A"])
         assert r.decision == qg.Decision.PROCEED
@@ -177,16 +193,16 @@ class TestAggregation:
         """One position = one (provider, model) group."""
         g = qg.aggregate_positions(["S2-A"])
         assert len(g) == 1
-        assert ("groq", "llama-3.3-70b-versatile") in g
-        total, positions = g[("groq", "llama-3.3-70b-versatile")]
+        assert ("groq", GROQ_MODEL) in g
+        total, positions = g[("groq", GROQ_MODEL)]
         assert total == 5_000
         assert positions == ["S2-A"]
 
     def test_shared_provider_model_summed(self):
         """Multiple positions on same provider/model: consumption summed."""
         g = qg.aggregate_positions(["S2-A", "S2-E", "S2-GAP", "MA", "S3-A"])
-        assert len(g) == 1  # all on groq/llama-3.3-70b
-        total, positions = g[("groq", "llama-3.3-70b-versatile")]
+        assert len(g) == 1  # all on the single Groq primary from the registry
+        total, positions = g[("groq", GROQ_MODEL)]
         assert total == 5_000 + 10_000 + 3_000 + 6_000 + 7_000  # = 31000
         assert set(positions) == {"S2-A", "S2-E", "S2-GAP", "MA", "S3-A"}
 
@@ -194,16 +210,16 @@ class TestAggregation:
         """T25: Multiple providers each get own group."""
         g = qg.aggregate_positions(["S2-A", "S2-B", "S2-C", "S3-D"])
         assert len(g) == 4  # groq, gemini, mistral, cerebras
-        assert ("groq", "llama-3.3-70b-versatile") in g
-        assert ("gemini", "gemini-2.0-flash") in g
-        assert ("mistral", "mistral-small") in g
-        assert ("cerebras", "qwen-3-235b") in g
+        assert ("groq", GROQ_MODEL) in g
+        assert ("gemini", GEMINI_MODEL) in g
+        assert ("mistral", MISTRAL_MODEL) in g
+        assert ("cerebras", CEREBRAS_MODEL) in g
 
     def test_unknown_position_skipped_gracefully(self):
         """Unknown position name is skipped with warning, doesn't crash."""
         g = qg.aggregate_positions(["S2-A", "BOGUS-POSITION", "MA"])
         assert len(g) == 1  # BOGUS-POSITION ignored
-        total, positions = g[("groq", "llama-3.3-70b-versatile")]
+        total, positions = g[("groq", GROQ_MODEL)]
         assert total == 5_000 + 6_000  # S2-A + MA only
         assert "BOGUS-POSITION" not in positions
 
@@ -226,19 +242,19 @@ class TestLedgerIO:
             {"estimated_use": 10000},
             {"estimated_use": 3000},
         ])
-        total = qg.read_ledger_usage(sb, "groq", "llama-3.3-70b-versatile")
+        total = qg.read_ledger_usage(sb, "groq", GROQ_MODEL)
         assert total == 18000
 
     def test_T16_read_fails_returns_none(self):
         """T16: Supabase unreachable during read → returns None (fail-safe)."""
         sb = mock_supabase(read_fails=True)
-        total = qg.read_ledger_usage(sb, "groq", "llama-3.3-70b-versatile")
+        total = qg.read_ledger_usage(sb, "groq", GROQ_MODEL)
         assert total is None  # fail-safe: caller should PROCEED
 
     def test_read_empty_returns_zero(self):
         """No ledger rows yet (T20 first run) returns 0."""
         sb = mock_supabase(ledger_rows=[])
-        total = qg.read_ledger_usage(sb, "groq", "llama-3.3-70b-versatile")
+        total = qg.read_ledger_usage(sb, "groq", GROQ_MODEL)
         assert total == 0
 
     def test_write_success(self):
@@ -246,7 +262,7 @@ class TestLedgerIO:
         sb = mock_supabase()
         r = qg.QuotaResult(
             decision=qg.Decision.PROCEED, reason="test",
-            provider="groq", model="llama-3.3-70b-versatile", quota_type="TPD",
+            provider="groq", model=GROQ_MODEL, quota_type="TPD",
             limit_value=100_000, used_value=10_000, remaining=90_000,
             estimated_use=5_000, headroom_pct=85.0, positions=["S2-A"],
         )
@@ -257,7 +273,7 @@ class TestLedgerIO:
         sb = mock_supabase(write_fails=True)
         r = qg.QuotaResult(
             decision=qg.Decision.PROCEED, reason="test",
-            provider="groq", model="llama-3.3-70b-versatile", quota_type="TPD",
+            provider="groq", model=GROQ_MODEL, quota_type="TPD",
             limit_value=100_000, used_value=10_000, remaining=90_000,
             estimated_use=5_000, headroom_pct=85.0, positions=["S2-A"],
         )
@@ -278,15 +294,21 @@ class TestGuardCheck:
             positions=["S2-A", "MA", "S3-A"],
             sb=sb, run_id="test-clean",
         )
-        assert len(results) == 1  # all on groq/llama-3.3-70b
+        assert len(results) == 1  # all on the single Groq primary
         assert results[0].decision == qg.Decision.PROCEED
 
     def test_full_flow_tight(self):
-        """Ledger shows heavy usage → PROCEED_TIGHT or DEGRADE."""
-        sb = mock_supabase(ledger_rows=[
-            {"estimated_use": 70_000},  # Already 70K used
-        ])
-        # 70K used + 31K estimated = 101K → over limit → SKIP
+        """Ledger shows heavy usage → SKIP.
+
+        Fixture is derived from GROQ_TPD, not written as a literal: the old
+        70_000 fixture forced SKIP against a 100K TPD but is a clean PROCEED
+        against the registry's 200K, which would have silently gutted this
+        test's intent at migration time (LENS-028 F4).
+        """
+        # These five positions estimate 31_000 combined. Leave 25_000 of quota
+        # so the run is 6_000 short → negative headroom → SKIP.
+        used = GROQ_TPD - 25_000
+        sb = mock_supabase(ledger_rows=[{"estimated_use": used}])
         results = qg.guard_check(
             positions=["S2-A", "S2-E", "S2-GAP", "MA", "S3-A"],
             sb=sb, run_id="test-tight",
@@ -309,7 +331,7 @@ class TestGuardCheck:
         # Build results with different decisions
         r_skip = qg.QuotaResult(
             decision=qg.Decision.SKIP, reason="test",
-            provider="groq", model="llama-3.3-70b-versatile", quota_type="TPD",
+            provider="groq", model=GROQ_MODEL, quota_type="TPD",
             limit_value=100_000, used_value=99_000, remaining=1_000,
             estimated_use=5_000, headroom_pct=-4.0, positions=["S2-A"],
         )
@@ -322,12 +344,66 @@ class TestGuardCheck:
         """DEGRADE in observer mode → PROCEED (only SKIP is enforced)."""
         r_degrade = qg.QuotaResult(
             decision=qg.Decision.DEGRADE, reason="test",
-            provider="groq", model="llama-3.3-70b-versatile", quota_type="TPD",
+            provider="groq", model=GROQ_MODEL, quota_type="TPD",
             limit_value=100_000, used_value=75_000, remaining=25_000,
             estimated_use=31_000, headroom_pct=-6.0, positions=["S2-A"],
         )
         per_pos = qg.filter_positions_by_guard(["S2-A"], [r_degrade])
         assert per_pos["S2-A"] == "PROCEED"  # DEGRADE → PROCEED in observer
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# REGISTRY ALIGNMENT (LENS-028 D-001 — the vaccine's teeth)
+# ═════════════════════════════════════════════════════════════════════════
+
+class TestRegistryAlignment:
+    """The guard cannot raise on drift without breaking its fail-safe contract,
+    so the loud failure lives here instead: these tests go red the moment a
+    position is modelled on a wire pair the registry does not know."""
+
+    def test_every_position_pair_is_registered(self):
+        """No position may reference a model outside the registry."""
+        offenders = qg.verify_registry_alignment()
+        assert offenders == [], f"Unregistered position wire pairs: {offenders}"
+
+    def test_position_consumption_is_derived_from_registry(self):
+        """Every POSITION_CONSUMPTION row must match wire(role) exactly.
+
+        Catches the drift shape directly: a hand-edited model string in the
+        guard that no longer matches what the call site would actually send.
+        """
+        for pos, (role, estimate) in qg.POSITION_ROLES.items():
+            provider, model, _key_env, _max_out = lm.wire(role)
+            assert qg.POSITION_CONSUMPTION[pos] == (provider, model, estimate), (
+                f"{pos} drifted from registry role '{role}'")
+
+    def test_no_china_lineage_model_in_any_position(self):
+        """D-004: no Qwen/DeepSeek/Kimi/MiniMax anywhere, primary or fallback."""
+        banned = ("qwen", "deepseek", "kimi", "minimax", "moonshot", "glm")
+        for pos, (_provider, model, _estimate) in qg.POSITION_CONSUMPTION.items():
+            low = model.lower()
+            assert not any(b in low for b in banned), \
+                f"China-lineage model at position {pos}: {model}"
+
+    def test_dead_models_absent_from_limits(self):
+        """The corpses this migration buried must not reappear in limits."""
+        dead = {("groq", "qwen3-32b"),
+                ("groq", "llama-3.3-70b-versatile"),
+                ("gemini", "gemini-2.0-flash")}
+        assert dead.isdisjoint(qg.PROVIDER_LIMITS.keys())
+
+    def test_unknown_limits_fall_through_to_failsafe(self):
+        """F3: registry marks Gemini LIMITS_UNKNOWN, so S2-B must PROCEED.
+
+        Guards the intended consequence of refusing to invent a number — an
+        unlimited pair must reach the fail-safe path, never a bogus limit.
+        """
+        provider, model, _estimate = qg.POSITION_CONSUMPTION["S2-B"]
+        assert (provider, model) not in qg.PROVIDER_LIMITS
+        results = qg.guard_check(positions=["S2-B"], sb=None,
+                                 record_ledger=False, run_id="test-unknown")
+        assert results[0].decision == qg.Decision.PROCEED
+        assert results[0].error_class == "LIMITS_UNKNOWN"
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -342,7 +418,7 @@ def run_all_tests():
     failures = []
 
     test_classes = [TestDecideFunction, TestEdgeCases, TestAggregation,
-                    TestLedgerIO, TestGuardCheck]
+                    TestLedgerIO, TestGuardCheck, TestRegistryAlignment]
 
     for cls in test_classes:
         instance = cls()
