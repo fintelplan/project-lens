@@ -305,7 +305,7 @@ def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard"
     # reasoning model that spends ~1500-1900 tokens thinking before it writes,
     # so the old flat MAX_TOKENS=2000 sat close to the starvation line.
     prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
-    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT)
+    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:

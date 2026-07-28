@@ -718,7 +718,8 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
         # Groq's 7500 and would strangle a 65k-context Cerebras call.
         max_tokens = raw_max_tokens
     else:
-        max_tokens = fit_max_tokens(fixture.prompt_chars, effective_max_out)
+        max_tokens = fit_max_tokens(fixture.prompt_chars, effective_max_out,
+                                    cand.provider, cand.model)
 
     print(f"  origin           : {fixture.origin}")
     for k, v in fixture.detail.items():
@@ -737,9 +738,11 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
         print(f"  RAW max_tokens   : {max_tokens}   "
               f"[fit_max_tokens BYPASSED -- provider ceiling verified]")
     else:
-        print(f"  fit_max_tokens   : {max_tokens}"
-              f"   [max(768, min({effective_max_out}, 7500 - "
-              f"{fixture.prompt_chars}//3))]")
+        from lens_models import request_ceiling
+        ceil = request_ceiling(cand.provider, cand.model)
+        print(f"  fit_max_tokens   : {max_tokens}   "
+              f"[ceiling {ceil if ceil is not None else 'UNRESOLVED -> cap'}"
+              f", cap {effective_max_out}, prompt {fixture.prompt_chars} chars]")
     print(f"  est prompt tokens: ~{est_prompt_tokens}")
     print(f"  est call total   : ~{est_prompt_tokens + max_tokens} tokens")
 

@@ -8,9 +8,10 @@ runtime (assert_model_known) -- that assertion is the vaccine against the
 MODEL-404 shape (S2-D ran dead for 10 days under green checks, Jul 2026).
 
 Rules encoded:
-  - Groq 8K per-request ceiling: prompt_tokens + max_tokens <= 8192, else
-    HTTP 413 (unretryable). fit_max_tokens() applies GNI's proven formula
-    (GNI commit 7097460): max(768, min(cap, 7500 - prompt_chars // 3)).
+  - Per-request ceilings are DERIVED, not hardcoded: min(CTX, TPM) per
+    (provider, model), from the LIMITS table below (D-015). The old
+    "Groq 8192" constant was never a context limit -- Groq gpt-oss-120b
+    has CTX 131,072 and is bound at 8,000 by TPM. Do not restore 8192.
   - gpt-oss models are REASONING models: they spend ~1500-1600 tokens
     thinking before writing. Output budgets below 2200 risk silent empty
     responses (starvation). Heavy analytical roles get 2400+.
@@ -24,6 +25,10 @@ Sources: LENS-028 byte census at HEAD 9b2836d + runtime logs of Jul 27
 (manage-analyze 81938609577, s2f 81938481905) + Groq console receipts.
 """
 
+import logging
+
+log = logging.getLogger("lens_models")
+
 # --------------------------------------------------------------------------
 # Wire model IDs (exact strings sent on the wire -- prefixes matter)
 # --------------------------------------------------------------------------
@@ -34,10 +39,21 @@ CLOUDFLARE_GPT_OSS_120B = "@cf/openai/gpt-oss-120b"
 SAMBANOVA_LLAMA_33_70B = "Meta-Llama-3.3-70B-Instruct"  # SambaNova format, LR-005(A)
 GEMINI_25_FLASH = "gemini-2.5-flash"            # dies 2026-10-16 (Google page)
 GEMINI_25_FLASH_LITE = "gemini-2.5-flash-lite"
-MISTRAL_SMALL = "mistral-small-latest"
+# Dated id, never an alias (D-015). No `mistral-small-latest` model card exists,
+# and -latest aliases carry far lower limits than dated ids (medium-latest
+# 25,000 TPM vs medium-2508 356,250). An alias is an unpinned wire id.
+# Higher-throughput option if a fallback ever needs it: mistral-small-2506
+# (TPM 2,250,000, RPS 5.00). Not wired -- recorded only.
+MISTRAL_SMALL = "mistral-small-2603"
 COHERE_CMD_R_PLUS = "command-r-plus-08-2024"
 
-GROQ_REQUEST_CEILING = 8192  # prompt + max_tokens hard cap per request
+# Budget-fitting constants (D-015). The old GROQ_REQUEST_CEILING = 8192 is gone:
+# it was never a context limit, it was TPM, and it was Groq-only. Ceilings now
+# derive from LIMITS per (provider, model) -- see request_ceiling().
+MARGIN_FRACTION = 0.08   # proportional: estimate error scales with request size
+MARGIN_FLOOR = 200       # never trust a ceiling to the last token
+CHARS_PER_TOKEN = 3      # deliberately conservative; measured mean is 4.42 and
+                         # loosening it to 4 is CC-1d, its own decision + probe
 
 
 class LensModelRegistryError(RuntimeError):
@@ -218,18 +234,45 @@ ROLES = {
 # LIMITS: (provider, wire_model) -> known limits. None = LIMITS_UNKNOWN.
 # VERIFIED = read from provider console/docs on 2026-07-27 by James.
 # --------------------------------------------------------------------------
+#
+# METER records HOW a provider rate-limits (D-015):
+#   "tokens"   -> TPM exists and binds a single request
+#   "requests" -> the provider limits calls, NOT tokens. Cohere (20 req/min)
+#                 and Cloudflare (300 req/min + neurons/day) have NO TPM by
+#                 design. "No TPM exists" and "nobody has checked" must never
+#                 collapse into the same silence.
+# CTX is the context window. It is rarely the binding constraint: Groq
+# gpt-oss-120b has CTX 131,072 and still resolves to 8,000 because TPM binds.
 LIMITS = {
-    ("groq", GROQ_GPT_OSS_120B): {"RPM": 30, "RPD": 1_000, "TPM": 8_000,
-                                  "TPD": 200_000},   # VERIFIED console Jul 27
-    ("groq", GROQ_GPT_OSS_20B): {"RPM": 30, "RPD": 1_000, "TPM": 8_000,
-                                 "TPD": 200_000},    # VERIFIED console Jul 27
-    ("cerebras", CEREBRAS_GPT_OSS_120B): {"TPD": 1_000_000},  # banked LENS-026; VERIFY
-    ("cloudflare", CLOUDFLARE_GPT_OSS_120B): None,   # neurons/day model; VERIFY
-    ("sambanova", SAMBANOVA_LLAMA_33_70B): None,     # VERIFY (probe also checks ctx)
-    ("gemini", GEMINI_25_FLASH): None,               # VERIFY free-tier RPD
-    ("gemini", GEMINI_25_FLASH_LITE): None,          # VERIFY free-tier RPD
-    ("mistral", MISTRAL_SMALL): {"RPD": 2_000},      # banked; VERIFY
-    ("cohere", COHERE_CMD_R_PLUS): {"RPD": 1_000},   # banked; VERIFY
+    ("groq", GROQ_GPT_OSS_120B): {"METER": "tokens", "RPM": 30, "RPD": 1_000,
+                                  "TPM": 8_000, "TPD": 200_000,
+                                  "CTX": 131_072},   # VERIFIED console Jul 27
+    ("groq", GROQ_GPT_OSS_20B): {"METER": "tokens", "RPM": 30, "RPD": 1_000,
+                                 "TPM": 8_000, "TPD": 200_000,
+                                 "CTX": 131_072},    # VERIFIED console Jul 27
+    ("cerebras", CEREBRAS_GPT_OSS_120B): {"METER": "tokens", "RPM": 5,
+                                          "RPD": 2_400, "TPM": 30_000,
+                                          "TPD": 1_000_000, "CTX": 131_000,
+                                          "MAX_COMPLETION": 40_000},
+    # ^ VERIFIED-console 2026-07-28. Overrides the public docs (which said
+    #   CTX 65,536 / max output 32,768). Console also warns short-interval
+    #   enforcement ("60 RPM may be enforced as 1 req/sec") -- at RPM 5 that
+    #   is why Cerebras roles need ~65s spacing between sequential calls.
+    ("cloudflare", CLOUDFLARE_GPT_OSS_120B): {"METER": "requests", "RPM": 300,
+                                              "CTX": 128_000},
+    # ^ VERIFIED-docs 2026-07-28. Metered in Neurons (10,000/day free), a GPU
+    #   compute unit with no honest token conversion -- so no TPM, by design.
+    ("gemini", GEMINI_25_FLASH): None,               # LIMITS_UNKNOWN -> AI Studio
+    ("gemini", GEMINI_25_FLASH_LITE): None,          # LIMITS_UNKNOWN -> AI Studio
+    ("mistral", MISTRAL_SMALL): {"METER": "tokens", "TPM": 50_000, "RPD": 2_000,
+                                 "CTX": 128_000},
+    # ^ TPM/RPS VERIFIED-console 2026-07-28 (RPS 0.83). CTX is VERIFY, not
+    #   VERIFIED: 128k comes from the Mistral Small 3.1/3.2 cards, and this is
+    #   a dated id -- re-read the card before upgrading the tag.
+    ("cohere", COHERE_CMD_R_PLUS): {"METER": "requests", "RPM": 20,
+                                    "RPD": 1_000, "CTX": 128_000},
+    # ^ 20 req/min VERIFIED-docs 2026-07-28; no TPM exists on trial keys.
+    #   CTX 128k is VERIFY (docs summary, not a fetched model card).
 }
 
 # Back-compat single-axis view for lens_quota_guard.PROVIDER_LIMITS
@@ -292,15 +335,61 @@ def limits_for(provider, model):
     return LIMITS.get((provider, model))
 
 
-def fit_max_tokens(prompt_chars, cap):
-    """Groq 8K ceiling guard (GNI formula, commit 7097460).
+def request_ceiling(provider, model):
+    """Largest single request this pair can ever satisfy, or None (D-015).
 
-    prompt_chars // 3 approximates prompt tokens; keep prompt + output
-    inside ~7500 to leave headroom under the 8192 hard cap. Floor 768 so
-    reasoning models are never fully starved -- if even 768 does not fit,
-    the PROMPT must shrink (that is a caller bug, and 413 will say so).
+        CTX + TPM                -> min(CTX, TPM)
+        CTX only, METER=requests -> CTX
+        otherwise                -> None
+
+    The context window is rarely the cap. A request larger than the per-minute
+    allowance can never be served, whatever CTX says -- Groq gpt-oss-120b has
+    CTX 131,072 and resolves to 8,000. The old hardcoded 8,192 looked right for
+    the wrong reason: it was TPM all along. DO NOT restore 8,192.
+
+    Returns None rather than raising. Raising would break S2-C/S3-B/S3-C/S2-F,
+    which work today on flat budgets -- a documentation gap must not become an
+    outage. Loudness belongs in verify_registry_alignment(), which reports
+    unresolved ceilings to the pre-flight line. Guard reports, call sites enforce.
     """
-    return max(768, min(cap, 7500 - prompt_chars // 3))
+    lim = LIMITS.get((provider, model))
+    if not lim:
+        return None
+    ctx = lim.get("CTX")
+    tpm = lim.get("TPM")
+    if ctx and tpm:
+        return min(ctx, tpm)
+    if ctx and lim.get("METER") == "requests":
+        return ctx
+    if tpm:
+        return tpm
+    return None
+
+
+def fit_max_tokens(prompt_chars, cap, provider, model):
+    """Output budget that fits this pair's real ceiling (D-015).
+
+    provider AND model are required: two Groq models on one key have different
+    TPM (llama-3.3-70b 12,000 vs gpt-oss-120b 8,000), so a provider-only lookup
+    would have refused the Mission Analyst baseline (6,893 + 2,500 = 9,393) that
+    in fact ran clean 3/3.
+
+    Unresolved ceiling -> return cap unchanged and log an ERROR naming the pair.
+    That is exactly today's behaviour for those roles, so it is status-quo
+    preserving rather than a new failure mode.
+
+    Floor 768 so reasoning models are never fully starved. Margin is
+    proportional because token-estimate error scales with request size.
+    """
+    ceiling = request_ceiling(provider, model)
+    if ceiling is None:
+        log.error(
+            "[LENS-MODELS] no resolvable ceiling for (%r, %r) -- returning cap "
+            "%s unchanged. Add CTX/TPM/METER to LIMITS to enable fitting.",
+            provider, model, cap)
+        return cap
+    usable = ceiling - max(MARGIN_FLOOR, int(ceiling * MARGIN_FRACTION))
+    return max(768, min(cap, usable - prompt_chars // CHARS_PER_TOKEN))
 
 
 if __name__ == "__main__":
