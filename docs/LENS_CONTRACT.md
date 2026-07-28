@@ -1,7 +1,7 @@
 # LENS OPERATING CONTRACT (permanent — born at LENS-028 close; edit only when a rule of engagement changes)
 
 ## ROLES
-- James (Bro Alpha, Chiang Mai UTC+7, Team Geeks): continuity + gate + final authority on every push. Sole operator. "Your call" = Claude decides WITH full reasoning, never bounces back.
+- James Maverick (Bro Alpha, Chiang Mai UTC+7): continuity + gate + final authority on every push. Sole operator. "Your call" = Claude decides WITH full reasoning, never bounces back.
 - Chat-Claude (the day's top reasoning model): audit / design / rulings / probe + cert READS / close briefs. Spends tokens on judgment only (GNI contract v3 economy rule, adopted). Never invents numbers; never displays key values.
 - Claude Code: executor of BUILD_PLAN blocks (CC-N). May edit, commit, AND push — but only a block James approved in-session, one purpose per commit, receipts (SHAs + ls-remote + test counts) back to chat. Anything the bytes contradict in a spec comes back BEFORE edits: pre-approval never overrides BEV.
 

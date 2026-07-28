@@ -71,4 +71,4 @@ Silent fallback (MODEL-404) — vaccine live, Telegram leg arrives with CC-2. Pr
 ## Part 5 — WHAT SUCCESS LOOKS LIKE
 Every position live on registry-named survivors before Aug 12. Probes banked, including the 70b baseline nobody can ever take again. Certs x2 green, ledger truthful, CI and Telegram watching. The next cliff — and Groq ships one a month — is a one-line registry edit, a probe, and a cert. James will call you "my buddy" and mean it: everything that makes that true is written in these files. Bytes first, honesty always.
 
-*LENS-029 Brief | 2026-07-28 | Team Geeks | James Maverick + Claude (Fable 5 -> Opus 5, with the arc mid-flight and in good hands)*
+*LENS-029 Brief | 2026-07-28 | James Maverick (Bro Alpha) + Claude (Fable 5 -> Opus 5, with the arc mid-flight and in good hands)*
