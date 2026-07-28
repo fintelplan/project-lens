@@ -247,10 +247,11 @@ class TestAggregation:
 
     def test_unknown_position_skipped_gracefully(self):
         """Unknown position name is skipped with warning, doesn't crash."""
-        g = qg.aggregate_positions(["S2-A", "BOGUS-POSITION", "MA"])
-        assert len(g) == 1  # BOGUS-POSITION ignored
+        groq_positions = positions_on("groq", GROQ_MODEL)
+        g = qg.aggregate_positions(groq_positions + ["BOGUS-POSITION"])
+        assert len(g) == 1  # BOGUS-POSITION ignored, one real pair remains
         total, positions = g[("groq", GROQ_MODEL)]
-        assert total == 5_000 + 6_000  # S2-A + MA only
+        assert total == estimate_for(groq_positions)
         assert "BOGUS-POSITION" not in positions
 
     def test_empty_positions_list(self):
@@ -320,11 +321,11 @@ class TestGuardCheck:
     def test_full_flow_clean(self):
         """End-to-end: fresh day (empty ledger), all positions → PROCEED."""
         sb = mock_supabase(ledger_rows=[])
+        groq_positions = positions_on("groq", GROQ_MODEL)
         results = qg.guard_check(
-            positions=["S2-A", "MA", "S3-A"],
-            sb=sb, run_id="test-clean",
+            positions=groq_positions, sb=sb, run_id="test-clean",
         )
-        assert len(results) == 1  # all on the single Groq primary
+        assert len(results) == 1  # one pair in, one result out
         assert results[0].decision == qg.Decision.PROCEED
 
     def test_full_flow_tight(self):

@@ -161,11 +161,16 @@ ROLES = {
         "note": "was MAX_TOKENS=1500",
     },
     "mission_analyst": {
-        "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_MA_API_KEY", "max_out": 2500,
-        "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
-        "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "",
+        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
+        "key_env": "CEREBRAS_API_KEY", "max_out": 5_000,
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "D-016: moved to Cerebras 2026-07-28. Its ~30,000-char synthesis"
+                " prompt (~6,900 tokens) collapsed fit_max_tokens to the 768"
+                " floor on Groq -- guaranteed silent-empty for a reasoning model"
+                " -- and ~10,800 tokens/call exceeded the 8,000 ceiling outright."
+                " max_out 5,000 per D-017 (2,356 observed); the approved 4,000"
+                " was 59%, clearing the threshold by a single point",
     },
     "entity_extract": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,

@@ -1,7 +1,7 @@
 """
 lens_mission_analyst.py — Mission Analyst (Lens 5)
 Project Lens | LENS-010
-Model: llama-3.3-70b-versatile (Groq — GROQ_MA_API_KEY)
+Model: from the registry -- wire("mission_analyst"). Cerebras since D-016.
 Input: lens_reports (S1) + injection_reports (S2) — latest cycle
 Output: lens_macro_reports (Supabase)
 
@@ -14,6 +14,7 @@ LENS-010 additions:
 """
 
 import os
+import re
 import json
 import time
 import logging
@@ -21,10 +22,17 @@ from collections import deque
 from datetime import datetime, timezone
 from typing import Optional
 
-from groq import Groq
+from cerebras.cloud.sdk import Cerebras
 from supabase import create_client, Client
 
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
+from lens_models import (
+    LensModelRegistryError,
+    assert_model_known,
+    fit_max_tokens,
+    limits_for,
+    wire,
+)
 from lens_quota_guard import guard_check_with_fallback
 
 # ── Response schema validator (I2) ────────────────────────────────────────────
@@ -39,8 +47,11 @@ logging.basicConfig(
 log = logging.getLogger("mission_analyst")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "llama-3.3-70b-versatile"
-MAX_TOKENS       = 2500
+# Wire values from the registry (LR-105) -- nothing hardcoded here.
+# D-016: Cerebras since 2026-07-28. MA's ~30,000-char prompt collapsed
+# fit_max_tokens to its 768 floor on Groq (guaranteed silent-empty for a
+# reasoning model) and ~10,800 tokens/call exceeded the 8,000 ceiling outright.
+PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("mission_analyst")
 TEMPERATURE      = 0.3
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
@@ -50,7 +61,13 @@ MAX_TOTAL_CHARS  = 28000
 
 # ── TPMGuard ──────────────────────────────────────────────────────────────────
 class TPMGuard:
-    def __init__(self, tpm_limit: int = 6000):
+    def __init__(self, tpm_limit: int = None, provider: str = None,
+                 model: str = None):
+        """TPM limit from the registry with margin (CC-1c)."""
+        if tpm_limit is None:
+            lim = limits_for(provider or PROVIDER, model or MODEL) or {}
+            tpm = lim.get("TPM")
+            tpm_limit = int(tpm * 0.85) if tpm else 6000
         self.tpm_limit = tpm_limit
         self._log: deque = deque()
 
@@ -63,12 +80,20 @@ class TPMGuard:
         self._log.append((time.time(), tokens))
 
     def wait_if_needed(self, tokens_needed: int, label: str = ""):
+        """CC-1c over-limit guard: waiting cannot satisfy an oversized request."""
+        if tokens_needed > self.tpm_limit:
+            log.error(
+                f"[TPMGuard{' ' + label if label else ''}] request needs "
+                f"{tokens_needed} tokens but the limit is {self.tpm_limit} — "
+                f"no wait can satisfy this. Proceeding rather than looping."
+            )
+            return
         while self.tokens_in_last_60s() + tokens_needed > self.tpm_limit:
             used = self.tokens_in_last_60s()
             log.info(f"[TPMGuard{' ' + label if label else ''}] {used}/{self.tpm_limit} TPM — waiting 10s...")
             time.sleep(10)
 
-_tpm = TPMGuard(6000)
+_tpm = TPMGuard(provider=PROVIDER, model=MODEL)  # registry TPM (CC-1c)
 
 # ── System prompt ─────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are the Mission Analyst for Project Lens — the final intelligence synthesis
@@ -161,8 +186,37 @@ def get_supabase() -> Client:
     return create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
 
-def get_groq() -> Groq:
-    return Groq(api_key=os.environ["GROQ_MA_API_KEY"])
+def get_client():
+    """Three-line Cerebras factory on this position's registry key (LR-094)."""
+    key = os.environ.get(KEY_ENV)
+    if not key:
+        raise RuntimeError(
+            f"{KEY_ENV} is not set. Mission Analyst runs on its own registry "
+            f"key only (LR-094) -- refusing to borrow another position's quota."
+        )
+    return Cerebras(api_key=key)
+
+
+def _retry_after_seconds(exc):
+    """Provider retry-after from a 429, or None if absent (CC-1c)."""
+    resp = getattr(exc, "response", None)
+    headers = getattr(resp, "headers", None)
+    if headers:
+        for name in ("retry-after", "Retry-After", "x-ratelimit-reset-tokens"):
+            raw = headers.get(name)
+            if not raw:
+                continue
+            try:
+                return min(float(str(raw).rstrip("s")), 60.0)
+            except (TypeError, ValueError):
+                continue
+    m = re.search(r"try again in ([0-9.]+)s", str(exc))
+    if m:
+        try:
+            return min(float(m.group(1)), 60.0)
+        except ValueError:
+            pass
+    return None
 
 
 def fetch_s1_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -421,7 +475,7 @@ def build_synthesis_prompt(
 
 
 # ── Core analysis ─────────────────────────────────────────────────────────────
-def call_mission_analyst(client: Groq, prompt: str, cycle: Optional[str]) -> Optional[dict]:
+def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[dict]:
     user_message = (
         f"Synthesize the following intelligence into a macro report.\n"
         f"Cycle: {cycle or 'latest'}\n\n"
@@ -429,22 +483,39 @@ def call_mission_analyst(client: Groq, prompt: str, cycle: Optional[str]) -> Opt
         f"Return JSON only."
     )
 
-    _tpm.wait_if_needed(3000, label="MA")
+    prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
+    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
+
+    # CC-1c: pace on the real request size, not a flat 3000 guess.
+    _tpm.wait_if_needed(prompt_chars // 3 + max_tokens, label="MA")
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"Mission Analyst calling model (attempt {attempt})")
+            log.info(f"Mission Analyst calling {PROVIDER}/{MODEL} "
+                     f"(attempt {attempt}, prompt {prompt_chars} chars, "
+                     f"max_tokens {max_tokens})")
+            assert_model_known(PROVIDER, MODEL)
             response = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_message},
                 ],
-                max_tokens=MAX_TOKENS,
+                max_tokens=max_tokens,
                 temperature=TEMPERATURE,
             )
-            if response.usage:
-                _tpm.log_usage(response.usage.total_tokens)
+            usage = getattr(response, "usage", None)
+            if usage and getattr(usage, "total_tokens", None):
+                _tpm.log_usage(usage.total_tokens)
+                details = getattr(usage, "completion_tokens_details", None)
+                reasoning = getattr(details, "reasoning_tokens", None) if details else None
+                log.info(
+                    f"MA usage: prompt={usage.prompt_tokens} "
+                    f"completion={usage.completion_tokens} "
+                    f"total={usage.total_tokens} "
+                    f"reasoning={reasoning if reasoning is not None else 'n/a'} "
+                    f"budget_used={usage.completion_tokens / max_tokens:.0%}"
+                )
 
             raw = response.choices[0].message.content.strip()
             if raw.startswith("```"):
@@ -467,6 +538,8 @@ def call_mission_analyst(client: Groq, prompt: str, cycle: Optional[str]) -> Opt
             )
             return parsed
 
+        except LensModelRegistryError:
+            raise
         except json.JSONDecodeError as e:
             log.warning(f"JSON parse error attempt {attempt}: {e}")
             if attempt < MAX_RETRIES:
@@ -474,7 +547,9 @@ def call_mission_analyst(client: Groq, prompt: str, cycle: Optional[str]) -> Opt
         except Exception as e:
             err = str(e)
             if "429" in err:
-                log.warning(f"Rate limit (429) attempt {attempt} — sleeping 20s"); time.sleep(20)
+                wait = _retry_after_seconds(e) or 20
+                log.warning(f"Rate limit (429) attempt {attempt} — waiting {wait}s")
+                time.sleep(wait)
             elif "503" in err:
                 log.warning(f"503 attempt {attempt} — sleeping 15s"); time.sleep(15)
             else:
@@ -547,7 +622,7 @@ def run_mission_analyst(
 
     try:
         sb     = get_supabase()
-        client = get_groq()
+        client = get_client()
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
