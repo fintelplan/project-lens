@@ -231,6 +231,35 @@ def build_articles_prompt(articles: list[dict]) -> str:
     return "\n---\n".join(sections)
 
 
+def _art_cost(art):
+    """Estimated token cost of one article as it will appear in the prompt.
+
+    Module level so measuring instruments (probe_lens_models.py) import the
+    REAL function instead of mirroring a copy. A duplicated copy of production
+    logic inside the tool that certifies production is the same dual-source
+    disease the LENS-028 registry cured -- when the copy drifts, certs lie.
+    """
+    sid  = art.get('source_id', '')
+    ttl  = art.get('title', '') or ''
+    body = (art.get('content', '') or '')[:MAX_ARTICLE_CHARS]
+    return max(1, len('[' + sid + '] ' + ttl + '\n' + body + '\n---\n') // 4)
+
+
+def _split_batches(arts, budget):
+    """Greedy token-aware batching. See _art_cost for why this is module level."""
+    batches, cur, cur_tok = [], [], 0
+    for art in arts:
+        cost = _art_cost(art)
+        if cur and cur_tok + cost > budget:
+            batches.append(cur)
+            cur, cur_tok = [], 0
+        cur.append(art)
+        cur_tok += cost
+    if cur:
+        batches.append(cur)
+    return batches
+
+
 def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard") -> Optional[dict]:
     """Call qwen3-32b to analyze adversarial narrative."""
     if not articles:
@@ -392,25 +421,6 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     # Measure token cost per article, fill batches greedily,
     # use TPMGuard.wait_if_needed() before each call -- no fixed sleep.
     TOKEN_BUDGET = 4500  # safe under 6000 (system prompt ~800 + response ~700)
-
-    def _art_cost(art):
-        sid  = art.get('source_id', '')
-        ttl  = art.get('title', '') or ''
-        body = (art.get('content', '') or '')[:MAX_ARTICLE_CHARS]
-        return max(1, len('[' + sid + '] ' + ttl + '\n' + body + '\n---\n') // 4)
-
-    def _split_batches(arts, budget):
-        batches, cur, cur_tok = [], [], 0
-        for art in arts:
-            cost = _art_cost(art)
-            if cur and cur_tok + cost > budget:
-                batches.append(cur)
-                cur, cur_tok = [], 0
-            cur.append(art)
-            cur_tok += cost
-        if cur:
-            batches.append(cur)
-        return batches
 
     batches = _split_batches(articles, TOKEN_BUDGET)
     log.info('S2-D: %d articles -> %d token-aware batches', len(articles), len(batches))
