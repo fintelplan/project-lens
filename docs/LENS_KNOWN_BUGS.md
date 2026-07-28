@@ -47,6 +47,68 @@ in characters against `MAX_TOTAL_CHARS`, or drop the char cap and let the token 
 own it — then build the user message from the articles actually included, never from the
 input list length.
 
+**Sequencing (ruled 2026-07-28):** the fix lands AFTER CC-1c, with its own probe on the
+larger prompt. Projected shape of the corrected call: **~5,300 prompt + ~1,900 completion
+≈ 7,200 tokens**. Note the ceiling it is measured against is **8,000, not 8,192** — the
+8,192 figure was always TPM-derived, and Groq gpt-oss-120b's verified TPM is 8,000
+(context is 131,072 and never the binding constraint). That leaves ~800 tokens of margin,
+which is thin enough that the probe is mandatory rather than a formality.
+
 ---
 
-*LENS_KNOWN_BUGS.md v1 | opened 2026-07-28 | LENS-028 CC-5*
+## BUG-002 — S2-E sends `Lens: unknown` on every call
+
+**Status:** OPEN — logged 2026-07-28, not fixed (freeze).
+**File:** `code/lens_s2e_legitimacy.py:204`.
+
+`call_legitimacy_filter()` reads `report.get("lens_name", "unknown")`, but
+`fetch_latest_reports()` selects `id, domain_focus, summary, cycle, generated_at` — there
+is no `lens_name` key, so the default always wins. Every S2-E prompt has therefore been
+telling the model `Lens: unknown` instead of naming the lens under assessment.
+
+**Evidence (CC-5 fixture, 2026-07-28):** `report_domain_focus: ALL`, `lens_name_sent: unknown`.
+
+The probe fixture reproduces this faithfully rather than correcting it — a probe must
+measure what production actually sends. Low severity (the report text carries the real
+content), but it silently removes context the prompt was designed to supply.
+
+---
+
+## BUG-003 (HYPOTHESIS — unconfirmed) — S2-F's Cloudflare 429s may be neuron exhaustion, not pacing
+
+**Status:** HYPOTHESIS. Do not act until measured.
+
+**Observation (run 81938481905, 2026-07-27):** S2-F's Cloudflare secondary logged
+10x HTTP 200 against 42x HTTP 429, retries ~1s apart with no backoff; the 429 stalls
+account for most of the 27-minute runtime.
+
+**What is ruled out.** Cloudflare Workers AI rate-limits Text Generation at **300 requests
+per minute** ([limits page](https://developers.cloudflare.com/workers-ai/platform/limits/)).
+S2-F is nowhere near 300 RPM at ~1s retries, so a per-minute request ceiling does not
+explain a 4:1 429 ratio. Pacing is not the cause, and **backoff is therefore not the fix** —
+it would only spread the same failures over a longer window and lengthen the run.
+
+**Daily neuron exhaustion — WEAKENED, 2026-07-28.** The free tier allocates **10,000
+Neurons/day**, a GPU-compute unit rather than a token count
+([pricing page](https://developers.cloudflare.com/workers-ai/platform/pricing/)), and
+exhaustion initially fit the shape. It no longer does: **the FIRST Cloudflare call of run
+81938481905 429'd at 05:08:22**, and that run was the first S2-F of the UTC day. A
+midnight-reset daily allocation should have been full. An allocation cannot be exhausted
+before it is used.
+
+**Live alternatives to test (no favourite):**
+1. The **REST API free tier differs from the Workers-binding tier** — S2-F calls REST, and
+   the published 300 RPM / 10,000 Neurons may describe the binding path only.
+2. **Workers AI is not provisioned on the account at all**, in which case every call 429s
+   from the first request and the secondary has never worked.
+
+Alternative 2 fits "429 on the very first call" most economically and should be checked
+first — it is a console question, not a code question.
+
+**Still worth computing:** the per-call Neuron cost of `@cf/openai/gpt-oss-120b`. Now
+derivable from the pricing page ($0.35/M input + $0.75/M output). Record it here when
+someone works it out — it bounds calls/day whichever alternative proves true.
+
+---
+
+*LENS_KNOWN_BUGS.md v2 | opened 2026-07-28 | LENS-028 CC-5 | BUG-002/003 added 2026-07-28*
