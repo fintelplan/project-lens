@@ -89,6 +89,10 @@ PACING_SLEEP_S = 65
 PROVIDER_ENDPOINTS = {
     "groq": "https://api.groq.com/openai/v1/chat/completions",
     "sambanova": "https://api.sambanova.ai/v1/chat/completions",
+    # Cerebras exposes an OpenAI-compatible surface at /v1. Production uses the
+    # cerebras-cloud-sdk instead; the raw endpoint is used HERE so LR-095 can
+    # read r.text on errors and so the usage object arrives unwrapped.
+    "cerebras": "https://api.cerebras.ai/v1/chat/completions",
 }
 
 REFUSAL_PATTERN = re.compile(
@@ -97,6 +101,12 @@ REFUSAL_PATTERN = re.compile(
 )
 
 MIN_USEFUL_CONTENT = 200
+
+# D-017: for JSON-output roles, completion consumption above this fraction of
+# the budget is MARGINAL, not passing. Evidence: S2-D probed 3/3 clean at 79%
+# and truncated in production on a prompt only 312 chars larger, losing 42 of
+# 60 articles. Truncated JSON has no partial value.
+D017_MARGINAL_RATIO = 0.60
 
 
 class ProbeError(RuntimeError):
@@ -190,11 +200,220 @@ def fixture_s2d_adversary() -> Fixture:
     )
 
 
+def fixture_lens1() -> Fixture:
+    """Rebuild Lens-1's real prompt from the live balanced article pool.
+
+    Mirrors run_lens_with_tpm_guard()'s sequence: fetch the balanced pool, trim
+    it to THIS provider's budget, rebuild domain blocks, then format
+    ANALYSIS_PROMPT. The trim is provider-specific, so the provider is taken
+    from the registry -- probing with the wrong provider's budget would measure
+    a prompt Lens-1 never sends.
+
+    Output is prose (split on a '## FOOD FOR THOUGHT' marker), not JSON.
+    """
+    from collections import Counter
+    import analyze_lens_multi as alm
+
+    provider, _model, _key_env, _max_out = wire("lens1")
+
+    sb = alm.get_supabase()
+    # Returns (balanced, all_articles, counts). Production passes `balanced`
+    # to each lens, which then trims it to its own provider budget.
+    articles_full, _all_articles, _counts = alm.fetch_balanced_articles(sb)
+    if not articles_full:
+        raise ProbeError(
+            "Lens-1 fixture: fetch_balanced_articles returned nothing. "
+            "Cannot build the real prompt -- refusing to invent one."
+        )
+
+    articles_trimmed = alm.trim_articles_to_budget(articles_full, provider)
+    domain_blocks, total = alm.build_domain_blocks(articles_trimmed, {})
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    counts = Counter((a.get("domain") or "POWER").upper() for a in articles_trimmed)
+    user_prompt = alm.build_prompt(domain_blocks, total, date_str, counts)
+
+    return Fixture(
+        system=alm.SYSTEM_PROMPTS[1],
+        user=user_prompt,
+        requires_json=False,          # prose + '## FOOD FOR THOUGHT' section
+        temperature=0.3,
+        origin="live-rebuild:analyze_lens_multi",
+        detail={
+            "articles_fetched": len(articles_full),
+            "articles_after_trim": len(articles_trimmed),
+            "articles_in_blocks": total,
+            "trim_provider": provider,
+            "domains": dict(counts),
+        },
+    )
+
+
+def fixture_s2a_injection() -> Fixture:
+    """Rebuild S2-A's real prompt, including the pre-call sanitisation step.
+
+    run_s2a() sanitises the summary BEFORE the API call and discloses the
+    replaced vocabulary inside the prompt, so a fixture that skipped
+    sanitize_text() would be measuring a different prompt than production
+    sends. Report 1 of the fetched batch is used (each report is its own call).
+    """
+    import lens_s2a_injection as s2a
+
+    sb = s2a.get_supabase()
+    reports = s2a.fetch_latest_reports(sb, None)
+    if not reports:
+        raise ProbeError(
+            "S2-A fixture: no rows in lens_reports. Cannot build the real "
+            "prompt -- refusing to invent one."
+        )
+
+    report = reports[0]
+    raw_text = report.get("summary", "")
+    san = s2a.sanitize_text(raw_text[:s2a.MAX_REPORT_CHARS] if raw_text else "")
+    replaced_phrases = san["replaced_phrases"]
+    report["_sanitized_summary"] = san["sanitized_text"]
+
+    # Mirror of call_injection_tracer()'s user_message construction.
+    report_id = report.get("id", "unknown")
+    lens_name = report.get("domain_focus", "unknown")
+    san_text = s2a.truncate_report(
+        report.get("_sanitized_summary", report.get("summary", "")))
+    if not san_text.strip():
+        raise ProbeError("S2-A fixture: sanitized summary is empty.")
+
+    replaced_note = ""
+    if replaced_phrases:
+        replaced_note = (
+            f"\n\nPRE-DETECTED INJECTION VOCABULARY (already replaced in text above):\n"
+            + ", ".join(f'"{p}"' for p in replaced_phrases)
+            + "\nThese qualify as EMOTIONAL_PRIME injections. Include them in your findings."
+        )
+
+    user_message = (
+        f"Analyze this intelligence report for narrative injection patterns.\n\n"
+        f"Lens: {lens_name}\nReport ID: {report_id}\n\n"
+        f"--- SANITIZED REPORT START ---\n{san_text}\n--- SANITIZED REPORT END ---"
+        f"{replaced_note}\n\nReturn JSON only."
+    )
+
+    return Fixture(
+        system=s2a.SYSTEM_PROMPT,
+        user=user_message,
+        requires_json=True,
+        temperature=s2a.TEMPERATURE,
+        origin="live-rebuild:lens_s2a_injection",
+        detail={
+            "reports_fetched": len(reports),
+            "report_lens": lens_name,
+            "replaced_phrases": len(replaced_phrases),
+            "sanitized_chars": len(san_text),
+        },
+    )
+
+
+def fixture_mission_analyst() -> Fixture:
+    """Rebuild MA's real synthesis prompt from S1 + S2 + corrections + S3.
+
+    Uses the module's own build_synthesis_prompt(), so the ordering rules
+    (mandatory corrections first, the 0.6 S1 cap, the S2 cap) come from
+    production rather than from a copy.
+    """
+    import lens_mission_analyst as ma
+
+    sb = ma.get_supabase()
+    s1_reports = ma.fetch_s1_reports(sb, None)
+    s2_reports = ma.fetch_s2_reports(sb, None)
+    if not s1_reports and not s2_reports:
+        raise ProbeError(
+            "MA fixture: no S1 or S2 reports available. Cannot build the real "
+            "prompt -- refusing to invent one."
+        )
+
+    corrections, contamination_depth = ma.apply_s2_corrections(s2_reports)
+    s3_context = ma.fetch_s3_context(sb)
+    prompt = ma.build_synthesis_prompt(s1_reports, s2_reports, corrections,
+                                       None, s3_context)
+
+    # Mirror of call_mission_analyst()'s user_message wrapper.
+    user_message = (
+        f"Synthesize the following intelligence into a macro report.\n"
+        f"Cycle: {'latest'}\n\n"
+        f"{prompt}\n\n"
+        f"Return JSON only."
+    )
+
+    return Fixture(
+        system=ma.SYSTEM_PROMPT,
+        user=user_message,
+        requires_json=True,
+        temperature=ma.TEMPERATURE,
+        origin="live-rebuild:lens_mission_analyst",
+        detail={
+            "s1_reports": len(s1_reports),
+            "s2_reports": len(s2_reports),
+            "corrections": len(corrections),
+            "contamination_depth": contamination_depth,
+            "s3_context_keys": sorted(s3_context.keys()) if s3_context else [],
+        },
+    )
+
+
+def fixture_s2e_legitimacy() -> Fixture:
+    """Rebuild S2-E's real prompt for report 1 of the fetched batch.
+
+    NOTE: production reads report['lens_name'], but fetch_latest_reports()
+    selects 'domain_focus' -- so the live prompt always says 'Lens: unknown'.
+    This fixture reproduces that faithfully rather than silently correcting it;
+    a probe must measure what production actually sends. Logged as BUG-002.
+    """
+    import lens_s2e_legitimacy as s2e
+
+    sb = s2e.get_supabase()
+    reports = s2e.fetch_latest_reports(sb, None)
+    if not reports:
+        raise ProbeError(
+            "S2-E fixture: no rows in lens_reports. Cannot build the real "
+            "prompt -- refusing to invent one."
+        )
+
+    report = reports[0]
+    report_id = report.get("id", "unknown")
+    lens_name = report.get("lens_name", "unknown")     # BUG-002: always 'unknown'
+    report_text = s2e.truncate_report(report.get("summary", ""))
+    if not report_text.strip():
+        raise ProbeError("S2-E fixture: report summary is empty.")
+
+    user_message = (
+        f"Extract state actors and apply the 6-point legitimacy assessment.\n\n"
+        f"Lens: {lens_name}\n"
+        f"Report ID: {report_id}\n\n"
+        f"--- REPORT START ---\n{report_text}\n--- REPORT END ---\n\n"
+        f"Return JSON only."
+    )
+
+    return Fixture(
+        system=s2e.SYSTEM_PROMPT,
+        user=user_message,
+        requires_json=True,
+        temperature=s2e.TEMPERATURE,
+        origin="live-rebuild:lens_s2e_legitimacy",
+        detail={
+            "reports_fetched": len(reports),
+            "report_domain_focus": report.get("domain_focus", "?"),
+            "lens_name_sent": lens_name,
+            "report_chars": len(report_text),
+        },
+    )
+
+
 # role_key -> builder. A role absent here has NO faithful builder yet and must
 # be given one, or a captured prompt at probe_fixtures/<role>.txt. There is
 # deliberately no generic fallback that would fabricate a prompt.
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
+    "lens1": fixture_lens1,
+    "s2a_injection": fixture_s2a_injection,
+    "mission_analyst": fixture_mission_analyst,
+    "s2e_legitimacy": fixture_s2e_legitimacy,
 }
 
 
@@ -249,6 +468,28 @@ class Candidate:
     model: str
     key_env: str
     label: str
+
+
+def resolve_override(provider: str, model: str, key_env: str) -> Candidate:
+    """An explicitly specified, possibly UNREGISTERED pairing.
+
+    Exists to test a migration target before it is written into the registry
+    (e.g. MA on Cerebras). All three parts must be given together -- guessing
+    any one of them is how a probe ends up measuring the wrong key's quota.
+    """
+    missing = [n for n, v in (("--provider", provider), ("--model", model),
+                              ("--key-env", key_env)) if not v]
+    if missing:
+        raise ProbeError(
+            f"Override needs all three of --provider/--model/--key-env; "
+            f"missing {', '.join(missing)}. Refusing to guess."
+        )
+    if provider not in PROVIDER_ENDPOINTS and provider != "gemini":
+        raise ProbeError(
+            f"No probe transport for provider '{provider}'. "
+            f"Known: {', '.join(sorted(list(PROVIDER_ENDPOINTS) + ['gemini']))}"
+        )
+    return Candidate(provider, model, key_env, "override")
 
 
 def resolve_candidate(role_key: str, which: str) -> Candidate:
@@ -375,6 +616,10 @@ def call_openai_compatible(endpoint: str, api_key: str, model: str,
     out["usage"] = {"prompt": usage.get("prompt_tokens"),
                     "completion": usage.get("completion_tokens"),
                     "total": usage.get("total_tokens")}
+    # Whole usage object, verbatim. CC-1c depends on knowing whether every
+    # provider really returns total_tokens in the Groq shape -- assuming that
+    # is how a guard ends up logging None into its rolling window.
+    out["raw_usage"] = usage
     return out
 
 
@@ -428,13 +673,22 @@ def execute_trial(cand: Candidate, api_key: str, fixture: Fixture,
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
-def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
+def run(role_key: str, which: str, trials: int, dry_run: bool,
+        max_out_override: Optional[int] = None,
+        raw_max_tokens: Optional[int] = None,
+        override_provider: Optional[str] = None,
+        override_model: Optional[str] = None,
+        override_key_env: Optional[str] = None) -> int:
     if role_key not in ROLES:
         raise ProbeError(f"Unknown role '{role_key}'. Known roles: "
                          f"{', '.join(sorted(ROLES))}")
 
     spec = get_role(role_key)
-    cand = resolve_candidate(role_key, which)
+    if override_provider or override_model or override_key_env:
+        cand = resolve_override(override_provider, override_model,
+                                override_key_env)
+    else:
+        cand = resolve_candidate(role_key, which)
 
     print("=" * 72)
     print(f"PROBE  role={role_key}  candidate={which}")
@@ -453,7 +707,18 @@ def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
 
     print("\n-- building fixture (real prompt, live reads) --")
     fixture = load_fixture(role_key)
-    max_tokens = fit_max_tokens(fixture.prompt_chars, spec["max_out"])
+    # The starvation diagnostic: when a primary returns finish_reason=length,
+    # that is BUDGET, not refusal. Re-running at a higher max_out inside the
+    # fit_max_tokens headroom distinguishes the two. Tagged in the jsonl so a
+    # boosted trial can never be mistaken for a standard one.
+    effective_max_out = max_out_override or spec["max_out"]
+    if raw_max_tokens:
+        # Bypass fit_max_tokens entirely. Legitimate ONLY where the provider's
+        # real ceiling has been verified to allow it -- fit_max_tokens hardcodes
+        # Groq's 7500 and would strangle a 65k-context Cerebras call.
+        max_tokens = raw_max_tokens
+    else:
+        max_tokens = fit_max_tokens(fixture.prompt_chars, effective_max_out)
 
     print(f"  origin           : {fixture.origin}")
     for k, v in fixture.detail.items():
@@ -466,9 +731,15 @@ def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
 
     est_prompt_tokens = fixture.prompt_chars // 3
     print("\n-- budget (D-007) --")
-    print(f"  role max_out     : {spec['max_out']}")
-    print(f"  fit_max_tokens   : {max_tokens}"
-          f"   [max(768, min({spec['max_out']}, 7500 - {fixture.prompt_chars}//3))]")
+    print(f"  role max_out     : {spec['max_out']}"
+          + (f"  -> OVERRIDE {effective_max_out}" if max_out_override else ""))
+    if raw_max_tokens:
+        print(f"  RAW max_tokens   : {max_tokens}   "
+              f"[fit_max_tokens BYPASSED -- provider ceiling verified]")
+    else:
+        print(f"  fit_max_tokens   : {max_tokens}"
+              f"   [max(768, min({effective_max_out}, 7500 - "
+              f"{fixture.prompt_chars}//3))]")
     print(f"  est prompt tokens: ~{est_prompt_tokens}")
     print(f"  est call total   : ~{est_prompt_tokens + max_tokens} tokens")
 
@@ -512,6 +783,18 @@ def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
         if usage.get("total"):
             key_token_total += usage["total"]
 
+        # D-017: a probe certifies the prompt SIZE it held, not just its shape
+        # (R-S80-2 extended). S2-D passed 3/3 at 79% of its completion budget
+        # and then truncated in production on a prompt 312 chars larger. For
+        # JSON roles a near-full budget is MARGINAL, never passing -- there is
+        # no partial credit for JSON that stops mid-string.
+        completion_ratio = None
+        d017_marginal = False
+        if usage.get("completion") and max_tokens:
+            completion_ratio = round(usage["completion"] / max_tokens, 3)
+            d017_marginal = bool(fixture.requires_json
+                                 and completion_ratio > D017_MARGINAL_RATIO)
+
         record = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "role": role_key,
@@ -523,6 +806,12 @@ def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
             "finish_reason": res["finish_reason"],
             "prompt_chars": fixture.prompt_chars,
             "max_tokens": max_tokens,
+            "max_out_override": max_out_override,
+            "starvation_retest": bool(max_out_override),
+            "raw_budget": bool(raw_max_tokens),
+            "raw_usage": res.get("raw_usage"),
+            "completion_ratio": completion_ratio,
+            "d017_marginal": d017_marginal,
             "usage_prompt_tokens": usage.get("prompt"),
             "usage_completion_tokens": usage.get("completion"),
             "usage_total_tokens": usage.get("total"),
@@ -540,12 +829,16 @@ def run(role_key: str, which: str, trials: int, dry_run: bool) -> int:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
         written += 1
 
+        ratio_str = (f"{completion_ratio:.0%}" if completion_ratio is not None
+                     else "n/a")
         print(f"    http={record['http_status']} "
               f"finish={record['finish_reason']} "
               f"len={record['content_len']} "
               f"json_ok={record['json_parse_ok']} "
               f"refusal_flag={record['refusal_flag']} "
               f"tokens={record['usage_total_tokens']} "
+              f"budget_used={ratio_str}"
+              f"{'  <<< D-017 MARGINAL' if d017_marginal else ''} "
               f"{latency}s")
 
     print(f"\n  {written} line(s) appended to "
@@ -568,12 +861,30 @@ def main() -> int:
                         "fallback = fallback(role)")
     p.add_argument("--trials", type=int, default=3,
                    help="trials on the same key (default 3)")
+    p.add_argument("--max-out", type=int, default=None,
+                   help="override the role's registry max_out for a tagged "
+                        "starvation re-test (finish_reason=length means budget, "
+                        "not refusal). Still passes through fit_max_tokens.")
+    p.add_argument("--raw-max-tokens", type=int, default=None,
+                   help="bypass fit_max_tokens entirely (tagged raw_budget in "
+                        "the jsonl). ONLY where the provider's real ceiling is "
+                        "verified -- fit_max_tokens hardcodes Groq's 7500.")
+    p.add_argument("--provider", default=None,
+                   help="override provider (needs --model and --key-env too)")
+    p.add_argument("--model", default=None, help="override wire model ID")
+    p.add_argument("--key-env", default=None,
+                   help="override key env var name (value never printed)")
     p.add_argument("--dry-run", action="store_true",
                    help="build fixture + show budget and pacing, no wire calls")
     args = p.parse_args()
 
     try:
-        return run(args.role, args.candidate, args.trials, args.dry_run)
+        return run(args.role, args.candidate, args.trials, args.dry_run,
+                   max_out_override=args.max_out,
+                   raw_max_tokens=args.raw_max_tokens,
+                   override_provider=args.provider,
+                   override_model=args.model,
+                   override_key_env=args.key_env)
     except ProbeError as e:
         print(f"\nPROBE ABORTED: {e}", file=sys.stderr)
         return 2
