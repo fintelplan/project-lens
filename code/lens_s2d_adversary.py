@@ -217,6 +217,9 @@ def build_articles_prompt(articles: list[dict]) -> str:
         entry = f"[{source_id}] {title}\n{snippet}\n"
 
         if total_chars + len(entry) > MAX_TOTAL_CHARS:
+            # BUG-001 (docs/LENS_KNOWN_BUGS.md): this 9000-char cap fires INSIDE a batch the
+            # caller already sized to 4500 tokens, so ~1/3 of each batch is dropped and the
+            # user message still states the pre-truncation count. Post-cert fix, own probe.
             log.info(f"Prompt cap reached at {included} articles")
             break
 
