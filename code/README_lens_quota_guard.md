@@ -204,7 +204,7 @@ If the guard misbehaves in production:
 
 ## Author
 
-Team Geeks (Bro Alpha + Claude Opus 4.7), April 17, 2026, LENS-013 session.
+James Maverick (Bro Alpha) + Claude Opus 4.7, April 17, 2026, LENS-013 session.
 
 Imported and adapted from GNI Autonomous `ai_engine/quota_guard.py`
 (GNI-R-112 Pre-flight quota reservation).

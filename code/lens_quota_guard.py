@@ -26,7 +26,7 @@ Rules referenced:
 Imported from GNI Autonomous ai_engine/quota_guard.py pattern, adapted for
 Project Lens multi-position architecture.
 
-Author: Team Geeks (Bro Alpha + Claude Opus 4.7)
+Author: James Maverick (Bro Alpha) + Claude Opus 4.7
 Date:   2026-04-17
 """
 from __future__ import annotations
