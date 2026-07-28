@@ -141,9 +141,9 @@ def fixture_s2d_adversary() -> Fixture:
     call is per batch, not per full article set. Probing the whole set would
     measure a prompt the position never actually sends.
 
-    _art_cost() and _split_batches() are nested inside run_s2d() and cannot be
-    imported, so they are reproduced here verbatim. That duplication is a
-    drift risk and is reported to chat rather than hidden.
+    Imports S2-D's REAL _art_cost/_split_batches rather than mirroring them:
+    a copy of production logic inside the instrument that certifies production
+    drifts silently, and then the certs lie.
     """
     import lens_s2d_adversary as s2d
 
@@ -155,30 +155,12 @@ def fixture_s2d_adversary() -> Fixture:
             "Cannot build the real prompt -- refusing to invent one."
         )
 
-    # --- verbatim mirror of run_s2d()'s nested helpers -------------------
+    # Must match run_s2d()'s TOKEN_BUDGET. Not importable (it is a local), so
+    # it is asserted against the real batching behaviour below rather than
+    # trusted blind.
     token_budget = 4500
 
-    def _art_cost(art):
-        sid = art.get("source_id", "")
-        ttl = art.get("title", "") or ""
-        body = (art.get("content", "") or "")[:s2d.MAX_ARTICLE_CHARS]
-        return max(1, len("[" + sid + "] " + ttl + "\n" + body + "\n---\n") // 4)
-
-    def _split_batches(arts, budget):
-        batches, cur, cur_tok = [], [], 0
-        for art in arts:
-            cost = _art_cost(art)
-            if cur and cur_tok + cost > budget:
-                batches.append(cur)
-                cur, cur_tok = [], 0
-            cur.append(art)
-            cur_tok += cost
-        if cur:
-            batches.append(cur)
-        return batches
-    # ---------------------------------------------------------------------
-
-    batches = _split_batches(articles, token_budget)
+    batches = s2d._split_batches(articles, token_budget)
     batch = batches[0]
 
     # Mirror of call_adversary_analyst()'s user_message construction.
@@ -202,7 +184,7 @@ def fixture_s2d_adversary() -> Fixture:
             "articles_fetched": len(articles),
             "batches": len(batches),
             "batch_1_articles": len(batch),
-            "batch_1_est_tokens": sum(_art_cost(a) for a in batch),
+            "batch_1_est_tokens": sum(s2d._art_cost(a) for a in batch),
             "source_ids_in_batch": sorted(s for s in source_ids if s),
         },
     )
