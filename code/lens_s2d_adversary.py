@@ -1,7 +1,12 @@
 """
 lens_s2d_adversary.py — System 2 Position D: Adversary Narrative
 Project Lens | LENS-009
-Model: qwen/qwen3-32b (Groq)
+Model: from the registry — wire("s2d_adversary") in code/lens_models.py.
+       Never hardcoded here. Was qwen/qwen3-32b, which 404'd from 2026-07-17
+       and ran dead for 10 days under green checks; gpt-oss-120b was probe
+       certified on this position's REAL prompt on 2026-07-28 (LENS-028 CC-5:
+       3/3 http200/stop/valid JSON, zero refusal flags on Russia/China/Iran
+       state-media material).
 Input: lens_raw_articles — STATE tier adversarial sources directly
        (Chinese state-apparatus: Xinhua, CGTN, Global Times, SCMP, CASS;
         Russian state-apparatus: TASS, RT, Valdai, Kremlin;
@@ -18,6 +23,12 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from groq import Groq
+from lens_models import (
+    LensModelRegistryError,
+    assert_model_known,
+    fit_max_tokens,
+    wire,
+)
 from lens_quota_guard import guard_check_with_fallback
 from supabase import create_client, Client
 
@@ -30,14 +41,16 @@ logging.basicConfig(
 log = logging.getLogger("s2d")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "qwen/qwen3-32b"
-MAX_TOKENS       = 2000
+# Wire values come from the registry (LR-105) — this file hardcodes no model
+# string, no key env, and no output budget. A migration is a registry edit.
+PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2d_adversary")
+
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
 MAX_ARTICLES     = 60        # cap articles sent to model (B-2: bumped from 30 for source diversity)
 MAX_ARTICLE_CHARS = 800      # per article snippet
-MAX_TOTAL_CHARS  = 9000      # per batch — fits qwen3-32b 6000 TPM
+MAX_TOTAL_CHARS  = 9000      # per batch — see BUG-001 at the truncation site
 
 # Adversarial STATE-APPARATUS source IDs — LENS-017 B-2 widened
 # Per PHI-003: these are state-apparatus organs, NOT the peoples of those countries.
@@ -149,7 +162,18 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    key = os.environ.get("GROQ_S2DGCOM_API_KEY") or os.environ["GROQ_API_KEY"]
+    """Client on THIS position's own key (LR-094) — no borrowing.
+
+    The previous `or os.environ["GROQ_API_KEY"]` fallback silently moved S2-D
+    onto the shared key whenever its own was missing, which both breaks quota
+    isolation and hides the misconfiguration. Missing key now fails loudly.
+    """
+    key = os.environ.get(KEY_ENV)
+    if not key:
+        raise RuntimeError(
+            f"{KEY_ENV} is not set. S2-D runs on its own key only (LR-094) — "
+            f"refusing to borrow another position's quota."
+        )
     return Groq(api_key=key)
 
 
@@ -261,7 +285,7 @@ def _split_batches(arts, budget):
 
 
 def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard") -> Optional[dict]:
-    """Call qwen3-32b to analyze adversarial narrative."""
+    """Call the registry-wired model to analyze adversarial narrative."""
     if not articles:
         log.warning("No articles to analyze")
         return None
@@ -277,22 +301,36 @@ def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard"
         f"Return JSON only."
     )
 
+    # Budget from the registry, fitted to this prompt (D-007). gpt-oss is a
+    # reasoning model that spends ~1500-1900 tokens thinking before it writes,
+    # so the old flat MAX_TOKENS=2000 sat close to the starvation line.
+    prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
+    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT)
+
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-D calling qwen3-32b (attempt {attempt})")
+            log.info(f"S2-D calling {PROVIDER}/{MODEL} "
+                     f"(attempt {attempt}, prompt {prompt_chars} chars, "
+                     f"max_tokens {max_tokens})")
+            # The vaccine, with teeth: an unregistered pair raises BEFORE the
+            # HTTP call. Blast radius is this position only — S2-D dying loudly
+            # beats S2-D 404ing silently for 10 days under green checks.
+            assert_model_known(PROVIDER, MODEL)
             response = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_message},
                 ],
-                max_tokens=MAX_TOKENS,
+                max_tokens=max_tokens,
                 temperature=TEMPERATURE,
             )
 
             raw = response.choices[0].message.content.strip()
 
-            # Strip thinking tags if qwen outputs them
+            # Strip reasoning blocks. Kept for gpt-oss-120b: the CC-5 probe
+            # returned clean JSON with no <think> wrapper, but reasoning models
+            # can emit one and the cost of keeping this is zero.
             if "<think>" in raw:
                 if "</think>" in raw:
                     raw = raw[raw.index("</think>") + 8:].strip()
@@ -312,6 +350,12 @@ def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard"
             )
             return parsed
 
+        except LensModelRegistryError:
+            # Never retried, never swallowed. An unregistered model is a build
+            # bug, not a transient fault — the generic handler below would turn
+            # it into two pointless retries and a quiet None, which is exactly
+            # the silent-corpse shape the vaccine exists to prevent.
+            raise
         except json.JSONDecodeError as e:
             log.warning(f"JSON parse error attempt {attempt}: {e}")
             if attempt < MAX_RETRIES:
@@ -414,10 +458,13 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No adversarial articles found — S2-D cannot run")
         return {"status": "NO_ARTICLES", "articles_analyzed": 0}
 
-    guard = TPMGuard(tpm_limit=6000)  # GROQ_S2_API_KEY
+    # Pacing stays 6000 by ruling (LENS-028): the real Groq ceiling is now 8000
+    # TPM, so 6000 keeps ~25% margin. Raising it would CUT margin against a
+    # LOWER ceiling than the 70b era's 12000.
+    guard = TPMGuard(tpm_limit=6000)  # counts prompt side only — see run_s2d notes
 
     # -- Token-aware batch processing (LENS-022) --------------------------
-    # qwen3-32b free tier: 6000 TPM hard ceiling.
+    # Groq free tier: 8000 TPM hard ceiling, governed here at 6000.
     # Measure token cost per article, fill batches greedily,
     # use TPMGuard.wait_if_needed() before each call -- no fixed sleep.
     TOKEN_BUDGET = 4500  # safe under 6000 (system prompt ~800 + response ~700)
