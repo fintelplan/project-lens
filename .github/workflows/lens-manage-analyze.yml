@@ -17,6 +17,13 @@ on:
 jobs:
   manage-and-analyze:
     runs-on: ubuntu-latest
+    # LENS-028: this job had NO timeout at all, relying on GitHub's unset-job
+    # default. Observed runs are 16-18 min; the Cerebras migration adds ~4 min
+    # of S2-E spacing. 35 leaves room for that plus a slow provider.
+    # Set deliberately because the TPM governor contained a loop that could
+    # never terminate (CC-1c fixed it) -- an unbounded job plus a guard that
+    # can hang burns hours of Actions minutes before anyone notices.
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v5
