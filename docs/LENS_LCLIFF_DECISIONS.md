@@ -97,6 +97,30 @@ binding constraint was always **TPM**, verified at 8,000. Do not restore 8,192.
 holding Cerebras-capable prompts; S2-E returned literally zero characters 3/3 until budget
 was raised.
 
+### D-015 AMENDMENT (2026-07-28) — max_out values, set by D-017 not by eye
+
+| role | provider | max_out | max completion observed | ratio | note |
+| --- | --- | --- | --- | --- | --- |
+| s2d_adversary | cerebras | 8,000 | 2,923 | 37% | PASS |
+| s2e_legitimacy | cerebras | **10,000** | 5,612 | 56% | raised from 8,000 |
+| mission_analyst | cerebras | **5,000** | 2,356 | 47% | raised from 4,000 |
+| s2a_injection | groq | 3,400 | 1,696 | 50% | PASS |
+
+**S2-E 8,000 -> 10,000 and MA 4,000 -> 5,000.** Both original numbers were approved before
+D-017 existed and both were caught by it afterwards: 8,000 put S2-E at **70%** (over the
+threshold) and 4,000 put MA at **59%** (clearing by a single point, which is not headroom).
+Recorded because it is the rule catching a number its own authors had already accepted —
+5,612 / 0.60 = 9,353 rounds to 10,000; 2,356 / 0.60 = 3,927 with variance margin to 5,000.
+
+### D-015 NOTE — Cerebras RPM 5 is not a blocker (ruled 2026-07-28)
+
+Seven positions share `CEREBRAS_API_KEY` (lens3, lens4, S3-D, S2-F, plus S2-D/S2-E/MA).
+Not blocking, because: within a position the ~65s token spacing already exceeds the ~12s
+RPM floor; across positions a wave is sequential with 5-30s calls; cross-workflow load is
+~2 calls/min against 5; lens3 and lens4 already fire back-to-back on Cerebras today without
+trouble; and CC-1c's retry-after handling makes a coincidental burst self-healing.
+A second Cerebras key remains the durable improvement — an improvement, not a gate.
+
 ## D-016 — S2-D joins MA and S2-E on Cerebras
 **Decision:** S2-D migrates from Groq to Cerebras `gpt-oss-120b`.
 **Why:** on Groq's 8,000 ceiling S2-D can never analyse more than ~23 articles per call,
