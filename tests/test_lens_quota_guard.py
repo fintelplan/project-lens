@@ -41,6 +41,23 @@ CEREBRAS_MODEL = lm.CEREBRAS_GPT_OSS_120B
 GROQ_TPD = qg.PROVIDER_LIMITS[("groq", GROQ_MODEL)]["TPD"]
 
 
+def positions_on(provider, model):
+    """Positions currently wired to a (provider, model) pair, from the registry.
+
+    Tests derive their fixtures from this rather than naming positions
+    literally: roles migrate between providers (S2-E and S2-D moved to Cerebras
+    on 2026-07-28) and a hardcoded position list silently changes what the test
+    is measuring instead of failing honestly.
+    """
+    return sorted(p for p, (prov, mod, _est) in qg.POSITION_CONSUMPTION.items()
+                  if (prov, mod) == (provider, model))
+
+
+def estimate_for(positions):
+    """Summed per-cron estimate for a position list, from the registry."""
+    return sum(qg.POSITION_CONSUMPTION[p][2] for p in positions)
+
+
 # ─────────────────────────────────────────────────────────────────────────
 # Test helper — mock Supabase client with configurable ledger state
 # ─────────────────────────────────────────────────────────────────────────
@@ -200,11 +217,24 @@ class TestAggregation:
 
     def test_shared_provider_model_summed(self):
         """Multiple positions on same provider/model: consumption summed."""
-        g = qg.aggregate_positions(["S2-A", "S2-E", "S2-GAP", "MA", "S3-A"])
-        assert len(g) == 1  # all on the single Groq primary from the registry
+        groq_positions = positions_on("groq", GROQ_MODEL)
+        assert len(groq_positions) > 1, "need >1 position sharing a pair to test summing"
+        g = qg.aggregate_positions(groq_positions)
+        assert len(g) == 1  # one pair in, one group out
         total, positions = g[("groq", GROQ_MODEL)]
-        assert total == 5_000 + 10_000 + 3_000 + 6_000 + 7_000  # = 31000
-        assert set(positions) == {"S2-A", "S2-E", "S2-GAP", "MA", "S3-A"}
+        assert total == estimate_for(groq_positions)
+        assert set(positions) == set(groq_positions)
+
+    def test_positions_split_across_providers(self):
+        """Positions on different providers land in different groups.
+
+        Guards the Cerebras migration (D-016): S2-E and S2-D left Groq, so a
+        mixed list must produce one group per pair, not one lump.
+        """
+        g = qg.aggregate_positions(["S2-A", "S2-E"])
+        assert len(g) == 2, f"expected 2 provider groups, got {list(g)}"
+        assert ("groq", GROQ_MODEL) in g
+        assert ("cerebras", CEREBRAS_MODEL) in g
 
     def test_T25_multiple_providers_independent_groups(self):
         """T25: Multiple providers each get own group."""
@@ -305,13 +335,15 @@ class TestGuardCheck:
         against the registry's 200K, which would have silently gutted this
         test's intent at migration time (LENS-028 F4).
         """
-        # These five positions estimate 31_000 combined. Leave 25_000 of quota
-        # so the run is 6_000 short → negative headroom → SKIP.
-        used = GROQ_TPD - 25_000
+        # Derived from the registry so a role migrating provider cannot
+        # silently change what this test measures.
+        groq_positions = positions_on("groq", GROQ_MODEL)
+        est = estimate_for(groq_positions)
+        # Leave the run 6_000 tokens short → negative headroom → SKIP.
+        used = GROQ_TPD - est + 6_000
         sb = mock_supabase(ledger_rows=[{"estimated_use": used}])
         results = qg.guard_check(
-            positions=["S2-A", "S2-E", "S2-GAP", "MA", "S3-A"],
-            sb=sb, run_id="test-tight",
+            positions=groq_positions, sb=sb, run_id="test-tight",
         )
         assert results[0].decision == qg.Decision.SKIP
 
@@ -335,10 +367,27 @@ class TestGuardCheck:
             limit_value=100_000, used_value=99_000, remaining=1_000,
             estimated_use=5_000, headroom_pct=-4.0, positions=["S2-A"],
         )
-        per_pos = qg.filter_positions_by_guard(["S2-A", "S2-E", "MA"], [r_skip])
-        assert per_pos["S2-A"] == "SKIP"
-        assert per_pos["S2-E"] == "SKIP"  # same provider/model group → SKIP too
-        assert per_pos["MA"] == "SKIP"
+        # Every position sharing the SKIPped pair is blocked; derived from the
+        # registry, because S2-E used to be in this group and no longer is.
+        groq_positions = positions_on("groq", GROQ_MODEL)
+        per_pos = qg.filter_positions_by_guard(groq_positions, [r_skip])
+        for pos in groq_positions:
+            assert per_pos[pos] == "SKIP", f"{pos} shares the pair, must SKIP"
+
+    def test_filter_positions_other_provider_unaffected(self):
+        """A SKIP on one pair must NOT block positions on a different pair."""
+        r_skip = qg.QuotaResult(
+            decision=qg.Decision.SKIP, reason="test",
+            provider="groq", model=GROQ_MODEL, quota_type="TPD",
+            limit_value=100_000, used_value=99_000, remaining=1_000,
+            estimated_use=5_000, headroom_pct=-4.0, positions=["S2-A"],
+        )
+        cerebras_positions = positions_on("cerebras", CEREBRAS_MODEL)
+        assert cerebras_positions, "expected Cerebras positions after D-016"
+        per_pos = qg.filter_positions_by_guard(cerebras_positions, [r_skip])
+        for pos in cerebras_positions:
+            assert per_pos[pos] == "PROCEED", (
+                f"{pos} is on Cerebras and must not inherit a Groq SKIP")
 
     def test_filter_positions_degrade_becomes_proceed_in_observer(self):
         """DEGRADE in observer mode → PROCEED (only SKIP is enforced)."""

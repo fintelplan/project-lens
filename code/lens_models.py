@@ -142,11 +142,16 @@ ROLES = {
                 " exact 11,589-char prompt that truncated on Groq",
     },
     "s2e_legitimacy": {
-        "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_S2E_API_KEY", "max_out": 2400,
-        "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_S2E_API_KEY",
-        "note": "was MAX_TOKENS=2000; log label said bare llama-3.3-70b",
+        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
+        "key_env": "CEREBRAS_API_KEY", "max_out": 10_000,
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "D-016: moved to Cerebras 2026-07-28. On Groq it returned ZERO"
+                " characters 3/3 at a 2400 budget -- ~2,000 tokens of reasoning"
+                " against an 8,000 TPM ceiling left nothing for output, which"
+                " reads exactly like a refusal and is how April's evidence was"
+                " misread. max_out 10,000 per D-017 (5,612 observed / 0.60);"
+                " 8,000 would have been 70% = MARGINAL",
     },
     "s2gap": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
