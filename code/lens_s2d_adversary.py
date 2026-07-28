@@ -2,11 +2,11 @@
 lens_s2d_adversary.py — System 2 Position D: Adversary Narrative
 Project Lens | LENS-009
 Model: from the registry — wire("s2d_adversary") in code/lens_models.py.
-       Never hardcoded here. Was qwen/qwen3-32b, which 404'd from 2026-07-17
-       and ran dead for 10 days under green checks; gpt-oss-120b was probe
-       certified on this position's REAL prompt on 2026-07-28 (LENS-028 CC-5:
-       3/3 http200/stop/valid JSON, zero refusal flags on Russia/China/Iran
-       state-media material).
+       Never hardcoded here. History: qwen/qwen3-32b 404'd from 2026-07-17 and
+       ran dead 10 days under green checks; Groq gpt-oss-120b resurrected it on
+       2026-07-28 but truncated mid-JSON and lost 42 of 60 articles against the
+       8,000 TPM ceiling; now Cerebras gpt-oss-120b (D-016), probed 3/3
+       stop/valid-JSON at 26-36% of budget on the exact prompt that broke Groq.
 Input: lens_raw_articles — STATE tier adversarial sources directly
        (Chinese state-apparatus: Xinhua, CGTN, Global Times, SCMP, CASS;
         Russian state-apparatus: TASS, RT, Valdai, Kremlin;
@@ -23,7 +23,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from groq import Groq
+from cerebras.cloud.sdk import Cerebras
 from lens_models import (
     LensModelRegistryError,
     assert_model_known,
@@ -218,12 +218,13 @@ def get_supabase() -> Client:
     return create_client(url, key)
 
 
-def get_groq() -> Groq:
-    """Client on THIS position's own key (LR-094) — no borrowing.
+def get_client() -> Cerebras:
+    """Client on THIS position's registry key (LR-094) — no borrowing.
 
-    The previous `or os.environ["GROQ_API_KEY"]` fallback silently moved S2-D
-    onto the shared key whenever its own was missing, which both breaks quota
-    isolation and hides the misconfiguration. Missing key now fails loudly.
+    Mirrors S3-D's three-line Cerebras factory; there is no shared helper and
+    inventing one is a refactor for another day. The old get_groq() fell back
+    to GROQ_API_KEY when its own key was missing, which broke quota isolation
+    and hid the misconfiguration. Missing key now fails loudly.
     """
     key = os.environ.get(KEY_ENV)
     if not key:
@@ -231,7 +232,7 @@ def get_groq() -> Groq:
             f"{KEY_ENV} is not set. S2-D runs on its own key only (LR-094) — "
             f"refusing to borrow another position's quota."
         )
-    return Groq(api_key=key)
+    return Cerebras(api_key=key)
 
 
 def fetch_adversarial_articles(sb: Client, cycle: Optional[str] = None) -> list[dict]:
@@ -341,7 +342,7 @@ def _split_batches(arts, budget):
     return batches
 
 
-def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard") -> Optional[dict]:
+def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> Optional[dict]:
     """Call the registry-wired model to analyze adversarial narrative."""
     if not articles:
         log.warning("No articles to analyze")
@@ -534,7 +535,7 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     # ─────────────────────────────────────────────────────────────────────────
     try:
         sb     = get_supabase()
-        client = get_groq()
+        client = get_client()
     except Exception as e:
         log.error(f"Client init failed: {e}")
         return {"status": "ERROR", "error": str(e)}
@@ -544,13 +545,14 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.warning("No adversarial articles found — S2-D cannot run")
         return {"status": "NO_ARTICLES", "articles_analyzed": 0}
 
-    # Pacing stays 6000 by ruling (LENS-028): the real Groq ceiling is now 8000
-    # TPM, so 6000 keeps ~25% margin. Raising it would CUT margin against a
-    # LOWER ceiling than the 70b era's 12000.
-    guard = TPMGuard(provider=PROVIDER, model=MODEL)  # TPM from registry (CC-1c)
+    # TPM limit resolves from the registry (CC-1c): Cerebras 30,000 * 0.85
+    # = 25,500. No hardcoded number survives a provider move.
+    guard = TPMGuard(provider=PROVIDER, model=MODEL)
 
     # -- Token-aware batch processing (LENS-022) --------------------------
-    # Groq free tier: 8000 TPM hard ceiling, governed here at 6000.
+    # TOKEN_BUDGET stays 4500 deliberately. It sizes the PROMPT per batch and
+    # is unrelated to the TPM ceiling; changing it changes what S2-D analyses
+    # per call, which is BUG-001 territory and gets its own probe + cert.
     # Measure token cost per article, fill batches greedily,
     # use TPMGuard.wait_if_needed() before each call -- no fixed sleep.
     TOKEN_BUDGET = 4500  # safe under 6000 (system prompt ~800 + response ~700)

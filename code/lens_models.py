@@ -130,12 +130,16 @@ ROLES = {
         "note": "",
     },
     "s2d_adversary": {
-        "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_S2DGCOM_API_KEY", "max_out": 2400,
-        "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
-        "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "DEAD since 2026-07-17 (qwen/qwen3-32b 404). Content-heaviest"
-                " role: content-fitness probe is mandatory before cert",
+        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
+        "key_env": "CEREBRAS_API_KEY", "max_out": 8000,
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "D-016: moved to Cerebras 2026-07-28. On Groq's 8,000 ceiling"
+                " it could never analyse more than ~23 articles per call and"
+                " lost 42 of 60 to mid-JSON truncation in the cert run; the"
+                " BUG-001 fix makes that worse, not better. Probed on Cerebras"
+                " 3/3 stop/valid-JSON at 26-36% of budget (D-017 PASS) on the"
+                " exact 11,589-char prompt that truncated on Groq",
     },
     "s2e_legitimacy": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
