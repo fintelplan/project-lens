@@ -16,6 +16,7 @@ Key: reads raw articles, NOT processed lens_reports
 """
 
 import os
+import re
 import json
 import time
 import logging
@@ -27,6 +28,7 @@ from lens_models import (
     LensModelRegistryError,
     assert_model_known,
     fit_max_tokens,
+    limits_for,
     wire,
 )
 from lens_quota_guard import guard_check_with_fallback
@@ -128,7 +130,19 @@ class TPMGuard:
     Waits intelligently before each API call. Never crashes — just waits.
     Adapted from GNI MAD pipeline pattern for Project Lens S2.
     """
-    def __init__(self, tpm_limit: int = 6000):
+    def __init__(self, tpm_limit: int = None, provider: str = None,
+                 model: str = None):
+        """TPM limit comes from the registry with margin (CC-1c).
+
+        Passing an explicit tpm_limit still works for tests; otherwise the
+        (provider, model) pair resolves its real TPM from LIMITS. A hardcoded
+        6000 was correct only for the Groq era and silently wrong the moment a
+        role moved provider.
+        """
+        if tpm_limit is None:
+            lim = limits_for(provider or PROVIDER, model or MODEL) or {}
+            tpm = lim.get("TPM")
+            tpm_limit = int(tpm * 0.85) if tpm else 6000
         self.tpm_limit = tpm_limit
         self.usage_log = []  # list of (timestamp, tokens)
 
@@ -144,7 +158,23 @@ class TPMGuard:
         self.usage_log.append((time.time(), tokens))
 
     def wait_if_needed(self, tokens_needed: int, label: str = ""):
-        """Wait until window has headroom. Logs every wait. Returns when safe."""
+        """Wait until window has headroom. Logs every wait. Returns when safe.
+
+        CC-1c over-limit guard: if a single request needs more than the whole
+        limit, no amount of waiting can ever satisfy it -- `used + needed <=
+        limit` is unsatisfiable even at used=0. The original loop had no
+        timeout and no escape, so it would spin forever and burn the job.
+        Log it and proceed: the provider will answer with a real 429/413 that
+        the retry path can read, which beats an invisible hang.
+        """
+        if tokens_needed > self.tpm_limit:
+            log.error(
+                f"[TPMGuard{' '+label if label else ''}] request needs "
+                f"{tokens_needed} tokens but the limit is {self.tpm_limit} — "
+                f"no wait can satisfy this. Proceeding and letting the provider "
+                f"answer rather than looping forever."
+            )
+            return
         while True:
             used = self.tokens_in_last_60s()
             if used + tokens_needed <= self.tpm_limit:
@@ -153,6 +183,33 @@ class TPMGuard:
             log.info(f"[TPMGuard{' '+label if label else ''}] "
                      f"{used}/{self.tpm_limit} TPM used — waiting {wait}s...")
             time.sleep(wait)
+
+
+def _retry_after_seconds(exc) -> Optional[float]:
+    """Pull the provider's retry-after from a 429, or None if absent (CC-1c).
+
+    Checks the response headers first (authoritative), then falls back to the
+    'try again in 7.2s' phrasing Groq puts in the message body. Returns None
+    rather than guessing so the caller's default is explicit and visible.
+    """
+    resp = getattr(exc, "response", None)
+    headers = getattr(resp, "headers", None)
+    if headers:
+        for name in ("retry-after", "Retry-After", "x-ratelimit-reset-tokens"):
+            raw = headers.get(name)
+            if not raw:
+                continue
+            try:
+                return min(float(str(raw).rstrip("s")), 60.0)
+            except (TypeError, ValueError):
+                continue
+    m = re.search(r"try again in ([0-9.]+)s", str(exc))
+    if m:
+        try:
+            return min(float(m.group(1)), 60.0)
+        except ValueError:
+            pass
+    return None
 
 
 def get_supabase() -> Client:
@@ -326,6 +383,25 @@ def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard"
                 temperature=TEMPERATURE,
             )
 
+            # CC-1c: record REAL usage, never a guess. The old caller logged
+            # b_tok + 800 and never counted the completion at all, so the
+            # rolling window understated every call by the whole response --
+            # which is how the 2026-07-28 cert earned four 429s.
+            usage = getattr(response, "usage", None)
+            if usage and getattr(usage, "total_tokens", None):
+                guard.log_usage(usage.total_tokens)
+                details = getattr(usage, "completion_tokens_details", None)
+                # Cerebras reports reasoning_tokens; Groq offers no such field.
+                # Absent = None, never a guess (CC-1c).
+                reasoning = getattr(details, "reasoning_tokens", None) if details else None
+                log.info(
+                    f"S2-D usage: prompt={usage.prompt_tokens} "
+                    f"completion={usage.completion_tokens} "
+                    f"total={usage.total_tokens} "
+                    f"reasoning={reasoning if reasoning is not None else 'n/a'} "
+                    f"budget_used={usage.completion_tokens / max_tokens:.0%}"
+                )
+
             raw = response.choices[0].message.content.strip()
 
             # Strip reasoning blocks. Kept for gpt-oss-120b: the CC-5 probe
@@ -363,8 +439,18 @@ def call_adversary_analyst(client: Groq, articles: list[dict], guard: "TPMGuard"
         except Exception as e:
             err = str(e)
             if "429" in err:
-                log.warning(f"Rate limit (429) attempt {attempt} — sleeping 20s")
-                time.sleep(20)
+                # CC-1c: honour the provider's own retry-after. A flat 20s is a
+                # guess that is either wasteful or too short; the provider knows
+                # exactly when the window reopens.
+                wait = _retry_after_seconds(e)
+                if wait is None:
+                    wait = 20
+                    log.warning(f"Rate limit (429) attempt {attempt} — no "
+                                f"retry-after given, falling back to {wait}s")
+                else:
+                    log.warning(f"Rate limit (429) attempt {attempt} — "
+                                f"provider retry-after {wait}s")
+                time.sleep(wait)
             elif "503" in err:
                 log.warning(f"503 attempt {attempt} — sleeping 15s")
                 time.sleep(15)
@@ -461,7 +547,7 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     # Pacing stays 6000 by ruling (LENS-028): the real Groq ceiling is now 8000
     # TPM, so 6000 keeps ~25% margin. Raising it would CUT margin against a
     # LOWER ceiling than the 70b era's 12000.
-    guard = TPMGuard(tpm_limit=6000)  # counts prompt side only — see run_s2d notes
+    guard = TPMGuard(provider=PROVIDER, model=MODEL)  # TPM from registry (CC-1c)
 
     # -- Token-aware batch processing (LENS-022) --------------------------
     # Groq free tier: 8000 TPM hard ceiling, governed here at 6000.
@@ -479,7 +565,8 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         guard.wait_if_needed(b_tok, label='S2-D batch ' + str(batch_num))
         result = call_adversary_analyst(client, batch, guard)
         if result is not None:
-            guard.log_usage(b_tok + 800)
+            # usage is logged inside call_adversary_analyst from the real
+            # response.usage (CC-1c) -- no guessed b_tok + 800 here any more.
             analyses.append(result)
         else:
             log.warning('S2-D batch %d failed -- continuing', batch_num)
