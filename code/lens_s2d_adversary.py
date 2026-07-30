@@ -367,6 +367,7 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            guard.wait_if_needed(prompt_chars // 3 + max_tokens, label="S2-D")
             log.info(f"S2-D calling {PROVIDER}/{MODEL} "
                      f"(attempt {attempt}, prompt {prompt_chars} chars, "
                      f"max_tokens {max_tokens})")
@@ -564,7 +565,7 @@ def run_s2d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     for batch_num, batch in enumerate(batches, 1):
         b_tok = sum(_art_cost(a) for a in batch)
         log.info('S2-D batch %d/%d: %d articles (~%d tokens)', batch_num, len(batches), len(batch), b_tok)
-        guard.wait_if_needed(b_tok, label='S2-D batch ' + str(batch_num))
+        # CC-7b: gating moved into call_adversary_analyst, on the TRUE reservation
         result = call_adversary_analyst(client, batch, guard)
         if result is not None:
             # usage is logged inside call_adversary_analyst from the real
