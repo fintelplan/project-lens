@@ -143,15 +143,15 @@ ROLES = {
     },
     "s2e_legitimacy": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
-        "key_env": "CEREBRAS_API_KEY", "max_out": 10_000,
+        "key_env": "CEREBRAS_API_KEY", "max_out": 16_000,
         "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "D-016: moved to Cerebras 2026-07-28. On Groq it returned ZERO"
                 " characters 3/3 at a 2400 budget -- ~2,000 tokens of reasoning"
                 " against an 8,000 TPM ceiling left nothing for output, which"
                 " reads exactly like a refusal and is how April's evidence was"
-                " misread. max_out 10,000 per D-017 (5,612 observed / 0.60);"
-                " 8,000 would have been 70% = MARGINAL",
+                " misread. max_out 16,000 (CC-7a, LENS-029): budget_used rose 54->62->68%"
+                " on flat prompts as reasoning grew 2,437->2,883; probed 3/3 stop at 26-43%",
     },
     "s2gap": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
