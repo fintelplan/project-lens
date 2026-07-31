@@ -132,8 +132,8 @@ def get_supabase() -> Client:
 
 
 def get_groq() -> Groq:
-    # GROQ_S2A_API_KEY = dedicated S2-A account (isolated quota, LENS-022)
-    # Falls back to GROQ_S2_API_KEY if not set
+    # Key comes from the registry (LR-105). CC-14 deleted the silent
+    # GROQ_S2_API_KEY fallback -- that is s2gap's key now.
     key = os.environ.get(KEY_ENV, "")
     if not key:
         raise RuntimeError(KEY_ENV + " missing")
