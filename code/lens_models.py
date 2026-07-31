@@ -155,7 +155,7 @@ ROLES = {
     },
     "s2gap": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_S2_API_KEY", "max_out": 4000,
+        "key_env": "GROQ_S2DGCOM_API_KEY", "max_out": 4000,
         "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
         "fb_key_env": "GROQ_S2_API_KEY",
         "note": "was MAX_TOKENS=1500",
