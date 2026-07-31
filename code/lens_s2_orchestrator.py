@@ -37,6 +37,7 @@ RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
 def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
     """1-token test call to Groq. Returns True if quota >= threshold."""
     import requests, os
+    from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
     if not key:
         print(f'[PRE-FLIGHT] {label}: {api_key_env} not set — skipping check')
@@ -45,9 +46,13 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
         r = requests.post(
             'https://api.groq.com/openai/v1/chat/completions',
             headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
-            json={'model': 'llama-3.3-70b-versatile', 'messages': [{'role': 'user', 'content': 'hi'}], 'max_tokens': 1},
+            json={'model': PREFLIGHT_MODEL, 'messages': [{'role': 'user', 'content': 'hi'}], 'max_tokens': 1},
             timeout=10
         )
+        if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+                  % (label, r.status_code))
+            return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
         print(f'[PRE-FLIGHT] {label}: {remaining:,} tokens remaining (threshold={threshold:,})')
         if remaining < threshold:
@@ -61,6 +66,7 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
 def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
     """1-token test call to Groq. Returns True if quota >= threshold."""
     import requests, os
+    from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
     if not key:
         print(f'[PRE-FLIGHT] {label}: {api_key_env} not set — skipping check')
@@ -69,9 +75,13 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
         r = requests.post(
             'https://api.groq.com/openai/v1/chat/completions',
             headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
-            json={'model': 'llama-3.3-70b-versatile', 'messages': [{'role': 'user', 'content': 'hi'}], 'max_tokens': 1},
+            json={'model': PREFLIGHT_MODEL, 'messages': [{'role': 'user', 'content': 'hi'}], 'max_tokens': 1},
             timeout=10
         )
+        if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+                  % (label, r.status_code))
+            return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
         print(f'[PRE-FLIGHT] {label}: {remaining:,} tokens remaining (threshold={threshold:,})')
         if remaining < threshold:
