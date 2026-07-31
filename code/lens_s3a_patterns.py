@@ -16,6 +16,8 @@ import os, json, time, logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from groq import Groq
+from cerebras.cloud.sdk import Cerebras
+from lens_models import assert_model_known, fit_max_tokens, wire
 from supabase import create_client, Client
 
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
@@ -57,8 +59,7 @@ log = logging.getLogger("S3-A")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-GROQ_KEY     = os.environ.get("GROQ_S3_API_KEY") or os.environ.get("GROQ_API_KEY")
-MODEL        = "llama-3.3-70b-versatile"
+PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s3a_patterns")
 LOOKBACK_DAYS = 7
 MAX_S1_REPORTS = 20
 MAX_S2_REPORTS = 15
@@ -179,7 +180,10 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     log.info(f"=== S3-A Pattern Intelligence START | run_id={run_id} ===")
 
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
-    client = Groq(api_key=GROQ_KEY)
+    api_key = os.environ.get(KEY_ENV, "")
+    if not api_key:
+        raise RuntimeError(KEY_ENV + " missing")
+    client = Cerebras(api_key=api_key)
 
     if already_ran_today(sb):
         log.info("S3-A already ran in last 20h — skipping (daily cadence)")
@@ -203,18 +207,22 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     prompt = build_prompt(s1, s2)
     log.info(f"Prompt: {len(prompt)} chars")
+    prompt_chars = len(SYSTEM_PROMPT) + len(prompt)
+    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
 
     analysis = None
     for attempt in range(1, 3):
         try:
-            log.info(f"S3-A calling {MODEL} (attempt {attempt})")
+            log.info(f"S3-A calling {PROVIDER}/{MODEL} (attempt {attempt}, "
+                     f"prompt {prompt_chars} chars, max_tokens {max_tokens})")
+            assert_model_known(PROVIDER, MODEL)
             resp = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": prompt},
                 ],
-                temperature=0.4, max_tokens=2500)
+                temperature=0.4, max_tokens=max_tokens)
             raw = resp.choices[0].message.content.strip()
             if raw.startswith("```"):
                 raw = raw.split("```")[1]
