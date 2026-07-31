@@ -408,12 +408,83 @@ def fixture_s2e_legitimacy() -> Fixture:
 # role_key -> builder. A role absent here has NO faithful builder yet and must
 # be given one, or a captured prompt at probe_fixtures/<role>.txt. There is
 # deliberately no generic fallback that would fabricate a prompt.
+def fixture_s2gap() -> Fixture:
+    """Rebuild S2-GAP's real prompt from production's own fetch + build.
+
+    lens_s2_gap exposes fetch_s1_signals(), fetch_s2d_findings() and
+    build_gap_prompt() at module level, so this calls PRODUCTION's functions
+    instead of mirroring them -- no copy that can drift. Temperature 0.3 is a
+    literal inside call_groq(); mirrored here and only here.
+    """
+    import lens_s2_gap as gap
+    sb = gap.get_supabase()
+    s1 = gap.fetch_s1_signals(sb, None)
+    if not s1:
+        raise ProbeError(
+            "S2-GAP fixture: no S1 signals in lens_reports. Cannot build the "
+            "real prompt -- refusing to invent one."
+        )
+    s2d = gap.fetch_s2d_findings(sb)
+    prompt = gap.build_gap_prompt(s1, s2d)
+    if not prompt.strip():
+        raise ProbeError("S2-GAP fixture: build_gap_prompt returned empty.")
+    return Fixture(
+        system=gap.SYSTEM_PROMPT,
+        user=prompt,
+        requires_json=True,
+        temperature=0.3,
+        origin="live-rebuild:lens_s2_gap",
+        detail={
+            "s1_signals": len(s1),
+            "s2d_findings_present": s2d is not None,
+        },
+    )
+
+
+def fixture_s3a_patterns() -> Fixture:
+    """Rebuild S3-A's real prompt from production's own fetch + build.
+
+    fetch_s1_reports(), fetch_s2_reports() and build_prompt() are module level,
+    so production's functions are called directly. LOOKBACK_DAYS and the
+    Supabase constants come from the module, never literals here. Temperature
+    0.4 is a literal inside run_s3a(); mirrored here and only here.
+    already_ran_today() is deliberately NOT called -- a probe must build the
+    prompt regardless of production's daily cadence.
+    """
+    import lens_s3a_patterns as s3a
+    from supabase import create_client
+    sb = create_client(s3a.SUPABASE_URL, s3a.SUPABASE_KEY)
+    s1 = s3a.fetch_s1_reports(sb, s3a.LOOKBACK_DAYS)
+    s2 = s3a.fetch_s2_reports(sb, s3a.LOOKBACK_DAYS)
+    if not s1:
+        raise ProbeError(
+            "S3-A fixture: no S1 reports in the lookback window. Cannot build "
+            "the real prompt -- refusing to invent one."
+        )
+    prompt = s3a.build_prompt(s1, s2)
+    if not prompt.strip():
+        raise ProbeError("S3-A fixture: build_prompt returned empty.")
+    return Fixture(
+        system=s3a.SYSTEM_PROMPT,
+        user=prompt,
+        requires_json=True,
+        temperature=0.4,
+        origin="live-rebuild:lens_s3a_patterns",
+        detail={
+            "s1_reports": len(s1),
+            "s2_reports": len(s2),
+            "lookback_days": s3a.LOOKBACK_DAYS,
+        },
+    )
+
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
     "lens1": fixture_lens1,
     "s2a_injection": fixture_s2a_injection,
     "mission_analyst": fixture_mission_analyst,
     "s2e_legitimacy": fixture_s2e_legitimacy,
+    "s2gap": fixture_s2gap,
+    "s3a_patterns": fixture_s3a_patterns,
 }
 
 
