@@ -9,7 +9,7 @@
 | Operator | James Maverick ("Bro Alpha") — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7. Lens is his SOLO project; "Team Geeks" is GNI only |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth is the push output or `git ls-remote` (LR-104), never `git status` |
-| Last known commit | **9de8a2c** — verify with ls-remote at open |
+| Last known commit | **7d1e413** — verify with ls-remote at open |
 | Clocks | **Aug 9** keyfile · **Aug 12** internal: every position certified ×2 · **Aug 16** Groq decommissions llama-3.3-70b-versatile + llama-3.1-8b-instant · **~Oct 10** gemini-2.5-flash registry edit (dies Oct 16) |
 | Doc map | contract > this brief > recollection. Decisions: `LENS_LCLIFF_DECISIONS.md`. Blocks: `LENS_LCLIFF_BUILD_PLAN.md`. Registry spec: `LENS_REGISTRY_SPEC.md`. Bugs: `LENS_KNOWN_BUGS.md`. Ritual: `LENS_SESSION_PROTOCOL.md` |
 
@@ -68,7 +68,11 @@ curl -s "$SUPABASE_URL/rest/v1/injection_reports?order=created_at.desc&limit=8&s
 | `3333dd4` | CC-13 — s3a_patterns call site to Cerebras via registry |
 | `044db89` | CC-14 — s2a_injection call site, dual-path budget |
 | `59ee42a` | CC-14b — stale key-fallback comment corrected |
-| `9de8a2c` | lens1 primary baseline banked — **HEAD** |
+| `9de8a2c` | lens1 primary baseline banked |
+| `1ab9b1c` | this brief |
+| `7d1e413` | LR-105..115 appended to the register — **HEAD** |
+
+Working tree clean at close: fifteen scratch files removed (fourteen one-shot `patch_*.py` scripts plus `s3f_dump.txt`, a dead dump from 2026-05-26 that had been an LR-093 cleanup candidate twice).
 
 ### The discovery that changed everything
 
@@ -101,7 +105,15 @@ Every Groq `max_out` set at LENS-028 was sized against a non-reasoning model. Me
 
 ---
 
-## Part 3 — LR ENTRIES EARNED THIS SESSION
+## Part 3 — LR ENTRIES (all RATIFIED and banked at close)
+
+**The register is `lens-DOC-002_rules.md` at the REPO ROOT — not under `docs/`.** It now holds 26 rules.
+
+**A gap was found and closed at the LENS-029 close: LR-105 through LR-110, minted at the LENS-028 close and listed in the LENS-029 brief, had NEVER been appended to the register.** The file ended at LR-104. There is precedent — LR-095 to 098 were once recorded as "still pending addition at session close." **Rules were being minted in briefs and banked in a register, and the two drifted: the dual-source disease in the process docs themselves.** All eleven (105–115) landed in `7d1e413`.
+
+**Check this at every close.** A rule that lives only in a brief is not a rule; it is a note.
+
+Earned in LENS-029:
 
 - **LR-111 (Derived logs only).** The truth order `runtime log > ledger > config > docstring` holds ONLY for log lines derived from the value they report. A hand-written log literal is a docstring wearing a log's clothes and ranks BELOW config. S2-B logs "calling gemini-1.5-flash" while its `MODEL` constant says `gemini-2.0-flash`; the log lied and cost a full turn. **Grep the f-string before trusting a log line as wire evidence.**
 - **LR-112 (Mechanisms derive, never duplicate).** The code-side sibling of LR-110. `class TPMGuard` is defined **seven times** across the repo, all seven bodies different (22/26/33/35/49/61/75 lines). A duplicated mechanism is a hardcoded assumption with a heartbeat.
@@ -164,7 +176,7 @@ Silent degrade remains this project's signature failure, and this session found 
 
 ## Part 7 — LIVE vs BANKED
 
-**LIVE — verified by bytes this session, ~90%:** head `9de8a2c` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement.
+**LIVE — verified by bytes this session, ~90%:** head `7d1e413` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement · 26 rules in `lens-DOC-002_rules.md`, verified by header count after the append.
 
 **BANKED — true when written, re-verify before acting, ~40%:** the three role-less files' shape · entity_extract and ai5_watchdog's fixture difficulty · the Gemini 3.x model roster · the S2-F Cloudflare picture · everything in Part 5.
 
