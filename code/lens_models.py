@@ -110,7 +110,7 @@ ROLES = {
     # ---- S2 family ----
     "s2a_injection": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_S2A_API_KEY", "max_out": 2400,
+        "key_env": "GROQ_S2A_API_KEY", "max_out": 4600,
         "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
         "fb_key_env": "SAMBANOVA_API_KEY",
         "note": "was MAX_TOKENS=1800",
