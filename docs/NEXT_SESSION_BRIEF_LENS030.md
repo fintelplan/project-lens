@@ -9,40 +9,50 @@
 | Operator | James Maverick ("Bro Alpha") — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7. Lens is his SOLO project; "Team Geeks" is GNI only |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth is the push output or `git ls-remote` (LR-104), never `git status` |
-| Last known commit | **7d1e413** — verify with ls-remote at open |
+| Last known commit | **03461b7** — verify with ls-remote at open |
 | Clocks | **Aug 9** keyfile · **Aug 12** internal: every position certified ×2 · **Aug 16** Groq decommissions llama-3.3-70b-versatile + llama-3.1-8b-instant · **~Oct 10** gemini-2.5-flash registry edit (dies Oct 16) |
 | Doc map | contract > this brief > recollection. Decisions: `LENS_LCLIFF_DECISIONS.md`. Blocks: `LENS_LCLIFF_BUILD_PLAN.md`. Registry spec: `LENS_REGISTRY_SPEC.md`. Bugs: `LENS_KNOWN_BUGS.md`. Ritual: `LENS_SESSION_PROTOCOL.md` |
 
 ---
 
-## Part 0 — FIRST ACTION: read the overnight wave
+## Part 0 — FIRST ACTION: verify S2-GAP recovered
 
-Three positions migrated on 2026-07-31 (`s2gap`, `s3a_patterns`, `s2a_injection`) and **none of them has run in production yet.** The next manage-analyze wave is their first live exercise. Read it before starting anything else.
+**Wave 6 (MA #244, 2026-07-31 15:42–16:03 UTC, log `83101558250`) has been read. S2-GAP FAILED it.** `CC-15` (`03461b7`) is the fix and has NOT yet run in production. **The next manage-analyze wave is the verification, and it is the first thing to read.**
 
 ```
 gh run list -R fintelplan/project-lens -w "Lens Manager + Analyze" -L 2
 gh run view PASTE_NUMERIC_ID -R fintelplan/project-lens --log > /tmp/ma.log && wc -l /tmp/ma.log
-grep -aiE "calling (cerebras|groq)/" /tmp/ma.log
-grep -aic "JSON parse error" /tmp/ma.log
+grep -a "S2-GAP" /tmp/ma.log
+grep -ah 'api\.groq\.com' /tmp/ma.log | grep -oE 'POST [^ ]+ "HTTP/[0-9.]+ [0-9]{3}' | sort | uniq -c
+grep -a "PRE-FLIGHT" /tmp/ma.log
+grep -aiE "(S2-A|S2-GAP|S3-A|S2-D|S2-E|MA) calling" /tmp/ma.log
 grep -aoE "budget_used=[0-9]+%" /tmp/ma.log | sort | uniq -c
 grep -ah 'api\.cerebras\.ai' /tmp/ma.log | grep -oE '(GET|POST) [^ ]+ "HTTP/[0-9.]+ [0-9]{3}' | sort | uniq -c
-grep -a "PRE-FLIGHT" /tmp/ma.log
-grep -a "TPMGuard" /tmp/ma.log
+grep -aic "JSON parse error" /tmp/ma.log
 grep -ac "REGISTRY_MISALIGNMENT" /tmp/ma.log
 grep -aciE "Traceback|LensModelRegistryError" /tmp/ma.log
 ```
 
-**What is new in this checklist and why:**
-
-- **`[PRE-FLIGHT]` lines** — CC-8 changed them to read the registry model. If any prints `ALARM ... TPD check is BLIND`, Groq returned a non-200 or dropped the rate-limit header.
-- **`[TPMGuard]` lines** — a wait line is a SUCCESS, not a symptom. It means a guard finally sees the truth. In wave 4, S2-A stalled 50s at `4693/6000` against a hardcoded limit less than half the real one.
-- **Cerebras request count** — S3-A now fires on the Cerebras key, making it the **eighth** consumer at RPM 5. This wave is the first observation of that contention. The arithmetic says S3-A lands ~2.5 min after MA and is clear of the window, but arithmetic is not observation.
+**PASS = `S2-GAP ... status=COMPLETE`, zero Groq 401s, and no `ALARM ... TPD check is BLIND` line.**
 
 Then LR-080:
 ```
 set -a && source .env && set +a
 curl -s "$SUPABASE_URL/rest/v1/injection_reports?order=created_at.desc&limit=8&select=analyst,injection_type,confidence_score,created_at" -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY"
 ```
+A fresh `S2-GAP GAP_ANALYSIS` row is the proof.
+
+### What wave 6 showed
+
+**✅ S3-A: COMPLETE, saved, first attempt, 4.0s** on `cerebras/gpt-oss-120b`, prompt 19,263 chars, max_tokens 5,000. The position that returned zero characters three times on Groq now finishes in four seconds. **The provider move is vindicated in production.**
+
+**✅ Cerebras held its eighth consumer** — 8 POSTs + 4 `tcp_warming`, all 200, **zero 429s.** Budgets 23/30/39/40/40/41/43, all under 60%. Zero JSON parse errors, zero misalignment, zero tracebacks.
+
+**⚠️ S2-A: COMPLETE, but 2 recovered Groq 429s** at 15:43:32 and 15:44:31. **The raise to 4,600 makes two S2-A calls in one minute impossible on Groq's 8,000 TPM** (2 × 4,600 = 9,200 reserved). Under the split bar 2 recovered is below the >3/wave investigate threshold, but it is a direct consequence of the raise and needs watching. The stale 6,000-limit TPMGuard copy actually helped, logging `7360/6000 TPM — waiting`.
+
+**❌ S2-GAP: `ANALYSIS_FAILED`** — three attempts, three HTTP 401s. See Part 3a.
+
+**⚠️ Pre-flight threshold is now miscalibrated:** `[PRE-FLIGHT] S2-A dedicated: 7,927 tokens remaining (threshold=8,000) — clean skip`. The threshold equals gpt-oss-120b's **entire** TPM, so it can essentially never pass. **CC-8 did not create this — it exposed that `check_groq_tpd` reads the per-MINUTE header `x-ratelimit-remaining-tokens` while being named and thresholded as a per-DAY check.** llama-3.3-70b's 12,000 TPM had hidden it. S2-A ran anyway, so the skip verdict is evidently not honoured by its caller either — trace both.
 
 ---
 
@@ -70,7 +80,9 @@ curl -s "$SUPABASE_URL/rest/v1/injection_reports?order=created_at.desc&limit=8&s
 | `59ee42a` | CC-14b — stale key-fallback comment corrected |
 | `9de8a2c` | lens1 primary baseline banked |
 | `1ab9b1c` | this brief |
-| `7d1e413` | LR-105..115 appended to the register — **HEAD** |
+| `7d1e413` | LR-105..115 appended to the register |
+| `f1d188f` | this brief, updated at close |
+| `03461b7` | **CC-15 — s2gap key reverted after wave 6 failed. HEAD** |
 
 Working tree clean at close: fifteen scratch files removed (fourteen one-shot `patch_*.py` scripts plus `s3f_dump.txt`, a dead dump from 2026-05-26 that had been an LR-093 cleanup candidate twice).
 
@@ -120,6 +132,22 @@ Earned in LENS-029:
 - **LR-113 (Never infer provider health from low consumption).** The pre-flight logged *"Gemini is OK with minimal RPD usage, which is a GO"* about a model dead since June 1 — failed calls consume no quota, so a corpse shows the LOWEST usage and reads HEALTHIEST. Absence of usage and absence of capability are indistinguishable on a usage meter. Read call outcomes.
 - **LR-114 (Measure every position; never project from a ratio).** Two positions established a 4.5× reasoning-burn ratio and the third broke it. Projection would have raised `lens1` unnecessarily and would have missed that `s3a_patterns` needed a different provider entirely.
 - **LR-115 (Perishable evidence commits immediately).** The llama-3.3-70b baselines are unrepeatable after Aug 16 and sat modified-but-unstaged after their probe run. Bank perishable evidence in its own commit the moment it exists.
+
+---
+
+## Part 3a — THE S2-GAP INCIDENT (wave 6, and the rule it earned)
+
+**What happened.** CC-10 moved `s2gap` from `GROQ_S2DGCOM_API_KEY` to `GROQ_S2_API_KEY`. In wave 6 that position failed completely — `status=ANALYSIS_FAILED`, three attempts, three HTTP 401s — and the CC-8 alarm named it: `[PRE-FLIGHT] S2 shared: ALARM http=401 no quota header -- TPD check is BLIND`.
+
+**Root cause.** `GROQ_S2_API_KEY` is valid in local `.env` — its probes passed 3/3 twice — and **invalid in GitHub Actions.** The Actions secret was last updated three months ago against DGCOM's two; it is stale or revoked. **Local `.env` and Actions secrets are independent stores that diverge silently.**
+
+**How the wrong call was made.** The key was chosen by consensus of three *static* sources — the registry row, the file's line-15 docstring, and its `RuntimeError` message all said `GROQ_S2_API_KEY` — and then verified with a probe that runs **locally**. LR-094 says probe on the role's own key, which was done; but "the role's own key" locally is not the same secret as in CI.
+
+**Fix shipped:** `03461b7` reverts `key_env` to `GROQ_S2DGCOM_API_KEY`, which demonstrably works in Actions. CC-10's other gain — deletion of the silent `or GROQ_API_KEY` fallback — is preserved. **Not yet verified in production; that is Part 0.**
+
+**Still open:** the naming is now inconsistent again (registry and code say DGCOM; the docstring and error message say GROQ_S2_API_KEY). Cleaning that up means refreshing the Actions secret first, then re-pointing — **and re-verifying in CI, not locally.**
+
+- **LR-116 (A key verified locally is not verified in CI).** Local `.env` and CI secret stores are independent and diverge without warning. A probe proves a key works *where the probe ran*. Before moving a production position onto a different key, verify that key in the environment that will actually use it — or accept that the first live wave is the test, and watch it.
 
 ---
 
@@ -176,7 +204,7 @@ Silent degrade remains this project's signature failure, and this session found 
 
 ## Part 7 — LIVE vs BANKED
 
-**LIVE — verified by bytes this session, ~90%:** head `7d1e413` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement · 26 rules in `lens-DOC-002_rules.md`, verified by header count after the append.
+**LIVE — verified by bytes this session, ~90%:** head `03461b7` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement · 26 rules in `lens-DOC-002_rules.md` · **wave 6: S3-A COMPLETE in 4.0s on Cerebras, Cerebras 8/8 POSTs 200 with zero 429s, S2-A COMPLETE with 2 recovered 429s, S2-GAP ANALYSIS_FAILED on three 401s.**
 
 **BANKED — true when written, re-verify before acting, ~40%:** the three role-less files' shape · entity_extract and ai5_watchdog's fixture difficulty · the Gemini 3.x model roster · the S2-F Cloudflare picture · everything in Part 5.
 
