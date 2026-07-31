@@ -470,3 +470,34 @@ at the end of the arc.
 Lens example: the llama-3.3-70b baselines are unrepeatable after 2026-08-16. After
 their probe run they sat modified-but-unstaged in `probe_results.jsonl`, existing
 only on one local disk. Bank first, continue second.
+
+---
+
+## LR-116 — A Key Verified Locally Is Not Verified in CI (LENS-030)
+
+**Type**: Process | **Added**: LENS-030 | **Status**: RATIFIED | **Origin**: LENS-030
+
+Local `.env` and the CI secret store are **independent stores that diverge without
+warning**. A probe proves a key works *where the probe ran* — nothing more.
+
+Before moving a production position onto a different key env var, verify that key
+in the environment that will actually use it. If that is not possible, accept
+explicitly that the first live wave IS the test, and watch it.
+
+Consensus among static sources is not verification. A registry row, a docstring
+and an error message can all agree and all be describing something that no longer
+exists in the environment that matters.
+
+Lens example: CC-10 moved `s2gap` from `GROQ_S2DGCOM_API_KEY` to
+`GROQ_S2_API_KEY` because the registry, the file's line-15 docstring and its
+`RuntimeError` message all named the latter. Local probes passed 3/3 twice. In the
+first production wave the position returned `status=ANALYSIS_FAILED` after three
+attempts and three HTTP 401s — the Actions secret of that name was stale, last
+updated three months prior against DGCOM's two. Reverted in `03461b7`.
+
+Corollary worth keeping: the failure was caught on its first wave only because
+CC-8's `ALARM ... TPD check is BLIND` line had shipped six hours earlier. Before
+that instrumentation the pre-flight would have read its `999999` default and the
+position would have failed silently for days. **Instrumentation added for one
+reason caught a different mistake entirely — which is the argument for adding it
+before you know what it will catch.**
