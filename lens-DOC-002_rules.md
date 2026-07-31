@@ -269,3 +269,204 @@ Lens example: the false "ahead by 6" git-tracking scare came from trusting
 transient state instead of a durable record. Keep the LENS LIVE STATE entry
 current at every close — and record the fintelplan-scoped push URL there, since a
 fresh session that runs plain `git push` hits a 403.
+---
+
+## LR-105 — Registry Law (LENS-028)
+
+**Type**: Architecture | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+Every model string, key env var, output budget and provider limit flows from
+`code/lens_models.py`. A model string typed anywhere else is a bug.
+
+Call sites run `assert_model_known(PROVIDER, MODEL)` immediately before each
+request and MAY raise there — the blast radius is that position only, and a
+position dying loudly beats a position 404ing silently for ten days under green
+checks. The alignment guard is the opposite: it verifies LOG-ONLY, plus a CI test
+and a pre-flight Telegram line, and **the guard NEVER raises** (fail-safe
+contract).
+
+Lens example: qwen/qwen3-32b 404'd from 2026-07-17 and ran dead for ten days
+behind green checkmarks. The registry exists so that cannot recur — and in
+LENS-029 the same law caught `GROQ_S2DGCOM_API_KEY` typed at a call site while
+the registry, the docstring and the error message all said `GROQ_S2_API_KEY`.
+
+---
+
+## LR-106 — Probe Before Push (LENS-028)
+
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+No call-site migration ships until that role's probe is green on mechanics AND
+content-fitness, on the role's OWN key (LR-094), with real-prompt fixtures.
+
+Bank dying-model baselines while they still breathe — after a decommission date
+the comparison is gone forever.
+
+Lens example (LENS-029): the probe caught that every Groq `max_out` was sized for
+a non-reasoning model. `s3a_patterns` returned `finish=length` with invalid JSON
+three times, one trial emitting zero characters. Without the probe, four
+positions would have shipped straight into truncation.
+
+---
+
+## LR-107 — Probe Headroom (LENS-028, D-017)
+
+**Type**: Engineering | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+For JSON-output roles, greater than 60% completion-budget consumption in a probe
+is MARGINAL, not passing.
+
+A probe certifies the prompt **size** it held, not merely its shape (R-S80-2
+extended). Truncated JSON has no partial value.
+
+Lens example: S2-D probed 3/3 clean at 79% of budget and then truncated in
+production on a prompt 312 characters larger, losing 42 of 60 articles. In
+LENS-029 the same rule blocked `s2gap` at 63/65% and `s2a_injection` at 64/66%
+until both budgets were raised and re-probed.
+
+Note: the rule is scoped to JSON roles deliberately. `lens1` produces prose
+(`requires_json: False`), so a partial response retains value and the same
+percentage carries genuinely less risk.
+
+---
+
+## LR-108 — Derived Ceilings (LENS-028)
+
+**Type**: Architecture | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+Per-request ceiling = `min(CTX, TPM)` per **(provider, model)** — never a
+hardcoded constant, never provider-only.
+
+The old "Groq 8,192" was never a context limit: Groq's context is 131,072 and TPM
+was always the binding cap. "No TPM exists" (Cohere, Cloudflare) and "nobody has
+checked" (Gemini) must never collapse into the same silence — hence `METER`. An
+unresolved ceiling returns the cap and logs an ERROR naming the pair; it does not
+raise.
+
+Lens example: `analyze_lens_multi.py:777` still keys `TPM_LIMITS` by provider
+alone with a `.get(provider, 10_000)` default — which cannot be right, because
+TPM differs *within* Groq (llama-3.3-70b 12,000 vs gpt-oss-120b 8,000).
+
+Caveat learned in LENS-029: CTX is a **size** and TPM is a **rate**. Bounding a
+single request by a per-minute budget only works if you assume one request per
+minute — true at RPM 1, false at RPM 5.
+
+---
+
+## LR-109 — Never Pollute the Record to Save Time (LENS-028)
+
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+Do not `workflow_dispatch` an analysis pipeline outside its schedule to speed a
+certification. It re-analyses the same collection pool and writes a duplicate
+cycle into the evidence base, skewing S2-F's 45-day windows invisibly for months.
+
+Use a read-only smoke test or a probe instead.
+
+Lens example: the temptation arose during the LENS-028 cert wait. The cost would
+have been silent and permanent — a corrupted analytical record is not fixable by
+a later commit.
+
+---
+
+## LR-110 — Tests Derive, Never Hardcode (LENS-028)
+
+**Type**: Engineering | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: LENS-028
+
+Derive test fixtures from the registry. A hardcoded assumption in a test silently
+changes what the test measures after a migration, instead of failing honestly.
+
+Lens example: five guard tests broke on the Cerebras migration because they
+encoded "these positions share one group". The tests were not wrong about the
+code — they were wrong about a fact that had changed underneath them, and they
+had no way to notice.
+
+---
+
+## LR-111 — Derived Logs Only (LENS-029)
+
+**Type**: Engineering | **Added**: LENS-029 | **Status**: RATIFIED | **Origin**: LENS-029
+
+The truth order `runtime log > ledger > config > docstring` (R-S79-2) holds ONLY
+for log lines **derived** from the value they report.
+
+A hand-written log literal is a docstring wearing a log's clothes and ranks BELOW
+config. Before trusting a log line as evidence of a wire value, grep the f-string
+that emits it.
+
+Lens example: `lens_s2b_coordination.py` logs "S2-A calling gemini-1.5-flash" at
+line 203 and "(gemini-1.5-flash, 1M context)" at line 388, while `MODEL` at line
+30 is `gemini-2.0-flash`. Both log strings are hardcoded literals. The log lied,
+and a full session turn was spent believing it before the bytes corrected it.
+A third instance surfaced the same day in S2-F: `[ENSEMBLE] Running primary:
+qwen-3-235b on Cerebras`, immediately followed by `Using Cerebras provider (model:
+gpt-oss-120b)`.
+
+---
+
+## LR-112 — Mechanisms Derive, Never Duplicate (LENS-029)
+
+**Type**: Architecture | **Added**: LENS-029 | **Status**: RATIFIED | **Origin**: LENS-029
+
+The code-side sibling of LR-110. A duplicated mechanism is a hardcoded assumption
+with a heartbeat.
+
+Lens example: `class TPMGuard` is defined **seven times** across the repo, and all
+seven bodies differ — 22, 26, 33, 35, 49, 61 and 75 lines. Each position
+instantiates its own copy, so seven private windows each model their own view of
+ONE shared 30,000 TPM budget. The per-position-guard versus per-key-limit mismatch
+is not a design oversight; this duplication IS its mechanism. Two of the seven
+still hardcode `tpm_limit=6000`, which cost a measured 50-second stall in a live
+wave.
+
+The irony worth remembering: LENS-028 moved `_art_cost` to module level
+specifically so the probe would import production's logic instead of mirroring it
+— while the entire rate-limiting class sat duplicated seven times a hundred lines
+above.
+
+---
+
+## LR-113 — Never Infer Provider Health From Low Consumption (LENS-029)
+
+**Type**: Engineering | **Added**: LENS-029 | **Status**: RATIFIED | **Origin**: LENS-029
+
+Failed calls consume no quota. A dead model therefore shows the LOWEST usage and
+reads as the HEALTHIEST provider on the board.
+
+Absence of usage and absence of capability are indistinguishable on a usage meter.
+Read call outcomes, not quota headroom.
+
+Lens example: the pre-flight logged *"Gemini is OK with minimal RPD usage, which
+is a GO"* about `gemini-2.0-flash`, shut down since 2026-06-01. The 429 body read
+`limit: 0` on all three quota metrics — a zero allocation, not an exhausted one.
+The corpse looked healthiest precisely because it was dead.
+
+---
+
+## LR-114 — Measure Every Position, Never Project From a Ratio (LENS-029)
+
+**Type**: Process | **Added**: LENS-029 | **Status**: RATIFIED | **Origin**: LENS-029
+
+Two data points make a ratio, not a law. Probe every position on its own real
+prompt before sizing its budget.
+
+Lens example: `s2gap` and `s2a_injection` both showed roughly a 4.5x completion
+increase moving from llama-3.3-70b to gpt-oss-120b, because gpt-oss is a reasoning
+model and Groq folds reasoning into `completion_tokens` with no separate field.
+Projecting that ratio onto `lens1` predicted it needed ~2,900 tokens. Measured, it
+peaks at ~1,104 and passes unchanged at 2,400. The same projection would also have
+missed that `s3a_patterns` needed a different **provider** entirely, not a bigger
+budget.
+
+---
+
+## LR-115 — Perishable Evidence Commits Immediately (LENS-029)
+
+**Type**: Process | **Added**: LENS-029 | **Status**: RATIFIED | **Origin**: LENS-029
+
+Evidence that cannot be re-created gets its own commit the moment it exists — not
+at the end of the arc.
+
+Lens example: the llama-3.3-70b baselines are unrepeatable after 2026-08-16. After
+their probe run they sat modified-but-unstaged in `probe_results.jsonl`, existing
+only on one local disk. Bank first, continue second.
