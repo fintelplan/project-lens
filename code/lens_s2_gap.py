@@ -29,13 +29,13 @@ from lens_quota_guard import guard_check_with_fallback
 
 # ── Response schema validator (I2) ────────────────────────────────────────────
 from lens_response_guard import validate_parsed_response, format_validation_for_log
+from lens_models import assert_model_known, fit_max_tokens, wire
 
 logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S2-GAP] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("S2-GAP")
 
-MODEL   = "llama-3.3-70b-versatile"
-MAX_TOKENS = 1500
+PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2gap")
 
 SYSTEM_PROMPT = """You are S2-GAP: Gap Analyst for Project Lens.
 
@@ -106,9 +106,9 @@ def get_supabase() -> Client:
 
 
 def get_groq():
-    key = os.environ.get("GROQ_S2DGCOM_API_KEY") or os.environ.get("GROQ_API_KEY", "")
+    key = os.environ.get(KEY_ENV, '')
     if not key:
-        raise RuntimeError("GROQ_S2_API_KEY missing")
+        raise RuntimeError(KEY_ENV + " missing")
     return Groq(api_key=key)
 
 
@@ -181,16 +181,20 @@ def build_gap_prompt(s1_reports: list, s2d: Optional[dict]) -> str:
 
 
 def call_groq(client: Groq, prompt: str) -> Optional[dict]:
+    prompt_chars = len(SYSTEM_PROMPT) + len(prompt)
+    max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
     for attempt in range(1, 4):
         try:
-            log.info(f"Calling {MODEL} (attempt {attempt}/3)")
+            log.info(f"S2-GAP calling {PROVIDER}/{MODEL} (attempt {attempt}/3, "
+                     f"prompt {prompt_chars} chars, max_tokens {max_tokens})")
+            assert_model_known(PROVIDER, MODEL)
             resp = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": prompt},
                 ],
-                max_tokens=MAX_TOKENS,
+                max_tokens=max_tokens,
                 temperature=0.3,
             )
             raw = resp.choices[0].message.content.strip()
