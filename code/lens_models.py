@@ -194,11 +194,16 @@ ROLES = {
     },
     # ---- S3 family ----
     "s3a_patterns": {
-        "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_S3_API_KEY", "max_out": 2500,
+        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
+        "key_env": "CEREBRAS_API_KEY", "max_out": 5000,
         "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
         "fb_key_env": "GROQ_S3_API_KEY",
-        "note": "was hardcoded llama-3.3-70b-versatile at L61",
+        "note": "CC-12 (LENS-029): moved to Cerebras. On Groq gpt-oss-120b its"
+                " 19,263-char prompt left fit_max_tokens only 939 tokens and all 3"
+                " probe trials returned finish=length with invalid JSON, one of them"
+                " zero characters. Cerebras TPM 30,000 -> probed 3/3 stop/valid-JSON"
+                " at 26-34%%. WARNING: the groq gpt-oss-20b fallback inherits max_out"
+                " and hits the same 939-token ceiling -- it is broken and unprobed",
     },
     "s3b_history": {
         "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
