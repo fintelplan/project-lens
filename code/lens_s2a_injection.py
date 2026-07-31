@@ -31,6 +31,7 @@ from lens_quota_guard import guard_check_with_fallback
 
 # ── Response schema validator (I2) ────────────────────────────────────────────
 from lens_response_guard import validate_parsed_response, format_validation_for_log
+from lens_models import assert_model_known, fit_max_tokens, wire
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -41,8 +42,8 @@ logging.basicConfig(
 log = logging.getLogger("s2a")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "llama-3.3-70b-versatile"
-MAX_TOKENS       = 1800
+PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2a_injection")
+MAX_TOKENS       = 1800   # fallback path only (Mistral); primary fits from the registry
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 8
@@ -133,7 +134,9 @@ def get_supabase() -> Client:
 def get_groq() -> Groq:
     # GROQ_S2A_API_KEY = dedicated S2-A account (isolated quota, LENS-022)
     # Falls back to GROQ_S2_API_KEY if not set
-    key = os.environ.get("GROQ_S2A_API_KEY") or os.environ["GROQ_S2_API_KEY"]
+    key = os.environ.get(KEY_ENV, "")
+    if not key:
+        raise RuntimeError(KEY_ENV + " missing")
     return Groq(api_key=key)
 
 
@@ -206,18 +209,28 @@ def call_injection_tracer(client, report: dict, replaced_phrases: list[str], mod
         f"{replaced_note}\n\nReturn JSON only."
     )
 
+    prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
+    if model is None:
+        max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
+        wire_label = PROVIDER + "/" + MODEL
+    else:
+        max_tokens = MAX_TOKENS
+        wire_label = "mistral/" + model
     _tpm.wait_if_needed(2000, label="S2-A")
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            log.info(f"S2-A calling model for {lens_name} (attempt {attempt})")
+            log.info(f"S2-A calling {wire_label} for {lens_name} (attempt {attempt}, "
+                     f"prompt {prompt_chars} chars, max_tokens {max_tokens})")
+            if model is None:
+                assert_model_known(PROVIDER, MODEL)
             response = client.chat.completions.create(
                 model=model or MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user",   "content": user_message},
                 ],
-                max_tokens=MAX_TOKENS,
+                max_tokens=max_tokens,
                 temperature=TEMPERATURE,
             )
             if response.usage:
