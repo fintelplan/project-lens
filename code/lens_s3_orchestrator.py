@@ -18,13 +18,16 @@ Session: LENS-010 (S3-E added)
 
 import sys, traceback
 from datetime import datetime, timezone
+from lens_models import limits_for, GROQ_GPT_OSS_120B
 
 RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
 
 
 
-def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
-    """1-token test call to Groq. Returns True if quota >= threshold."""
+def check_groq_tpm(api_key_env: str, threshold: int, label: str) -> bool:
+    """1-token test call to Groq. Reads x-ratelimit-remaining-tokens, which is a
+    PER-MINUTE counter -- CC-16 renamed this from check_groq_tpd because the old
+    name invited a per-DAY threshold that the per-minute window could never pass."""
     import requests, os
     from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
@@ -39,7 +42,7 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
             timeout=10
         )
         if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
-            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPM check is BLIND'
                   % (label, r.status_code))
             return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
@@ -52,8 +55,10 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
         print(f'[PRE-FLIGHT] {label}: check failed ({e}) — proceeding anyway')
         return True
 
-def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
-    """1-token test call to Groq. Returns True if quota >= threshold."""
+def check_groq_tpm(api_key_env: str, threshold: int, label: str) -> bool:
+    """1-token test call to Groq. Reads x-ratelimit-remaining-tokens, which is a
+    PER-MINUTE counter -- CC-16 renamed this from check_groq_tpd because the old
+    name invited a per-DAY threshold that the per-minute window could never pass."""
     import requests, os
     from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
@@ -68,7 +73,7 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
             timeout=10
         )
         if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
-            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPM check is BLIND'
                   % (label, r.status_code))
             return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
@@ -107,7 +112,9 @@ def main():
     results = {}
 
     # ── Pre-flight: Groq S3 quota check ──────────────────────────────────────
-    if not check_groq_tpd("GROQ_S3_API_KEY", 6000, "S3"):
+    _PF_TPM = (limits_for('groq', GROQ_GPT_OSS_120B) or {}).get('TPM')
+    _PF_MIN = max(1000, int(_PF_TPM * 0.25)) if _PF_TPM else 2000
+    if not check_groq_tpm("GROQ_S3_API_KEY", _PF_MIN, "S3"):
         sys.exit(0)
 
 

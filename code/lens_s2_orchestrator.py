@@ -28,14 +28,17 @@ import traceback
 import logging
 log = logging.getLogger("S2-ORC")
 from datetime import datetime, timezone
+from lens_models import limits_for, GROQ_GPT_OSS_120B
 
 # ── Shared run identity ───────────────────────────────────────────────────────
 RUN_ID = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
 
 
 
-def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
-    """1-token test call to Groq. Returns True if quota >= threshold."""
+def check_groq_tpm(api_key_env: str, threshold: int, label: str) -> bool:
+    """1-token test call to Groq. Reads x-ratelimit-remaining-tokens, which is a
+    PER-MINUTE counter -- CC-16 renamed this from check_groq_tpd because the old
+    name invited a per-DAY threshold that the per-minute window could never pass."""
     import requests, os
     from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
@@ -50,7 +53,7 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
             timeout=10
         )
         if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
-            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPM check is BLIND'
                   % (label, r.status_code))
             return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
@@ -63,8 +66,10 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
         print(f'[PRE-FLIGHT] {label}: check failed ({e}) — proceeding anyway')
         return True
 
-def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
-    """1-token test call to Groq. Returns True if quota >= threshold."""
+def check_groq_tpm(api_key_env: str, threshold: int, label: str) -> bool:
+    """1-token test call to Groq. Reads x-ratelimit-remaining-tokens, which is a
+    PER-MINUTE counter -- CC-16 renamed this from check_groq_tpd because the old
+    name invited a per-DAY threshold that the per-minute window could never pass."""
     import requests, os
     from lens_models import GROQ_GPT_OSS_120B as PREFLIGHT_MODEL
     key = os.environ.get(api_key_env, '')
@@ -79,7 +84,7 @@ def check_groq_tpd(api_key_env: str, threshold: int, label: str) -> bool:
             timeout=10
         )
         if r.status_code != 200 or 'x-ratelimit-remaining-tokens' not in r.headers:
-            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPD check is BLIND'
+            print('[PRE-FLIGHT] %s: ALARM http=%s no quota header -- TPM check is BLIND'
                   % (label, r.status_code))
             return True
         remaining = int(r.headers.get('x-ratelimit-remaining-tokens', 999999))
@@ -124,11 +129,14 @@ def main():
     results = {}
 
     # -- Pre-flight: Groq quota check per key (LENS-022 LR-094)
-    # S2-A: dedicated GROQ_S2A_API_KEY (isolated 100K TPD)
-    # S2-E/GAP: shared GROQ_S2_API_KEY
-    s2a_ok = check_groq_tpd('GROQ_S2A_API_KEY', 8000, 'S2-A dedicated')
-    s2_shared_ok = check_groq_tpd('GROQ_S2_API_KEY', 8000, 'S2 shared')
-    if not s2a_ok and not s2_shared_ok:
+    # S2-A: dedicated GROQ_S2A_API_KEY. S2-GAP: GROQ_S2DGCOM_API_KEY (CC-15).
+    # S2-E moved to Cerebras (D-016) and is not covered by this Groq check.
+    # Threshold derives from the registry (LR-108): 25% of the pair's TPM.
+    _PF_TPM = (limits_for('groq', GROQ_GPT_OSS_120B) or {}).get('TPM')
+    _PF_MIN = max(1000, int(_PF_TPM * 0.25)) if _PF_TPM else 2000
+    s2a_ok = check_groq_tpm('GROQ_S2A_API_KEY', _PF_MIN, 'S2-A dedicated')
+    s2gap_ok = check_groq_tpm('GROQ_S2DGCOM_API_KEY', _PF_MIN, 'S2-GAP')
+    if not s2a_ok and not s2gap_ok:
         print('[PRE-FLIGHT] Both keys exhausted -- clean skip')
         sys.exit(0)
 
