@@ -502,6 +502,16 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     guard = TPMGuard(provider=PROVIDER, model=MODEL)  # TPM from registry (CC-1c)
 
     for i, report in enumerate(reports):
+        # CC-18 (LENS-030): the stagger moved from the loop TAIL to its HEAD and
+        # lost its `if i < len-1` guard, so the FIRST call waits too. Before this,
+        # S2-E's first call fired ~8s after S2-D's last batch: S2-D reserved
+        # ~22,707 tokens and S2-E's 19,067 landed in the same minute = 41,774
+        # against Cerebras' 30,000 TPM, producing 3 recovered 429s in wave 8.
+        # S2-E alone reserves 64% of the window, so no ordering fits an S2-D
+        # batch and an S2-E call in one minute -- they must be separate minutes.
+        # Cross-position spacing cannot live in the per-position TPMGuard (LR-112).
+        log.info(f"Stagger {STAGGER_SLEEP}s before call {i+1} (Cerebras TPM/RPM spacing)...")
+        time.sleep(STAGGER_SLEEP)
         log.info(f"Processing {i+1}/{len(reports)}: {report.get('domain_focus')}")
 
         analysis = call_legitimacy_filter(client, report, guard)
@@ -524,13 +534,6 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             "gap_signal":    analysis.get("legitimacy_gap_signal", "none"),
         })
 
-        if i < len(reports) - 1:
-            # CC-1c: ~65s between S2-E's sequential calls. Four calls at
-            # ~12,000 tokens each is ~48,000 -- far past Cerebras' 30,000 TPM
-            # if they share a minute. Also clears the RPM-5 floor (~12s) and
-            # the console's short-interval enforcement warning.
-            log.info(f"Stagger {STAGGER_SLEEP}s (Cerebras TPM/RPM spacing)...")
-            time.sleep(STAGGER_SLEEP)
 
     elapsed = round(time.time() - start, 1)
 
