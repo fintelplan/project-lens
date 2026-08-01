@@ -9,51 +9,56 @@
 | Operator | James Maverick ("Bro Alpha") — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7. Lens is his SOLO project; "Team Geeks" is GNI only |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth is the push output or `git ls-remote` (LR-104), never `git status` |
-| Last known commit | **20c3b99** — verify with ls-remote at open |
+| Last known commit | **64ef2df** — verify with ls-remote at open |
 | Clocks | **Aug 9** keyfile · **Aug 12** internal: every position certified ×2 · **Aug 16** Groq decommissions llama-3.3-70b-versatile + llama-3.1-8b-instant · **~Oct 10** gemini-2.5-flash registry edit (dies Oct 16) |
 | Doc map | contract > this brief > recollection. Decisions: `LENS_LCLIFF_DECISIONS.md`. Blocks: `LENS_LCLIFF_BUILD_PLAN.md`. Registry spec: `LENS_REGISTRY_SPEC.md`. Bugs: `LENS_KNOWN_BUGS.md`. Ritual: `LENS_SESSION_PROTOCOL.md` |
 
 ---
 
-## Part 0 — FIRST ACTION: verify CC-16 in the next wave
+## Part 0 — FIRST ACTION: verify CC-18 killed the Cerebras 429s
 
-**S2-GAP is FIXED and verified.** Wave 7 (MA #245, 2026-08-01 04:53–05:12 UTC, log `83216818417`): `S2-GAP COMPLETE, saved=YES, severity=HIGH, 6.8s, first attempt` on `groq/openai/gpt-oss-120b` via `GROQ_S2DGCOM_API_KEY`. CC-15 confirmed in production; the LR-116 incident is closed.
+**Wave 8 (MA #246, 2026-08-01 14:44–15:07 UTC, log `83267465221`) verified CC-16 — both pre-flight defects are closed.** The `S2 shared: ALARM http=401` line is gone, a real `[PRE-FLIGHT] S2-GAP: 7,927 tokens remaining (threshold=2,000)` line appears, `S2-A dedicated` now PASSES instead of declaring a skip it could not enforce, and S3 reads `threshold=2,000` too. Every position COMPLETE. Misalignment 0, tracebacks 0.
 
-**Every position COMPLETE** — S2-A, S2-B, S2-C, S2-D, S2-GAP, S2-E, MA, S3-B. Budgets 21/27/34/34/37/37/38, all well under 60%. **Cerebras 7 POSTs + 4 `tcp_warming`, all 200, zero 429s** — the eight-consumer key has now held two waves. Misalignment 0, tracebacks 0. S3-A `SKIPPED` correctly on daily cadence (it ran ~13h earlier).
-
-### CC-16 (`20c3b99`) fixed both pre-flight defects — VERIFY THEM
-
-**Expect in the next wave:** NO `S2 shared: ALARM http=401` line at all · a new `[PRE-FLIGHT] S2-GAP: N tokens remaining (threshold=2,000)` line · and `S2-A dedicated` PASSING instead of printing "quota too low — clean skip".
-
-What was wrong, for the record — both in `lens_s2_orchestrator.py`
-
-**1. A vestigial pre-flight alarming on a dead key.** `[PRE-FLIGHT] S2 shared: ALARM http=401 no quota header -- TPD check is BLIND` still fires every wave. The orchestrator probes `GROQ_S2_API_KEY`, whose Actions secret is invalid — **and after CC-15 no position uses that key at all.** The check is now pure noise, and noise that cries wolf trains you to ignore a real alarm. **Fixed in CC-16:** the S2 pre-flight now probes `GROQ_S2A_API_KEY` and `GROQ_S2DGCOM_API_KEY` — the keys positions actually use — and the stale comment claiming "S2-E/GAP: shared GROQ_S2_API_KEY" is corrected (S2-E is on Cerebras, S2-GAP on DGCOM).
-
-**2. A skip verdict nobody honours.** `[PRE-FLIGHT] S2-A dedicated: 7,927 tokens remaining (threshold=8,000) — quota too low — clean skip (exit 0)` — **and then S2-A made 16 calls.** Two bugs in one line: the threshold equals gpt-oss-120b's entire per-minute TPM so it can essentially never pass, and the caller ignores the `False` return anyway. The root cause is that `check_groq_tpd` reads the per-MINUTE header `x-ratelimit-remaining-tokens` while being named and thresholded as a per-DAY check. llama-3.3-70b's 12,000 TPM hid this; gpt-oss-120b's 8,000 exposed it.
-
-**Correction worth keeping:** the verdict IS honoured — but the guard needs BOTH keys to fail (`if not s2a_ok and not s2gap_ok: sys.exit(0)`). S2-A's `False` was outvoted by the dead shared key, whose 401 path returns `True` by CC-8's deliberate fail-open. **A dead key was casting a healthy vote**, so the AND could essentially never fire. Two fail-opens stacked on an AND.
-
-**Fixed in CC-16:** `check_groq_tpd` renamed `check_groq_tpm` (all four copies) with a docstring stating it reads the PER-MINUTE `x-ratelimit-remaining-tokens`; the threshold now derives from the registry as 25% of the pair's TPM — `max(1000, int(limits_for('groq', GROQ_GPT_OSS_120B)['TPM'] * 0.25))` = 2,000 — replacing the hardcoded 8,000 (S2) and 6,000 (S3). **The AND itself is deliberately unchanged:** with two live keys it is correct, and making a dormant check newly effective in the same commit that fixes its inputs would be two behaviour changes wearing one hat.
-
-### Also live, lower priority
-
-- **1 JSON parse error, recovered.** S2-A attempt 1: `Expecting ',' delimiter: line 8 column 22 (char 168)`. **Char 168 is early in the output — this is malformed JSON mid-generation, NOT the truncation tell** (truncation fails at the end of the buffer). Attempt 2 recovered. Watch whether gpt-oss-120b produces malformed JSON more often than llama-3.3-70b did.
-- **2 recovered Groq 429s**, consistent with wave 6. S2-A made **16 calls** this wave; at max_out 4,600 that is the pressure source against Groq's 8,000 TPM.
-
-### Standing wave-read checklist
+**But wave 8 brought 3 Cerebras 429s — the first since cert 2 — and CC-18 is the fix. It has not yet run.**
 
 ```
 gh run list -R fintelplan/project-lens -w "Lens Manager + Analyze" -L 2
 gh run view PASTE_NUMERIC_ID -R fintelplan/project-lens --log > /tmp/ma.log && wc -l /tmp/ma.log
-grep -aiE "(S2-A|S2-GAP|S3-A|S2-D|S2-E|MA) calling" /tmp/ma.log
+grep -a "Stagger" /tmp/ma.log
+grep -ah 'api\.cerebras\.ai/v1/chat' /tmp/ma.log | grep -oE '"HTTP/[0-9.]+ [0-9]{3}' | sort | uniq -c
+grep -aiE "(S2-D|S2-E) calling cerebras" /tmp/ma.log
+grep -a "PRE-FLIGHT" /tmp/ma.log
 grep -aoE "budget_used=[0-9]+%" /tmp/ma.log | sort | uniq -c
 grep -ah 'api\.groq\.com' /tmp/ma.log | grep -oE 'POST [^ ]+ "HTTP/[0-9.]+ [0-9]{3}' | sort | uniq -c
-grep -ah 'api\.cerebras\.ai' /tmp/ma.log | grep -oE '(GET|POST) [^ ]+ "HTTP/[0-9.]+ [0-9]{3}' | sort | uniq -c
-grep -a "PRE-FLIGHT" /tmp/ma.log
 grep -aic "JSON parse error" /tmp/ma.log
 grep -ac "REGISTRY_MISALIGNMENT" /tmp/ma.log
 grep -aciE "Traceback|LensModelRegistryError" /tmp/ma.log
 ```
+
+**PASS = zero Cerebras 429s, a new `Stagger 65s before call 1` line, and S2-E's first call ~65s after S2-D's last batch.**
+
+### Why the 429s happened, and why the obvious fixes do not work
+
+The colliding minute in wave 8:
+
+```
+14:58:54  S2-D batch 1   reserves ~11,789   200
+14:58:55  S2-D batch 2   reserves ~10,918   200      <- both inside ONE second
+14:59:03  S2-E call 1    reserves ~19,067   429      <- ~41,774 vs TPM 30,000
+```
+
+**S2-E's single call reserves 64% of the entire per-minute window**, leaving 10,933 — and S2-D's batch 1 alone is 11,789. **There is no ordering that fits an S2-D batch and an S2-E call in the same minute; they must occupy separate minutes.**
+
+- **Spacing S2-D's batches does not work.** `11,789 + 19,067 = 30,856` — still over 30,000. Checked, rejected.
+- **Cutting S2-E's `max_out` does not work.** Its peak completion in wave 8 was 8,160 tokens; at 12,000 that is 68%, a D-017 breach. It would trade a recoverable 429 for a possible truncation. The budget is right; the spacing was wrong.
+- **A second Cerebras key is not available.** `CEREBRAS_02_API_KEY` returns **HTTP 402 `payment_required`** — and it was created under a *separate email account*, so this is not account-linking. **Cerebras appears to have closed its free tier to new signups; a third account would very likely 402 the same way.** Probe evidence banked in `0e067dd`. **Any additional Cerebras capacity now costs money, and the project runs at zero budget.**
+- **CC-18 is what shipped:** S2-E's `STAGGER_SLEEP = 65` moved from the loop tail to its head, dropping the `if i < len(reports) - 1` guard so the *first* call waits too. One extra sleep per wave (~+65s on a 23-minute run, against a 35-minute timeout). The guard and S2-D are deliberately untouched — cross-position spacing cannot live in a per-position `TPMGuard` (LR-112), and rebuilding that is the unification arc, not a contention patch.
+
+### Also live, lower priority
+
+- **The same JSON parse error, now twice.** S2-A attempt 1, both waves: `Expecting ',' delimiter: line 8 column 22 (char 168)`. **Char 168 is early in the output — malformed JSON mid-generation, NOT the truncation tell** (truncation fails at the end of the buffer). Both recovered on retry. **Two waves running makes this a gpt-oss-120b trait worth tracking, not a fluke.**
+- **3 recovered Groq 429s** in wave 8. S2-A at `max_out` 4,600 cannot make two calls in one minute against Groq's 8,000 TPM.
+- Under the split bar wave 8 PASSES — every 429 recovered, every position COMPLETE, zero rows lost — **but 3 on each provider sits exactly at the >3/wave investigate threshold. That trigger fired; CC-18 is the response.**
 
 Then LR-080:
 ```
@@ -92,7 +97,10 @@ curl -s "$SUPABASE_URL/rest/v1/injection_reports?order=created_at.desc&limit=8&s
 | `03461b7` | CC-15 — s2gap key reverted after wave 6 failed |
 | `2381803` | brief updated with the wave-6 incident |
 | `949e8b8` | LR-116 appended to the register |
-| `20c3b99` | **CC-16 — pre-flight fixes. HEAD** |
+| `20c3b99` | CC-16 — pre-flight fixes |
+| `188cf87` | brief through wave 7 |
+| `0e067dd` | CEREBRAS_02 402 probe banked |
+| `64ef2df` | **CC-18 — S2-E first-call stagger. HEAD** |
 
 Working tree clean at close: fifteen scratch files removed (fourteen one-shot `patch_*.py` scripts plus `s3f_dump.txt`, a dead dump from 2026-05-26 that had been an LR-093 cleanup candidate twice).
 
@@ -214,7 +222,7 @@ Silent degrade remains this project's signature failure, and this session found 
 
 ## Part 7 — LIVE vs BANKED
 
-**LIVE — verified by bytes, ~90%:** head `949e8b8` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement · 27 rules in `lens-DOC-002_rules.md` · **wave 6: S3-A COMPLETE in 4.0s on Cerebras, S2-GAP failed on three 401s** · **wave 7: S2-GAP COMPLETE first attempt after CC-15, all positions COMPLETE, Cerebras zero 429s across two consecutive waves** · CC-16's derived threshold verified locally at 2,000 with COMPILE_OK and IMPORT_OK.
+**LIVE — verified by bytes, ~90%:** head `949e8b8` and every SHA in Part 1 · certification of S2-D/S2-E/MA across waves 4 and 5 with LR-080 confirmation on both · every Groq position's real budget, measured on real prompts · the Cerebras meter table read from response headers · the Groq 404 fail-open behaviour, tested with a bogus model name · seven divergent TPMGuard copies with line counts · BUG-001's 44-batched-23-sent measurement · 27 rules in `lens-DOC-002_rules.md` · **wave 6: S3-A COMPLETE in 4.0s on Cerebras, S2-GAP failed on three 401s** · **wave 7: S2-GAP COMPLETE first attempt after CC-15** · **wave 8: CC-16 verified — no 401 alarm, real S2-GAP pre-flight line, S2-A passing; but 3 Cerebras + 3 Groq 429s, all recovered** · **`CEREBRAS_02_API_KEY` returns 402 payment_required 3/3, from a separate email account.**
 
 **BANKED — true when written, re-verify before acting, ~40%:** the three role-less files' shape · entity_extract and ai5_watchdog's fixture difficulty · the Gemini 3.x model roster · the S2-F Cloudflare picture · everything in Part 5.
 
