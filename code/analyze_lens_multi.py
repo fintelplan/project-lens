@@ -55,7 +55,7 @@ LENSES = [
     {
         "lens_id":    1,
         "lens_name":  "Foundation",
-        "model":      "qwen/qwen3-32b",
+        "model":      "openai/gpt-oss-120b",
         "provider":   "groq",
         "api_key_env": "GROQ_API_KEY",
         "perspective": "GCSP human rights — who is blocked from growing freely?",

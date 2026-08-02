@@ -75,7 +75,7 @@ ROLES = {
         "key_env": "GROQ_API_KEY", "max_out": 2400,
         "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
         "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "was qwen/qwen3-32b (dead 2026-07-17); ran on dying 70b fallback",
+        "note": "was qwen/qwen3-32b (dead 2026-07-17); call site ran NO fallback -- lens1 produced nothing Jul 17 to Aug 2, see S1-001",
     },
     "lens2": {
         "provider": "gemini", "model": GEMINI_25_FLASH,
