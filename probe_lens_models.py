@@ -477,6 +477,104 @@ def fixture_s3a_patterns() -> Fixture:
         },
     )
 
+def fixture_compendium_intro() -> Fixture:
+    """Rebuild the Compendium intro's real prompt.
+
+    Mirrors run_compendium(): six DB fetches, six build_sectionN calls, then
+    the exact slice production passes -- sections[:2] only (HOW SHAPED and
+    Entities), NOT all six. synthesize_intro truncates at 3000 chars, so the
+    detail block records the joined length before and after truncation.
+
+    Known duplication: the short user wrapper is an inline f-string at the
+    call site, so it is reconstructed here. The system prompt is imported.
+    """
+    import lens_compendium as lc
+
+    sb = lc.get_supabase()
+    injections  = lc.fetch_s2_injection_detail(sb)
+    entities    = lc.fetch_entities(sb)
+    s2f         = lc.fetch_s2f_data(sb)
+    s3          = lc.fetch_s3_all(sb)
+    trend       = lc.fetch_7day_trend(sb)
+    predictions = lc.fetch_predictions(sb)
+
+    sections = [
+        lc.build_section1(injections),
+        lc.build_section2(entities),
+        lc.build_section3(s2f),
+        lc.build_section4(s3),
+        lc.build_section5(trend),
+        lc.build_section6(predictions),
+    ]
+
+    joined = "\n\n".join(sections[:2])
+    if not joined.strip():
+        raise ProbeError(
+            "Compendium fixture: sections 1-2 are empty. Cannot build the "
+            "real prompt -- refusing to invent one."
+        )
+
+    user_prompt = (
+        "Based on this data summary, write the 3-sentence intro:\n\n"
+        + joined[:3000]
+    )
+
+    return Fixture(
+        system=lc.INTRO_SYSTEM_PROMPT,
+        user=user_prompt,
+        requires_json=False,
+        temperature=0.2,
+        origin="live-rebuild:lens_compendium",
+        detail={
+            "section_chars": [len(s) for s in sections],
+            "joined_1_2_chars": len(joined),
+            "sent_chars": len(joined[:3000]),
+            "truncation_bit": len(joined) > 3000,
+            "s2_findings": len(injections),
+            "entities": len(entities),
+        },
+    )
+
+
+def fixture_regular_report() -> Fixture:
+    """Rebuild the Regular Report's real prompt.
+
+    Mirrors run_regular_report(): fetch S1 reports, S3 reports and references,
+    then build_prompt(), which returns a (system_prompt, user_msg) TUPLE
+    despite its '-> str' annotation.
+    """
+    import lens_regular_report as lrr
+
+    sb = lrr.get_supabase()
+    s1_reports = lrr.fetch_s1_reports(sb)
+    s3_reports = lrr.fetch_s3_reports(sb)
+    references = lrr.fetch_references(sb)
+
+    if not s1_reports:
+        raise ProbeError(
+            "Regular Report fixture: no S1 reports in DB. Production returns "
+            "SKIPPED here, so a prompt built now is one it never sends."
+        )
+
+    system_prompt, user_msg = lrr.build_prompt(
+        s1_reports, s3_reports, references)
+
+    return Fixture(
+        system=system_prompt,
+        user=user_msg,
+        requires_json=False,
+        temperature=lrr.TEMPERATURE,
+        origin="live-rebuild:lens_regular_report",
+        detail={
+            "s1_reports": len(s1_reports),
+            "s3_reports": len(s3_reports),
+            "references": len(references),
+            "system_chars": len(system_prompt),
+            "user_chars": len(user_msg),
+        },
+    )
+
+
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
     "lens1": fixture_lens1,
@@ -485,6 +583,8 @@ FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2e_legitimacy": fixture_s2e_legitimacy,
     "s2gap": fixture_s2gap,
     "s3a_patterns": fixture_s3a_patterns,
+    "compendium_intro": fixture_compendium_intro,
+    "regular_report": fixture_regular_report,
 }
 
 
