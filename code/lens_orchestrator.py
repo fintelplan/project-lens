@@ -294,8 +294,18 @@ class LensResult:
     report_id:str=""; error:str=""; error_type:str=""
     repair_attempts:int=0; fallback_used:bool=False; skip_reason:str=""
 
-def _parse_quality(out):
+def _parse_quality(out, lens_id=None):
+    # CC-24: the child ignores --single-lens and runs ALL FOUR lenses per
+    # invocation, so the old first-match parse returned lens 1's score
+    # under every label -- the healing gate then re-ran four lenses on the
+    # wrong lens's number. Match this lens's own marker line instead.
     import re
+    if lens_id is not None:
+        m=re.search(r"LENS_QUALITY lens_id=%d quality=([0-9.]+)" % lens_id, out)
+        if m:
+            return float(m.group(1))
+        log.warning(f"[LENS {lens_id}] LENS_QUALITY marker absent -- "
+                    f"falling back to first-quality parse (CC-24)")
     m=re.search(r"[Qq]uality score[:\s]+([0-9.]+)",out)
     return float(m.group(1)) if m else 0.0
 
@@ -328,7 +338,7 @@ def run_single_lens(lens_id:int, stagger_s:int=0) -> LensResult:
         if result.returncode!=0:
             et,em=_classify_error(out)
             return LensResult(lens_id,status="failed",runtime_s=rt,error=em,error_type=et)
-        return LensResult(lens_id,status="complete",quality=_parse_quality(out),
+        return LensResult(lens_id,status="complete",quality=_parse_quality(out,lens_id),
             runtime_s=rt,report_id=_parse_report_id(out))
     except subprocess.TimeoutExpired:
         return LensResult(lens_id,status="failed",runtime_s=300.0,

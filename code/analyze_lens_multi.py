@@ -1301,6 +1301,9 @@ async def main():
               f"(spec={quality['details'].get('specificity',0):.1f} "
               f"depth={quality['details'].get('signal_depth',0):.1f} "
               f"phi={quality['details'].get('phi002_align',0):.1f})")
+        # CC-24: machine-readable marker so the parent can read THIS
+        # lens's quality instead of whichever printed first.
+        print(f"LENS_QUALITY lens_id={lens_id} quality={quality['total']}")
 
         print(f"\n{'='*60}")
         print(f"LENS {lens_id} — {lens['lens_name'].upper()} ({lens['model']})")
