@@ -45,6 +45,9 @@ GEMINI_25_FLASH_LITE = "gemini-2.5-flash-lite"
 # Higher-throughput option if a fallback ever needs it: mistral-small-2506
 # (TPM 2,250,000, RPS 5.00). Not wired -- recorded only.
 MISTRAL_SMALL = "mistral-small-2603"
+MISTRAL_SMALL_LATEST = "mistral-small-latest"  # FLOATING alias -- what
+# production actually sets (lens-s2f-scoring.yml, lens_regular_report.py).
+# Can change model without a commit. Pin it when there is time.
 COHERE_CMD_R_PLUS = "command-r-plus-08-2024"
 
 # Budget-fitting constants (D-015). The old GROQ_REQUEST_CEILING = 8192 is gone:
@@ -191,6 +194,25 @@ ROLES = {
         "key_env": "MISTRAL_API_KEY", "max_out": 2400,
         "fb_provider": None, "fb_model": None, "fb_key_env": None,
         "note": "",
+    },
+    "compendium_intro": {
+        "provider": "groq", "model": GROQ_GPT_OSS_120B,
+        "key_env": "GROQ_S2DGCOM_API_KEY", "max_out": 1200,
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "3-sentence exec intro only. Call site shipped max_tokens=200,"
+                " which gpt-oss reasoning ALONE exceeds (236-484 measured on"
+                " lens1) -- the budget must move with the model. Shares"
+                " S2-GAP's dedicated key (LENS-022 quota isolation).",
+    },
+    "regular_report": {
+        "provider": "mistral", "model": MISTRAL_SMALL_LATEST,
+        "key_env": "MISTRAL_API_KEY", "max_out": 4096,
+        "fb_provider": "cerebras", "fb_model": CEREBRAS_GPT_OSS_120B,
+        "fb_key_env": "CEREBRAS_API_KEY",
+        "note": "PROVIDERS is a 3-LEG chain mistral -> cerebras -> groq."
+                " This 2-leg schema cannot express leg 3: groq /"
+                " GROQ_GPT_OSS_120B / GROQ_API_KEY / max_out 4096."
+                " Probe leg 3 with --provider/--model/--key-env overrides.",
     },
     # ---- S3 family ----
     "s3a_patterns": {
