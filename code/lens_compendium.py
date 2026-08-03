@@ -1,7 +1,7 @@
 """
 lens_compendium.py
 Project Lens — Intelligence Compendium (Free Tier)
-Model: Groq llama-3.3-70b-versatile (light synthesis + formatting)
+Model: from registry role "compendium_intro" (LR-105) -- Groq openai/gpt-oss-120b
 Schedule: 1x daily at 02:30 UTC (10:30 PM DC EDT)
 Cost: $0/run
 
@@ -25,6 +25,8 @@ import tempfile
 import time
 from datetime import datetime, timedelta, timezone
 
+from lens_models import wire, assert_model_known
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [COMPENDIUM] %(levelname)s %(message)s",
@@ -38,6 +40,14 @@ MAX_TOKENS     = 3000
 TEMPERATURE    = 0.2
 MAX_RETRIES    = 3
 CAPTION_CAP    = 950
+
+# LR-105: model, key env and output budget all flow from the registry.
+_PROVIDER, _MODEL, _KEY_ENV, _MAX_OUT = wire("compendium_intro")
+# assert at MODULE scope, not at the call site: synthesize_intro runs
+# inside a try/except that returns a canned sentence, so a call-site
+# assert would be swallowed by the zero-failure guard and a misalignment
+# would degrade silently. One request in this file, so coverage is equal.
+assert_model_known(_PROVIDER, _MODEL)
 
 # Intro synthesis system prompt -- module scope so the probe fixture can
 # import it instead of keeping a second copy (fixtures import prompts,
@@ -72,7 +82,13 @@ def get_supabase():
 
 def get_groq():
     from groq import Groq
-    key = os.environ.get("GROQ_S2DGCOM_API_KEY") or os.environ["GROQ_API_KEY"]
+    # LENS-022 wired a silent `or GROQ_API_KEY` net here. Reversed for the
+    # same reason CC-10 and CC-14 reversed it at s2gap and s2a: a silent
+    # key fallback means the log never says which key ran (LR-116).
+    key = os.environ.get(_KEY_ENV)
+    if not key:
+        raise RuntimeError(
+            "%s not set (registry role compendium_intro)" % _KEY_ENV)
     return Groq(api_key=key)
 
 
@@ -512,7 +528,7 @@ def synthesize_intro(sections_text: str) -> str:
     try:
         client = get_groq()
         resp = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=_MODEL,
             messages=[
                 {"role": "system", "content": INTRO_SYSTEM_PROMPT},
                 {"role": "user", "content": (
@@ -520,7 +536,7 @@ def synthesize_intro(sections_text: str) -> str:
                     f"{sections_text[:3000]}"
                 )},
             ],
-            max_tokens=200,
+            max_tokens=_MAX_OUT,
             temperature=0.2,
             timeout=60,
         )
