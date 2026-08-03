@@ -177,6 +177,21 @@ Return ONLY valid JSON. No preamble. No markdown fences. Format:
 If no quoted experts found, return {"experts": []}."""
 
 
+def build_user_msg(title: str, body: str, source_name: str) -> str:
+    """The exact user message sent to the LLM.
+
+    Module scope so the probe fixture can import it instead of keeping a
+    second copy (fixtures import prompts, they never duplicate them).
+    Pure move -- no behaviour change.
+    """
+    return (
+        f"Source: {source_name}\n"
+        f"Title: {title}\n"
+        f"--- ARTICLE BODY ---\n{body}\n--- END ---\n\n"
+        "Return JSON only."
+    )
+
+
 def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[dict]:
     """Call Groq llama-3.3-70b to extract quoted experts. Returns list, never None."""
     try:
@@ -192,12 +207,7 @@ def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[di
         return []
 
     client = Groq(api_key=api_key)
-    user_msg = (
-        f"Source: {source_name}\n"
-        f"Title: {title}\n"
-        f"--- ARTICLE BODY ---\n{body}\n--- END ---\n\n"
-        "Return JSON only."
-    )
+    user_msg = build_user_msg(title, body, source_name)
 
     try:
         resp = client.chat.completions.create(
