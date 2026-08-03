@@ -39,6 +39,15 @@ TEMPERATURE    = 0.2
 MAX_RETRIES    = 3
 CAPTION_CAP    = 950
 
+# Intro synthesis system prompt -- module scope so the probe fixture can
+# import it instead of keeping a second copy (fixtures import prompts,
+# never duplicate them).
+INTRO_SYSTEM_PROMPT = (
+    "You are Project Lens. Write a 3-sentence executive introduction "
+    "for today's Intelligence Compendium. Concise, intelligence-briefing "
+    "tone. No predictions. PHI-003: use Office names (Xi Office, Trump Office etc)."
+)
+
 
 # ── Guard: Preflight ──────────────────────────────────────────────────────────
 def preflight_check() -> bool:
@@ -505,11 +514,7 @@ def synthesize_intro(sections_text: str) -> str:
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": (
-                    "You are Project Lens. Write a 3-sentence executive introduction "
-                    "for today's Intelligence Compendium. Concise, intelligence-briefing "
-                    "tone. No predictions. PHI-003: use Office names (Xi Office, Trump Office etc)."
-                )},
+                {"role": "system", "content": INTRO_SYSTEM_PROMPT},
                 {"role": "user", "content": (
                     f"Based on this data summary, write the 3-sentence intro:\n\n"
                     f"{sections_text[:3000]}"
