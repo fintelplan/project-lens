@@ -7,7 +7,9 @@ SUPERSEDES NEXT_SESSION_BRIEF_LENS030.md entirely.
 
 ## PART 0 — FIRST ACTIONS (in this order)
 
-1. [V] `git ls-remote https://github.com/fintelplan/project-lens.git main` -> expect `898cc97`.
+1. [V] `git ls-remote https://github.com/fintelplan/project-lens.git main`. Last CODE commit is
+   `898cc97` (CC-25); HEAD will be this brief's own docs commit or later. A close doc can never
+   name its own SHA -- record what ls-remote says and move on (LR-104).
 2. [V] **CERT CC-24** on the newest Manager+Analyze run:
    - GREEN = 16 rows not 20 in `lens_reports` for the wave window
    - GREEN = the ORCH table shows FOUR DIFFERENT qualities (before CC-24 all four were lens1's)
