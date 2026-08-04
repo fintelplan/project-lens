@@ -162,15 +162,24 @@ def check_cerebras():
         return r.ok,("OK" if r.ok else f"HTTP {r.status_code}")
     except Exception as e: return False,str(e)[:40]
 
+# AI 5 prompts at module scope so the probe fixture IMPORTS them rather than
+# keeping a second copy -- fixtures import prompts, they never duplicate them
+# (CC-25 pattern). Pure move: no behaviour change (CC-28c).
+AI5_SYSTEM_PROMPT="You are AI 5 — Management AI for Project Lens. Analyze system health. Give GO/WARN/STOP verdict. Direct, one line per finding."
+
+def build_ai5_user_msg(ctx):
+    """The exact user message sent to AI 5. Pure move -- byte-identical."""
+    return (f"Budget: {ctx['runs_today']}/{ctx['daily_budget']}\nTrigger: {ctx['trigger']}\n"
+            f"Groq: {ctx['groq_status']}\nGemini: {ctx['gemini_status']}\nCerebras: {ctx['cerebras_status']}\n"
+            f"Lens3 avg: {ctx['lens3_avg']}s  Lens4 stagger: {ctx['lens4_stagger']}s\nVerdict: GO/WARN/STOP")
+
 def get_ai5_verdict(ctx):
     if not GROQ_MANAGER_KEY: return "MANAGER_KEY_MISSING"
     try:
         from groq import Groq
         c=Groq(api_key=GROQ_MANAGER_KEY)
-        sys_p="You are AI 5 — Management AI for Project Lens. Analyze system health. Give GO/WARN/STOP verdict. Direct, one line per finding."
-        user_p=(f"Budget: {ctx['runs_today']}/{ctx['daily_budget']}\nTrigger: {ctx['trigger']}\n"
-                f"Groq: {ctx['groq_status']}\nGemini: {ctx['gemini_status']}\nCerebras: {ctx['cerebras_status']}\n"
-                f"Lens3 avg: {ctx['lens3_avg']}s  Lens4 stagger: {ctx['lens4_stagger']}s\nVerdict: GO/WARN/STOP")
+        sys_p=AI5_SYSTEM_PROMPT
+        user_p=build_ai5_user_msg(ctx)
         resp=c.chat.completions.create(model="llama-3.3-70b-versatile",
             messages=[{"role":"system","content":sys_p},{"role":"user","content":user_p}],
             temperature=0.1,max_tokens=300)
