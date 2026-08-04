@@ -104,11 +104,17 @@ ROLES = {
     # ---- orchestrator watchdog ----
     "ai5_watchdog": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_MANAGER_API_KEY", "max_out": 1600,
+        "key_env": "GROQ_MA_API_KEY", "max_out": 1600,
         "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_MANAGER_API_KEY",
-        "note": "was max_tokens=300 (starvation bomb); key was GROQ_MA_API_KEY"
-                " -- CC-6 wires the provisioned-but-unused GROQ_MANAGER_API_KEY",
+        "fb_key_env": "GROQ_MA_API_KEY",
+        "note": "was max_tokens=300 (starvation bomb). key_env CORRECTED to"
+                " GROQ_MA_API_KEY at CC-28a -- that is what lens_orchestrator.py"
+                " reads (:25) and what lens-manage-analyze.yml supplies (:45,:67)."
+                " GROQ_MANAGER_API_KEY is supplied by NO workflow and read by NO"
+                " code, so the CC-6 intention never shipped; wiring to it would"
+                " have 401d exactly as S2-GAP did (LR-116; CC-15 precedent:"
+                " production wins, the row moves). Sole consumer since MA left"
+                " for Cerebras at 869f368, so LR-094 isolation already holds.",
     },
     # ---- S2 family ----
     "s2a_injection": {
