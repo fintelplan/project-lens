@@ -5,6 +5,13 @@ SUPERSEDES NEXT_SESSION_BRIEF_LENS030.md entirely.
 ## TRUST TAGS
 [V] verified this session by bytes/logs (~90%)  [I] inferred (~50-60%)  [B] banked, unverified (~30-40%)
 
+## DEADLINE
+- [V] James wants ALL of Lens finished by **2026-08-05**. Aug 16 (the Groq
+      llama-3.3-70b decommission) is the BACKSTOP, not the clock. GNI is next.
+- [V] Remaining: 3 strings / 2 positions. entity_extract needs only probe + wire;
+      the AI-5 pair needs one ruling (unify vs keep both), then CC-25 -> fixture
+      -> probe -> wire. Both fit the window.
+
 ## PART 0 — FIRST ACTIONS (in this order)
 
 1. [V] `git ls-remote https://github.com/fintelplan/project-lens.git main`. Last CODE commit is
