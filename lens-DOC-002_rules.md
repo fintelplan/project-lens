@@ -501,3 +501,20 @@ that instrumentation the pre-flight would have read its `999999` default and the
 position would have failed silently for days. **Instrumentation added for one
 reason caught a different mistake entirely — which is the argument for adding it
 before you know what it will catch.**
+
+
+## LENS-030 (2026-08-03/04) -- earned rules
+LR-117  Fixtures select the WORST CASE the position actually sends, not the first sample that
+        qualifies. A probe certifies the prompt SIZE it held (LR-107); certifying at 449 chars and
+        shipping against a 3,000-char cap is how S3-A's 939-token collapse happened.
+LR-118  Where a fail-safe guard wraps the call site, put assert_model_known OUTSIDE it. Inside, the
+        guard swallows the raise the assert exists to produce.
+LR-119  Fallback SELECTION is not fallback DELIVERY. Two independent mechanisms in this repo compute
+        the right fallback and never hand it over. Audit every fallback for delivery.
+LR-120  A silent fallback hides which path ran and is forbidden; a LOUD fallback that logs a warning
+        is acceptable and often correct.
+LR-121  Before citing a banked number, verify it describes the same thing you are measuring. Two
+        false alarms this session came from a baseline mismatched to its subject.
+LR-122  Log-grep patterns come from the LOG, not from the source's print statements. A zero-match
+        grep indicts the pattern first and the world second.
+LR-123  "CI green" is only as broad as what CI actually runs. Read the workflow before citing it.
