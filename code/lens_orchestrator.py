@@ -103,12 +103,29 @@ def assert_gate(action:str, ctx:dict):
 # STEP 2 — PRE-FLIGHT  (migrated from lens_manager.py)
 # ══════════════════════════════════════════════════════════════════════════════
 def _sb_get(ep,params=""):
-    if not SUPABASE_URL or not SUPABASE_KEY: return []
+    # VISIBILITY ONLY -- control flow is UNCHANGED (LENS-031). Every failure
+    # path still returns [], because callers coerce [] to 'zero runs today' and
+    # arming those gates is a separate decision: lens_pipeline_runs is written
+    # by fetch_text.py (Collection), so DAILY_BUDGET would gate Manage+Analyze
+    # on Collection's count. What changes here is only that a FAILED READ is no
+    # longer indistinguishable from a quiet day (LR-120).
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        log.error(f"[SB] GET {ep}: credentials missing -- returning [] (NOT 'no rows')")
+        return []
     try:
         r=requests.get(f"{SUPABASE_URL}/rest/v1/{ep}{params}",
             headers={"apikey":SUPABASE_KEY,"Authorization":f"Bearer {SUPABASE_KEY}"},timeout=10)
-        return r.json() if r.ok else []
-    except: return []
+        if not r.ok:
+            log.error(f"[SB] GET {ep} HTTP {r.status_code}: {r.text[:160]}"
+                      f" -- returning [] (NOT 'no rows'). params={params[:120]}")
+            return []
+        return r.json()
+    except BaseException as e:
+        # deliberately BaseException: byte-equivalent to the bare 'except:' this
+        # replaces, so this commit cannot change what is or is not caught.
+        log.error(f"[SB] GET {ep} raised {type(e).__name__}: {str(e)[:120]}"
+                  f" -- returning [] (NOT 'no rows')")
+        return []
 
 def _sb_post(ep,data):
     if not SUPABASE_URL or not SUPABASE_KEY: return None
