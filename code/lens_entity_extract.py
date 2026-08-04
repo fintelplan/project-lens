@@ -41,8 +41,8 @@ log = logging.getLogger("entity_extract")
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL = "llama-3.3-70b-versatile"
-MAX_TOKENS = 600
+# MODEL / MAX_TOKENS come from lens_models.py role "entity_extract" (LR-105).
+# Resolved LAZILY inside _extract_experts_via_llm -- see the note there.
 TEMPERATURE = 0.1          # NER should be deterministic
 ARTICLE_BODY_CHARS = 3000  # cap body passed to LLM
 MIN_BODY_FOR_LLM = 300     # skip LLM call for stubs
@@ -193,30 +193,55 @@ def build_user_msg(title: str, body: str, source_name: str) -> str:
 
 
 def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[dict]:
-    """Call Groq llama-3.3-70b to extract quoted experts. Returns list, never None."""
+    """Extract quoted experts on the registry-wired model. Returns list, never None."""
     try:
         from groq import Groq
     except ImportError:
         log.warning("groq SDK not available — skipping LLM extraction")
         return []
 
-    # GROQ_S2_API_KEY: mail b, dedicated, ~96K headroom (entity extract isolated)
-    api_key = os.environ.get("GROQ_S2_API_KEY") or os.environ.get("GROQ_API_KEY", "")
+    # LR-105: model, key and budget all come from the registry -- but resolved
+    # LAZILY, inside the call path, NEVER at module scope. fetch_text.py imports
+    # this module at top level (:20), so an import-time raise would take down the
+    # entire Collection Pipeline. Collection is the canary's air supply; an
+    # enrichment module must never be able to stop it (LR-059).
+    #
+    # The key is NOT dedicated. lens-collect.yml supplies only GROQ_API_KEY,
+    # SUPABASE_URL and SUPABASE_SERVICE_KEY -- read from CI bytes, not .env (LR-116).
+    try:
+        from lens_models import wire, assert_model_known, fit_max_tokens
+        provider, model, key_env, max_out = wire("entity_extract")
+    except Exception as e:
+        log.warning(f"entity_extract registry resolve failed: {e}")
+        return []
+
+    # LR-118: the raise is not swallowed -- it is named loudly and greppable.
+    try:
+        assert_model_known(provider, model)
+    except Exception as e:
+        log.warning(f"REGISTRY MISALIGNMENT entity_extract: {e}")
+        return []
+
+    api_key = os.environ.get(key_env, "")
     if not api_key:
-        log.warning("GROQ_API_KEY missing — skipping LLM extraction")
+        log.warning(f"{key_env} missing — skipping LLM extraction")
         return []
 
     client = Groq(api_key=api_key)
     user_msg = build_user_msg(title, body, source_name)
+    prompt_chars = len(_SYSTEM_PROMPT) + len(user_msg)
+    max_tokens = fit_max_tokens(prompt_chars, max_out, provider, model)
+    log.info(f"entity_extract calling {provider}/{model} "
+             f"(prompt {prompt_chars} chars, max_tokens {max_tokens})")
 
     try:
         resp = client.chat.completions.create(
-            model=MODEL,
+            model=model,
             messages=[
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user",   "content": user_msg},
             ],
-            max_tokens=MAX_TOKENS,
+            max_tokens=max_tokens,
             temperature=TEMPERATURE,
             timeout=REQUEST_TIMEOUT_SEC,
         )
