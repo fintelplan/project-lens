@@ -575,6 +575,66 @@ def fixture_regular_report() -> Fixture:
     )
 
 
+def fixture_entity_extract() -> Fixture:
+    """Rebuild entity_extract's real prompt from a live raw article.
+
+    Mirrors extract_entities_for_article()'s LLM path exactly:
+      content -> .strip() -> gate at MIN_BODY_FOR_LLM -> slice ARTICLE_BODY_CHARS
+    then build_user_msg(title, body, source_name). The system prompt and the
+    user builder are both imported from production, never copied.
+
+    Note the payload key is 'content', not 'body'.
+    """
+    import lens_entity_extract as ee
+
+    sb = ee._get_sb()
+    if sb is None:
+        raise ProbeError("entity_extract fixture: no Supabase client.")
+
+    rows = (sb.table("lens_raw_articles")
+              .select("title,content,source_name,collected_at")
+              .order("collected_at", desc=True)
+              .limit(60)
+              .execute()).data or []
+
+    eligible = [r for r in rows
+                if len((r.get("content") or "").strip()) >= ee.MIN_BODY_FOR_LLM]
+    # LR-107: a probe certifies the prompt SIZE it held. Production's
+    # binding case is a body truncated at ARTICLE_BODY_CHARS, so take the
+    # LONGEST eligible body, not the first one over the floor.
+    art = max(eligible,
+              key=lambda r: len((r.get("content") or "").strip()),
+              default=None)
+    if art is None:
+        raise ProbeError(
+            "entity_extract fixture: no recent article has a body of at least "
+            "%d chars. Refusing to invent one -- a short body never reaches "
+            "the LLM path in production." % ee.MIN_BODY_FOR_LLM)
+
+    body_full = (art.get("content") or "").strip()
+    body = body_full[:ee.ARTICLE_BODY_CHARS]
+    title = art.get("title") or ""
+    source_name = art.get("source_name") or ""
+
+    return Fixture(
+        system=ee._SYSTEM_PROMPT,
+        user=ee.build_user_msg(title, body, source_name),
+        requires_json=True,
+        temperature=ee.TEMPERATURE,
+        origin="live-rebuild:lens_entity_extract",
+        detail={
+            "rows_scanned": len(rows),
+            "rows_eligible": len(eligible),
+            "body_chars_full": len(body_full),
+            "body_chars_sent": len(body),
+            "body_truncated": len(body_full) > ee.ARTICLE_BODY_CHARS,
+            "title_chars": len(title),
+            "source_name": source_name,
+            "max_experts": ee.MAX_EXPERTS_PER_ARTICLE,
+        },
+    )
+
+
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
     "lens1": fixture_lens1,
@@ -585,6 +645,7 @@ FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s3a_patterns": fixture_s3a_patterns,
     "compendium_intro": fixture_compendium_intro,
     "regular_report": fixture_regular_report,
+    "entity_extract": fixture_entity_extract,
 }
 
 
