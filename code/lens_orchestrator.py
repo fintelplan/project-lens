@@ -23,7 +23,6 @@ log = logging.getLogger("lens_orchestrator")
 # ── Env ───────────────────────────────────────────────────────────────────────
 SUPABASE_URL      = os.getenv("SUPABASE_URL","")
 SUPABASE_KEY      = os.getenv("SUPABASE_SERVICE_KEY","")
-GROQ_MANAGER_KEY  = os.getenv("GROQ_MA_API_KEY","")
 GITHUB_ACTIONS    = os.getenv("GITHUB_ACTIONS","false").lower()=="true"
 LENS_FORCE        = os.getenv("LENS_FORCE","0")=="1"
 LENS_DRY_RUN      = os.getenv("LENS_DRY_RUN","0")=="1"
@@ -174,15 +173,31 @@ def build_ai5_user_msg(ctx):
             f"Lens3 avg: {ctx['lens3_avg']}s  Lens4 stagger: {ctx['lens4_stagger']}s\nVerdict: GO/WARN/STOP")
 
 def get_ai5_verdict(ctx):
-    if not GROQ_MANAGER_KEY: return "MANAGER_KEY_MISSING"
+    # LR-105: provider/model/key/budget from lens_models.py role "ai5_watchdog".
+    # Resolved LAZILY even though this file is a standalone script:
+    # get_ai5_verdict runs inside run_preflight, which gates the whole S1 wave.
+    # A malformed registry row for a WATCHDOG must never cost the canary its
+    # wave (LR-059). Every failure path below returns a string, never raises.
+    try:
+        from lens_models import wire, assert_model_known, fit_max_tokens
+        provider,model,key_env,max_out=wire("ai5_watchdog")
+    except Exception as e: return f"AI5_REGISTRY_ERROR: {str(e)[:60]}"
+    api_key=os.getenv(key_env,"")
+    if not api_key: return f"MANAGER_KEY_MISSING ({key_env})"
+    try:
+        assert_model_known(provider,model)
+    except Exception as e: return f"AI5_REGISTRY_MISALIGNMENT: {str(e)[:60]}"
     try:
         from groq import Groq
-        c=Groq(api_key=GROQ_MANAGER_KEY)
+        c=Groq(api_key=api_key)
         sys_p=AI5_SYSTEM_PROMPT
         user_p=build_ai5_user_msg(ctx)
-        resp=c.chat.completions.create(model="llama-3.3-70b-versatile",
+        max_tokens=fit_max_tokens(len(sys_p)+len(user_p),max_out,provider,model)
+        print(f"  [AI5] {provider}/{model} prompt {len(sys_p)+len(user_p)} chars,"
+              f" max_tokens {max_tokens}")
+        resp=c.chat.completions.create(model=model,
             messages=[{"role":"system","content":sys_p},{"role":"user","content":user_p}],
-            temperature=0.1,max_tokens=300)
+            temperature=0.1,max_tokens=max_tokens)
         return resp.choices[0].message.content.strip()
     except Exception as e: return f"AI5_ERROR: {str(e)[:60]}"
 
@@ -270,7 +285,7 @@ def run_preflight(job_count=1, is_resume=False, cp_age_hours=0.0) -> PreflightRe
             f"Philosophy gate: {gate.reason}")
 
     # AI 5 verdict
-    print("\nAI 5 verdict (llama-3.3-70b):")
+    print("\nAI 5 verdict:")
     ai5=get_ai5_verdict({"runs_today":runs_count,"daily_budget":DAILY_BUDGET,
         "trigger":trigger,"minutes_since_last":mins_since,
         "groq_status":groq_msg,"gemini_status":gem_msg,"cerebras_status":cer_msg,

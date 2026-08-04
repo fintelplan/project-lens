@@ -635,6 +635,82 @@ def fixture_entity_extract() -> Fixture:
     )
 
 
+def fixture_ai5_watchdog() -> Fixture:
+    """Rebuild AI-5's real prompt from lens_orchestrator's own pre-flight reads.
+
+    Mirrors run_preflight()'s assembly: the same eight scalars, the same helper
+    functions, and production's AI5_SYSTEM_PROMPT / build_ai5_user_msg imported
+    rather than copied.
+
+    LR-117, BOTH axes. The input axis is trivial here (273 chars; status strings
+    cap near 40 each). The OUTPUT axis is what max_tokens=300 starved: the system
+    prompt says "one line per finding", so a healthy system yields "GO" in a few
+    dozen tokens while a degraded one yields a line per failing provider. Today
+    the system is healthy, so the LIVE statuses are recorded in detail but the
+    three provider strings are replaced with production's OWN failure literals
+    from check_groq / check_gemini / check_cerebras. Nothing here is invented --
+    every string is a literal that production emits, and the healthy case is
+    then strictly cheaper than what this measures.
+    """
+    from datetime import datetime, timezone
+    import lens_orchestrator as orch
+
+    runs   = orch.get_runs_today()
+    gcalls = orch.get_gemini_calls_today()
+    last   = orch.get_last_run()
+
+    mins_since = 9999
+    if last and last.get("started_at"):
+        try:
+            started = datetime.fromisoformat(last["started_at"].replace("Z", "+00:00"))
+            mins_since = int((datetime.now(timezone.utc) - started).total_seconds() / 60)
+        except Exception:
+            pass
+
+    _, live_groq = orch.check_groq()
+    _, live_gem  = orch.check_gemini(gcalls)
+    _, live_cer  = orch.check_cerebras()
+
+    l3avg   = orch.get_lens3_avg()
+    stagger = int(l3avg + orch.CEREBRAS_SAFE_GAP + 6)
+
+    deg_groq = "GROQ_API_KEY not set"
+    deg_gem  = "RPD exhausted (%d/%d used)" % (orch.GEMINI_RPD_LIMIT, orch.GEMINI_RPD_LIMIT)
+    deg_cer  = "CEREBRAS_API_KEY not set"
+
+    ctx = {
+        "runs_today": len(runs),
+        "daily_budget": orch.DAILY_BUDGET,
+        "trigger": "scheduled (GitHub Actions)",
+        "minutes_since_last": mins_since,
+        "groq_status": deg_groq,
+        "gemini_status": deg_gem,
+        "cerebras_status": deg_cer,
+        "lens3_avg": l3avg,
+        "lens4_stagger": stagger,
+    }
+
+    return Fixture(
+        system=orch.AI5_SYSTEM_PROMPT,
+        user=orch.build_ai5_user_msg(ctx),
+        requires_json=False,
+        temperature=0.1,
+        origin="live-rebuild:lens_orchestrator (degraded-status worst case)",
+        detail={
+            "runs_today": len(runs),
+            "gemini_calls_today": gcalls,
+            "minutes_since_last": mins_since,
+            "lens3_avg": l3avg,
+            "lens4_stagger": stagger,
+            "live_groq_status": live_groq,
+            "live_gemini_status": live_gem,
+            "live_cerebras_status": live_cer,
+            "statuses_sent": "production failure literals (LR-117 output axis)",
+            "d017_note": "prose role -- the JSON marginal rule does NOT fire; read finish_reason",
+        },
+    )
+
+
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
     "lens1": fixture_lens1,
@@ -646,6 +722,7 @@ FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "compendium_intro": fixture_compendium_intro,
     "regular_report": fixture_regular_report,
     "entity_extract": fixture_entity_extract,
+    "ai5_watchdog": fixture_ai5_watchdog,
 }
 
 
