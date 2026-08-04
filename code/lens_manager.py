@@ -8,7 +8,13 @@
 # Warns on manual triggers.
 # Calculates dynamic stagger for Cerebras lenses.
 #
-# Model: llama-3.3-70b-versatile via Groq (GROQ_MA_API_KEY)
+# SUPERSEDED FILE -- NOT INVOKED ANYWHERE (verified 2026-08-04, LENS-031).
+# No workflow runs it; no module imports it. Its pre-flight was migrated into
+# lens_orchestrator.py (see that file's 'migrated from lens_manager.py' note).
+# Kept as history. Everything below is DEAD CODE -- the model strings were
+# swept only so a future grep does not inherit a lie (LR-111). The LIVE AI-5
+# watchdog is registry-wired in lens_orchestrator.py, role 'ai5_watchdog'.
+# Model: registry role ai5_watchdog via Groq (GROQ_MA_API_KEY)
 # Separate API key — never competes with Lens 1 quota.
 #
 # Rules:
@@ -138,10 +144,10 @@ def check_cerebras():
     except Exception as e:
         return False, str(e)[:40]
 
-# ── AI 5 verdict via Groq llama-3.3-70b ──────────────────────
+# ── AI 5 verdict via Groq (DEAD -- see header) ──────────────────────
 def get_ai_verdict(context: dict) -> str:
     """
-    Ask AI 5 (llama-3.3-70b) for management verdict.
+    Ask AI 5 for management verdict. DEAD -- see file header.
     Returns structured decision in plain text.
     """
     if not GROQ_MANAGER_KEY:
@@ -171,7 +177,7 @@ Suggest next safe run time if WARN or STOP."""
 
     try:
         resp = client.chat.completions.create(
-            model='llama-3.3-70b-versatile',
+            model='openai/gpt-oss-120b',  # DEAD FILE -- see header
             messages=[
                 {'role': 'system', 'content': system},
                 {'role': 'user', 'content': user}
@@ -287,7 +293,7 @@ def run_manager() -> dict:
 
     # ── AI 5 verdict ──────────────────────────────────────────
     print()
-    print('AI 5 verdict (llama-3.3-70b):')
+    print('AI 5 verdict:')
     context = {
         'runs_today': runs_count,
         'daily_budget': DAILY_BUDGET,
