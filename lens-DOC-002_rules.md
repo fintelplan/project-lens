@@ -519,32 +519,75 @@ LR-122  Log-grep patterns come from the LOG, not from the source's print stateme
         grep indicts the pattern first and the world second.
 LR-123  "CI green" is only as broad as what CI actually runs. Read the workflow before citing it.
 
-## LENS-031 (2026-08-04) -- the Aug-16 migration closed and certified
+---
+## LR-124 — A surviving anchor is not idempotence (LENS-030)
+**Type**: Process | **Added**: LENS-030 | **Status**: RATIFIED
+A patch whose ANCHOR survives its own replacement will re-apply on a second run.
+Guard on the ABSENCE OF THE NEW CONTENT, not the presence of the anchor, and assume
+every patch script may run twice. Earned when a close-doc patch duplicated a section.
 
-- **LR-127** -- A fixture's worst case has TWO axes: the prompt SIZE the position
-  sends and the OUTPUT DEMAND it provokes. Maximising one can zero out the other.
-  Amends LR-117. Earned on entity_extract: ranking eligible articles by length
-  picked one with zero quoted experts and certified 6% of budget -- an instrument
-  that was never loaded.
-- **LR-128** -- Build every instrument from the DATA, never from what you expect the
-  data to look like. Three instances in one session: a log-grep built from the
-  source's print statements, a cert criterion that ignored its own healing line, and
-  a 'density' selector that counted quote marks inside class= and href= attributes.
-  Generalises LR-122 beyond log-greps to greps, cert criteria and selectors alike.
-- **LR-129** -- Absent RED is not GREEN. Verify the artifact under test is the one
-  that actually ran (headSha) before reading any cert. Two runs passed every grep
-  today while carrying pre-migration code.
-- **LR-130** -- An empty result from an honest instrument is intelligence. Chasing
-  'why isn't this producing?' is the gas-mask reflex; a populated table from a
-  loosened instrument is pretend-right bias. Canary doctrine, arm 3.
-- **LR-131** -- Anything the Collection pipeline imports at module scope resolves
-  LAZILY. Collection is the canary's air supply and a module-scope raise there takes
-  down the whole wave. The certified module-scope registry pattern (S2-D, compendium)
-  is for STANDALONE SCRIPTS only. Canary doctrine, arm 2.
-- **LR-132** -- When the real fix needs a ruling, ship the VISIBILITY half alone:
-  make the failure loud, keep control flow byte-for-byte unchanged, and say so in the
-  commit message.
-- **LR-133** -- A rule's SCOPE line is load-bearing. The canary doctrine read 'before
-  changing anything in System 1', so agents working on Collection or Enrichment judged
-  it irrelevant and skipped it for months. Scope a doctrine by what it PROTECTS, not
-  by where it was discovered.
+---
+## LR-125 — No unbounded loops in patch scripts (LENS-030)
+**Type**: Process | **Added**: LENS-030 | **Status**: RATIFIED
+Never put an unbounded `while` in a patch script. Use a bounded
+`str.replace(old, new, count)` with an asserted match count of exactly 1.
+
+---
+## LR-126 — A close is not complete until the tree is clean (LENS-030)
+**Type**: Process | **Added**: LENS-030 | **Status**: RATIFIED
+`git status --short` must be EMPTY before a session is closed. Writing the brief is
+not shipping the work. The LENS-030 close audit found CC-26 written, compiled and
+dry-run twice -- and never committed.
+
+---
+## LR-127 — A fixture worst case has TWO axes (LENS-031)
+**Type**: Process | **Added**: LENS-031 | **Status**: RATIFIED
+The prompt SIZE the position sends and the OUTPUT DEMAND it provokes. Maximising one
+can zero out the other. Amends LR-117. Earned on entity_extract: ranking eligible
+articles by length picked one with zero quoted experts and certified 6% of budget --
+an instrument that was never loaded.
+
+---
+## LR-128 — Build instruments from the DATA, not from expectation (LENS-031)
+**Type**: Discipline | **Added**: LENS-031 | **Status**: RATIFIED
+Never build a grep, a cert criterion or a selector from what you expect the data to
+look like. FIVE instances in one session: a log-grep from the source's print
+statements; a cert criterion that ignored its own healing line; a density selector
+that counted quote marks inside class= and href=; and a register grep written in a
+format the register does not use -- while recording this very rule.
+Generalises LR-122 beyond log-greps.
+
+---
+## LR-129 — Absent RED is not GREEN (LENS-031)
+**Type**: Process | **Added**: LENS-031 | **Status**: RATIFIED
+Verify the artifact under test is the one that actually ran (headSha) before reading
+any cert. Two runs passed every grep while carrying pre-migration code.
+
+---
+## LR-130 — An empty result from an honest instrument is intelligence (LENS-031)
+**Type**: Doctrine | **Added**: LENS-031 | **Status**: RATIFIED
+Chasing "why isn't this producing?" is the gas-mask reflex. A populated table from a
+loosened instrument is pretend-right bias: lens_entities held five quoted experts that
+were an arXiv bibliography, and a full-looking table hid it for three months.
+Canary doctrine, arm 3.
+
+---
+## LR-131 — The collection import path resolves LAZILY (LENS-031)
+**Type**: Doctrine | **Added**: LENS-031 | **Status**: RATIFIED
+Anything the Collection pipeline imports at module scope must resolve its registry
+wiring INSIDE the call path. Collection is the canary's air supply and a module-scope
+raise there takes down the whole wave. The certified module-scope pattern (S2-D,
+compendium) is for STANDALONE SCRIPTS only. Canary doctrine, arm 2.
+
+---
+## LR-132 — When the fix needs a ruling, ship the visibility half (LENS-031)
+**Type**: Process | **Added**: LENS-031 | **Status**: RATIFIED
+Make the failure loud, keep control flow byte-for-byte unchanged, and say so in the
+commit. A silent read failure that looks like an empty result can hide for months.
+
+---
+## LR-133 — A rule's SCOPE line is load-bearing (LENS-031)
+**Type**: Doctrine | **Added**: LENS-031 | **Status**: RATIFIED
+The canary doctrine read "before changing anything in System 1", so agents working on
+Collection or Enrichment judged it irrelevant and skipped it for months. Scope a
+doctrine by what it PROTECTS, not by where it was discovered.
