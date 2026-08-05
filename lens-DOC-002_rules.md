@@ -614,3 +614,37 @@ post-change file before writing the number, or express the gate as its intent --
 fb_provider/fb_model/fb_key_env naming the dead provider -- instead of a raw count.
 Amends LR-128, which covers instruments built from existing data; this covers
 instruments built for data that does not exist yet.
+
+---
+## LR-136 — A spec must not state a number its reader can derive (LENS-032)
+**Type**: Process | **Added**: LENS-032 | **Status**: RATIFIED
+Write the COMMAND, not the answer. Line numbers, line endings, file counts, anchor
+uniqueness, expected grep results and SHA ranges are all re-derived from bytes by the
+executor at BEV time, so supplying my value adds nothing and risks everything: a stated
+number is an ANCHOR that competes with the bytes. LENS-032 produced ~13 such errors
+across nine specs -- line endings recorded inverted, a scratch-script count of 4 against
+a real 21, a cron range corrected in the wrong direction, a gate that contradicted its
+own spec, an unrunnable gate, and a SHA range covering four commits where nine were
+listed. Every one was a number, address, size or line-ending stated with the confidence
+of a measurement; none was a reasoning error. This is the AUTHOR-side duty; LR-134 is the
+EXECUTOR-side duty, and a defence-only rule guarantees the error is always made. It does
+not forbid numbers: a value MEASURED from a log or a byte read this session is evidence
+and belongs in the spec -- a remembered one is an anchor and does not. Scope: every
+chat->executor spec and every executor->chat receipt, both directions, scoped by what it
+protects rather than where it was found (LR-133).
+
+---
+## LR-137 — Provenance records the WIRE, not the registry (LENS-032)
+**Type**: Architecture | **Added**: LENS-032 | **Status**: RATIFIED
+The registry is the source of truth for what a call site SHOULD use. A provenance field
+must record what the WIRE actually did. LR-105 routes every model string through
+`code/lens_models.py`, and read without this carve-out it covers provenance too. At CC-37
+that reading would have stamped rows `mistral-small-2603` from the registry while the
+request body posted `mistral-small-latest` -- writing a NEW mislabel inside the commit
+that existed to remove mislabels, in the registry's own name. Errors dressed as
+compliance are the hardest to see. The fix pattern: lift the wire value to a single
+constant used for BOTH the request body and the provenance field, so the two cannot
+drift. Where registry and wire disagree, that divergence is a SEPARATE defect with its
+own commit -- never resolved by writing the aspiration into a record of what happened.
+Scope: every DB write, log line or report field naming a model or provider. Recurs on
+every fallback leg in the registry. Amends LR-105.
