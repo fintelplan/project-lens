@@ -65,7 +65,6 @@ log = logging.getLogger("s2f_rubric")
 # ══════════════════════════════════════════════════════════════════════════════
 # Constants
 # ══════════════════════════════════════════════════════════════════════════════
-MODEL = "llama-3.3-70b-versatile"
 MAX_TOKENS = 6000              # Larger than v1 — operations output is more verbose
 TEMPERATURE = 0.1              # Deterministic detection
 ARTICLE_BODY_CHARS = 4500      # Slightly larger than v1 — operations need more context
@@ -297,12 +296,18 @@ _tpm_guard = TPMGuard(tpm_limit=6000)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LLM client — provider-agnostic (Groq | Cerebras)
+# LLM client -- provider-agnostic, one of five explicit providers
 # ══════════════════════════════════════════════════════════════════════════════
-# Provider selection via S2F_PROVIDER env var:
-#   "groq" (default)     — uses GROQ_S2F_API_KEY or GROQ_API_KEY
-#   "cerebras"           — uses CEREBRAS_API_KEY, model "llama-3.3-70b"
-# Both providers expose OpenAI-compatible chat.completions.create() interface.
+# Provider selection via the S2F_PROVIDER env var.
+# THERE IS NO DEFAULT: an unset or unrecognised value logs an error and
+# returns (None, None, None). The five explicit providers are:
+#   "cerebras"   -- CEREBRAS_API_KEY  (+ CEREBRAS_MODEL, default gpt-oss-120b)
+#   "openrouter" -- OPENROUTER_API_KEY (model pinned openai/gpt-oss-120b:free)
+#   "ollama"     -- OLLAMA_MODEL required (+ OLLAMA_HOST, default localhost:11434)
+#   "cloudflare" -- CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
+#                   (+ CLOUDFLARE_MODEL, default @cf/openai/gpt-oss-120b)
+#   "mistral"    -- MISTRAL_API_KEY   (+ MISTRAL_MODEL, default mistral-medium-latest)
+# All five expose an OpenAI-compatible chat.completions.create() interface.
 # Returned tuple: (client_object, model_name, provider_name) or (None, None, None)
 
 
@@ -311,7 +316,7 @@ def _get_llm_client():
 
     Returns (client, model_name, provider) on success or (None, None, None).
     """
-    provider = os.environ.get("S2F_PROVIDER", "groq").lower().strip()
+    provider = os.environ.get("S2F_PROVIDER", "").lower().strip()
 
     if provider == "cerebras":
         try:
@@ -403,26 +408,12 @@ def _get_llm_client():
         )
         log.info(f"Using Mistral provider (model: {mistral_model})")
         return client, mistral_model, "mistral"
-    # Default: groq
-    try:
-        from groq import Groq
-    except ImportError:
-        log.error("groq SDK not available — install via requirements.txt")
-        return None, None, None
-
-    key = os.environ.get("GROQ_S2F_API_KEY", "")
-    if key:
-        return Groq(api_key=key), MODEL, "groq"
-
-    fallback = os.environ.get("GROQ_API_KEY", "")
-    if fallback:
-        log.warning(
-            "GROQ_S2F_API_KEY not set — using GROQ_API_KEY fallback. "
-            "Create dedicated GROQ_S2F_API_KEY before LENS-020 cron ships."
-        )
-        return Groq(api_key=fallback), MODEL, "groq"
-
-    log.error("No Groq API key available (GROQ_S2F_API_KEY or GROQ_API_KEY)")
+    if not provider:
+        log.error("S2F_PROVIDER is not set. Set one of: "
+                  "cerebras, openrouter, ollama, cloudflare, mistral.")
+    else:
+        log.error(f"S2F_PROVIDER={provider!r} is not a recognised provider. "
+                  "Set one of: cerebras, openrouter, ollama, cloudflare, mistral.")
     return None, None, None
 
 
@@ -678,7 +669,7 @@ def detect_operations_ensemble(
     )
 
     # ── Primary: qwen-3-235b on Cerebras ──
-    original_provider = os.environ.get("S2F_PROVIDER", "groq")
+    original_provider = os.environ.get("S2F_PROVIDER", "")
     original_model = os.environ.get("CEREBRAS_MODEL", "")
 
     os.environ["S2F_PROVIDER"] = "cerebras"
@@ -701,7 +692,10 @@ def detect_operations_ensemble(
              f"({result_secondary.operation_count()} ops)")
 
     # ── Restore original env ──
-    os.environ["S2F_PROVIDER"] = original_provider
+    if original_provider:
+        os.environ["S2F_PROVIDER"] = original_provider
+    else:
+        os.environ.pop("S2F_PROVIDER", None)
     if original_model:
         os.environ["CEREBRAS_MODEL"] = original_model
     else:
