@@ -1,7 +1,10 @@
 """
 lens_regular_report.py
 Project Lens — Regular Report (Free Tier)
-Model: mistral-small-latest (free) → Cerebras fallback → Groq fallback
+Model: mistral-small-latest (free) -> Cerebras fallback
+NOTE (CC-43): Groq leg 3 removed -- this position's real prompt exceeds
+  Groq's TPM ceiling several times over. The Cerebras leg is also NOT
+  reachable on an API failure: _FORCE_PROVIDER is written, never read.
 Schedule: 1x daily at 02:10 UTC (10:10 PM DC EDT)
 Structure: Same 4-part as Opus Report (Detection/Recovery/Food for Thought/References)
 Cost: $0/run
@@ -43,7 +46,7 @@ TELEGRAM_CAPTION_CAP = 950
 MAX_REFS             = 400
 MAX_RETRIES          = 3
 
-# Provider chain: mistral-small → cerebras → groq
+# Provider chain: mistral-small -> cerebras  (groq leg 3 removed, CC-43)
 PROVIDERS = [
     {
         "name": "mistral",
@@ -56,12 +59,6 @@ PROVIDERS = [
         "model": "gpt-oss-120b",
         "key_env": "CEREBRAS_API_KEY",
         "base_url": None,  # uses cerebras SDK
-    },
-    {
-        "name": "groq",
-        "model": "llama-3.3-70b-versatile",
-        "key_env": "GROQ_API_KEY",
-        "base_url": None,  # uses groq SDK
     },
 ]
 
@@ -106,11 +103,6 @@ def get_llm_client():
                 client = Cerebras(api_key=key)
                 log.info(f"LLM: using Cerebras ({prov['model']})")
                 return client, prov["model"], "cerebras"
-            elif prov["name"] == "groq":
-                from groq import Groq
-                client = Groq(api_key=key)
-                log.info(f"LLM: using Groq ({prov['model']})")
-                return client, prov["model"], "groq"
             else:
                 from openai import OpenAI
                 client = OpenAI(api_key=key, base_url=prov["base_url"])

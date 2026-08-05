@@ -218,10 +218,14 @@ ROLES = {
         "key_env": "MISTRAL_API_KEY", "max_out": 4096,
         "fb_provider": "cerebras", "fb_model": CEREBRAS_GPT_OSS_120B,
         "fb_key_env": "CEREBRAS_API_KEY",
-        "note": "PROVIDERS is a 3-LEG chain mistral -> cerebras -> groq."
-                " This 2-leg schema cannot express leg 3: groq /"
-                " GROQ_GPT_OSS_120B / GROQ_API_KEY / max_out 4096."
-                " Probe leg 3 with --provider/--model/--key-env overrides.",
+        "note": "PROVIDERS is a 2-LEG chain mistral -> cerebras (CC-43)."
+                " Leg 3 was groq/llama-3.3-70b-versatile and was REMOVED:"
+                " this position's real prompt exceeds Groq TPM several"
+                " times over, so no Groq model can serve it -- measure it"
+                " with probe_lens_models.py --role regular_report --dry-run"
+                " before re-proposing one. The cerebras leg is NOT reachable"
+                " on an API failure: _FORCE_PROVIDER is written, never read"
+                " (CC-44).",
     },
     # ---- S3 family ----
     "s3a_patterns": {
