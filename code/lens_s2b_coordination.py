@@ -151,7 +151,8 @@ def build_prompt(reports: list) -> str:
         total_chars += len(entry)
     combined = "\n".join(sections)
     pct = (total_chars / MAX_TOTAL_CHARS) * 100
-    log.info(f"S2-B prompt: {len(sections)} raw articles, {total_chars} chars ({pct:.1f}% of 1M context)")
+    log.info(f"S2-B prompt: {len(sections)} raw articles, {total_chars} chars "
+             f"({pct:.1f}% of the {MAX_TOTAL_CHARS}-char MAX_TOTAL_CHARS budget)")
     return f"Analyze {len(reports)} intelligence reports for cross-source coordination patterns.\n\n{combined}\n\nReturn JSON only."
 
 
@@ -246,6 +247,12 @@ def call_coordination_analyzer(client, reports: list,
             findings = len(parsed.get("findings", []))
             score    = parsed.get("overall_coordination_score", 0)
             narrative = parsed.get("dominant_coordinated_narrative", "none")[:60]
+            _g_usage = getattr(response, "usage_metadata", None)
+            log.info(f"S2-B Gemini usage [{MODEL}]: "
+                     f"prompt_chars={len(full_content)} "
+                     f"prompt_tokens={getattr(_g_usage, 'prompt_token_count', 'UNAVAILABLE')} "
+                     f"completion_tokens={getattr(_g_usage, 'candidates_token_count', 'UNAVAILABLE')} "
+                     f"total_tokens={getattr(_g_usage, 'total_token_count', 'UNAVAILABLE')}")
             log.info(f"S2-B result: {findings} findings, score={score}, narrative='{narrative}'")
             return parsed, MODEL
 
@@ -298,6 +305,13 @@ def call_coordination_analyzer(client, reports: list,
                 parsed = json.loads(raw)
                 findings = len(parsed.get("findings", []))
                 score = parsed.get("overall_coordination_score", 0)
+                _m_usage = mr.json().get("usage") or {}
+                _m_uget  = getattr(_m_usage, "get", lambda k, d=None: d)
+                log.info(f"S2-B Mistral usage [{MISTRAL_FALLBACK_MODEL}]: "
+                         f"prompt_chars={len(full_content_for_mistral)} "
+                         f"prompt_tokens={_m_uget('prompt_tokens', 'UNAVAILABLE')} "
+                         f"completion_tokens={_m_uget('completion_tokens', 'UNAVAILABLE')} "
+                         f"total_tokens={_m_uget('total_tokens', 'UNAVAILABLE')}")
                 log.info(f"S2-B Mistral fallback ({MISTRAL_FALLBACK_MODEL}): "
                          f"{findings} findings, score={score}")
                 return parsed, MISTRAL_FALLBACK_MODEL

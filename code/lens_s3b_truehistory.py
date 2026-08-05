@@ -208,6 +208,13 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                 if raw.startswith("json"): raw = raw[4:]
             raw = raw.strip()
             analysis = json.loads(raw)
+            _g_chars = len(SYSTEM_PROMPT) + len("\n".join(lines))
+            _g_usage = getattr(resp, "usage_metadata", None)
+            log.info(f"S3-B Gemini usage [{MODEL}]: "
+                     f"prompt_chars={_g_chars} "
+                     f"prompt_tokens={getattr(_g_usage, 'prompt_token_count', 'UNAVAILABLE')} "
+                     f"completion_tokens={getattr(_g_usage, 'candidates_token_count', 'UNAVAILABLE')} "
+                     f"total_tokens={getattr(_g_usage, 'total_token_count', 'UNAVAILABLE')}")
             break
         except Exception as e:
             log.warning(f"Attempt {attempt} failed: {e}")
@@ -237,6 +244,13 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                         analysis = json.loads(raw)
                         model_used    = MISTRAL_FALLBACK_MODEL
                         provider_used = "mistral"
+                        _m_usage = mr.json().get("usage") or {}
+                        _m_uget  = getattr(_m_usage, "get", lambda k, d=None: d)
+                        log.info(f"S3-B Mistral usage [{MISTRAL_FALLBACK_MODEL}]: "
+                                 f"prompt_chars={len(SYSTEM_PROMPT) + len(prompt)} "
+                                 f"prompt_tokens={_m_uget('prompt_tokens', 'UNAVAILABLE')} "
+                                 f"completion_tokens={_m_uget('completion_tokens', 'UNAVAILABLE')} "
+                                 f"total_tokens={_m_uget('total_tokens', 'UNAVAILABLE')}")
                         log.info(f"S3-B Mistral fallback OK ({MISTRAL_FALLBACK_MODEL}): "
                                  f"{len(str(raw))} chars")
                         break
