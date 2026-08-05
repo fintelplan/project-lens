@@ -147,31 +147,58 @@ and `probe_lens_models.py:1183` (the `--candidate` help text).
 
 Total realistic time: **6–10 hours** if all four are attempted. Pick by what James wants.
 
-### 2.1 — Gemini corpses: S2-B and S3-B on `gemini-2.0-flash`, dead since **Jun 1**
-Two months. Two 429 ladders per wave, **~5 minutes of every 21-minute wave**,
-`limit: 0` on three quota IDs, and **Google returns a `retryDelay` that we ignore**,
-sleeping a fixed 30/60/90 instead. `lens_s2b_coordination.py:30`,
-`lens_s3b_truehistory.py:30`. Registry is already ahead — it points both at
-`gemini-2.5-flash-lite`. Textbook LR-105.
+### 2.1 — S2-B and S3-B: ALIVE on a Mistral fallback, blocked on a token measurement
 
-**⚠️ BLOCKED ON A CONSOLE READ, AND THE HAZARD IS A DOCTRINE ONE.**
-Gemini RPD is **20/day per PROJECT, not per key** (Google's own doc). lens2 —
-System 1's Physical Reality lens — already draws 11/20 from that pool. Migrating two
-more positions onto it could **starve the canary to fix two S2 positions**. That is
-gas-mask arm 2: taking the canary's air.
+> **PREMISE REPLACED 2026-08-05 (CC-39).** This section used to read
+> "Gemini corpses ... dead since Jun 1". **That was wrong about the positions.**
+> Only the **Gemini leg** has been dead since Jun 1. Both positions have completed
+> every wave for two months on their **Mistral fallback**, and both write real
+> findings to the DB.
+>
+> **Proof, from the log, not from memory:** MA **#253**, databaseId
+> `30975849325`, headSha `d7b79c3`, conclusion `success`. Mistral-small handled
+> S2-B's 200-article / **105,122-char** prompt in **~6 seconds**. The registry
+> note's "needs long context, probe on flash-lite" is falsified by production.
 
-**James must answer first:** do `GEMINI_S2B_API_KEY` and `GEMINI_S3B_API_KEY` belong
-to *different Google projects* than lens2's `GEMINI_API_KEY`? (aistudio.google.com →
-the project each key belongs to.) Two other idle Free-tier projects exist
-(`gen-lang-client-0026461991`, `-0697867306`).
+What is actually true: each wave still burns **two 429 ladders** (~7.5 min of a
+~21 min wave) climbing a decommissioned `gemini-2.0-flash` before the fallback
+takes over, on `limit: 0` across three quota IDs, and **Google returns a
+`retryDelay` that we ignore**, sleeping a fixed 30/60/90 instead. That is waste,
+not outage — and it is a cost, not a blocker.
 
-- **Different projects** → migrate; the RPD pools are separate and this is safe.
-- **Same project** → do NOT migrate onto 2.5-flash-lite. Move them to Mistral or
-  Cerebras instead, or leave them dead until a project is provisioned. **Never spend
-  the canary's RPD on an S2 position.**
+**THE BLOCKER IS NOT A CONSOLE READ. It is a token measurement**, and it arrives
+with tonight's 21:17-23:02 wave. CC-38 (`c5080f8`) logs `prompt_chars` and the
+provider's `prompt_tokens` on the **same line** for both positions. Nothing below
+can be sized before that line exists: these bodies are HTML and tokenize worse
+than prose, so a chars-per-token rule of thumb is not usable.
 
-Ship the **hardcoded log literals at `lens_s2b_coordination.py:203` and `:388`** in
-the same commit — they print "gemini-1.5-flash" and are lies (LR-111).
+**The work, in this order:**
+
+1. **A1 — add a `LIMITS` row for `mistral-small-latest`.** It is the model on the
+   wire for **BOTH** positions and has **no row at all**, so `fit_max_tokens` and
+   the quota guard cannot resolve a ceiling for the live production path. See 3.5.
+2. **A2 — re-size `MAX_TOTAL_CHARS`** (currently `800000`, sized for Gemini's 1M
+   context). **TPM 50,000 binds tighter than CTX**, and the registry's own comment
+   tags CTX 128,000 as "VERIFY, not VERIFIED". Use the **measured** ratio.
+3. **A3 — THEN promote Mistral to primary** on `s2b_coordination` and
+   `s3b_history`, and delete the Gemini leg. Recovers ~7.5 min of every ~21 min
+   wave, removes the Oct-16 cliff for both positions, and returns the entire
+   Gemini quota to the canary. **A3 MUST NOT SHIP BEFORE A2** — promoting an
+   unsized prompt onto the primary path is how a working position becomes a
+   broken one.
+
+**The console question is DEFERRED, NOT RETIRED.** Do `GEMINI_S2B_API_KEY` and
+`GEMINI_S3B_API_KEY` belong to *different Google projects* than lens2's
+`GEMINI_API_KEY`? RPD is 20/day **per PROJECT, not per key**, and lens2 — System
+1's Physical Reality lens — already draws 11/20 from that pool. **Never spend the
+canary's RPD on an S2 position.** It still matters because **`gemini-2.5-flash`
+dies Oct 16** and lens2 runs on it — but it goes **moot for Manage+Analyze** the
+moment A3 lands, because MA then stops calling Gemini at all.
+
+> **DONE `fe1d9b5` (CC-37).** The hardcoded `gemini-1.5-flash` log literals this
+> section used to demand shipped (LR-111): both positions now record the model
+> that actually ran. Separately, `d7b79c3` (CC-36) removed the silent
+> `or GEMINI_API_KEY` fallback that made both positions reachable to lens2's key.
 
 ### 2.2 — entity_extract call volume: 283 calls/run, **116 × HTTP 429**
 Measured tonight in run `83856966602`: 399 Groq requests for 283 successful calls.
@@ -305,6 +332,13 @@ Registry pins `mistral-small-2603`; production sets `mistral-small-latest`.
 `assert_model_known` but is absent from `LIMITS`. **`_KNOWN_WIRE` and `LIMITS` are
 separate tables: known ≠ fittable.** 12 alias sites; D-015 forbids aliases.
 
+> **CORRECTION 2026-08-05 (CC-39): THIS IS NOT DORMANT.** `mistral-small-latest`
+> is the **live production path for two positions** — S2-B and S3-B have run on it
+> every wave for two months (see 2.1). The missing `LIMITS` row is therefore not
+> Tier-3 documentation debt; it is **work item A1**, and it gates the re-size that
+> gates the promotion. Its placement under "DOCUMENTED, NOT THIS WINDOW" is a
+> mis-prioritisation.
+
 ### 3.6 — S2-F: three sources, three answers
 Registry says cerebras+cloudflare, workflow says mistral, code default says groq. Its
 real wire model **is not in the registry at all**, and S2-F never calls
@@ -338,8 +372,10 @@ the brief's "Most active". **Fix at the extractor (2.2), never at collection.**
 
 ## RULINGS JAMES MUST GIVE (a new agent cannot decide these alone)
 
-1. **2.1** — which Google project do the S2B/S3B Gemini keys belong to? Decides
-   whether the corpse migration is safe or starves the canary.
+1. **2.1** — which Google project do the S2B/S3B Gemini keys belong to?
+   **DEFERRED, not retired** (see 2.1): both positions are alive on Mistral, so
+   nothing is blocked on this today, and it goes moot for Manage+Analyze if A3
+   lands. It still decides the Oct-16 `gemini-2.5-flash` path for lens2.
 2. **2.3** — should Manage+Analyze get its own run counter, or should `DAILY_BUDGET`
    be retired? Fixing the timestamp without this arms a gate on the wrong number.
 3. **3.1** — when to open `analyze_lens_multi.py`, and whether the rescue is worth an
