@@ -60,7 +60,7 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
 | `c79f594` | CC-32 | probe refuses a baseline candidate after 2026-08-16 |
 | `b8e920b` | CC-33 | write-guard test fixture string |
 | `7457a92` | CC-34 | doc corrections; Tier 1 marked complete |
-| `969ca22` | CC-35 | LR-134, LR-135 (register now 39, LR-100..135, no gaps) |
+| `969ca22` | CC-35 | LR-134, LR-135 (register unbroken LR-090..LR-135 at that commit; the "39" first written here was a HEADING count, **not** a rule count -- see HAZARDS) |
 | `d7b79c3` | CC-36 | silent `or GEMINI_API_KEY` removed from S2-B and S3-B — both could reach lens2's key, the canary's Physical Reality lens |
 | `fe1d9b5` | CC-37 | provenance: Mistral rows were stamped with the dead Gemini model FIVE ways; now record what actually ran |
 | `c5080f8` | CC-38 | provider token usage logged on all four legs (LR-132 visibility half); chars-vs-context units corrected |
@@ -118,6 +118,12 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
   **certs are read from those logs**. Audit every cert grep pattern in use before
   touching it.
 - `[V]` **B6.** 21 tracked `patch_*.py` scripts in the repo root (LR-093).
+- `[V]` **B7. Build a real register-integrity gate, in `tests/` so CI enforces it.** It
+  must count rule DEFINITIONS across **both** formats (`^## LR-\d{3}` headings and
+  `^LR-\d{3}\s` compact entries, excluding prose cross-references — `LR-092` at `:139`
+  is one such false positive) and diff the resulting set against the expected unbroken
+  sequence. **Both gates in use today pass on a register that has silently lost a
+  rule.** It is the only thing that would have caught the LR-124..126 loss.
 
 ---
 
@@ -149,10 +155,26 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
 - `[V]` **LINE ENDINGS:** `probe_lens_models.py` is CRLF (1206/1206); the pure-LF files
   are `tests/test_lens_write_guard.py` and both docs in `docs/`. `code/` is CRLF.
   **Detect per file, always.**
-- `[V]` `lens-DOC-002_rules.md` has **THREE EOL regions** (CRLF / bare LF / CRLF). A
-  split-join rewrite normalises 248 lines and turns an append into a whole-file diff —
-  plausibly how LR-124..126 vanished once. **Append onto RAW BYTES** and assert the
-  bare-LF count is unchanged either side.
+- `[V]` `lens-DOC-002_rules.md`: the three-EOL-region scar is a **WORKING-TREE
+  property, not a repository one.** All three measured this session: the stored blob is
+  **uniformly LF** (0 CRLF); *this* checkout carries CRLF / bare-LF / CRLF (248 bare
+  LF); and a **fresh clone on this machine checks out uniformly CRLF** (650 CRLF, 0 bare
+  LF), because `core.autocrlf=true` is set in the **system** gitconfig
+  (`C:/Program Files/Git/etc/gitconfig`) and **no `.gitattributes` is tracked**. The
+  region layout therefore depends on which checkout you are standing in — derive it,
+  never carry it between sessions. **The operational rule is unchanged: append onto RAW
+  BYTES and assert the bare-LF count is unchanged either side.** That invariant holds in
+  both checkouts (248 -> 248 here, 0 -> 0 in a fresh clone).
+- `[V]` **THE REGISTER'S INTEGRITY GATES ARE BLIND TO THE FAILURE THEY EXIST TO CATCH.**
+  `grep -c "^## LR-"` counts **headings** and misses the seven compact one-line rules
+  (LR-117..123) stored under `## LENS-030 -- earned rules`, so it is **not** a rule
+  count. `grep -o "LR-1[0-9][0-9]" | sort -u` matches **BODY CROSS-REFERENCES**, so a
+  rule can lose its definition entirely while the sequence still reads unbroken — which
+  is how LR-124..126 vanished undetected. **Until a real gate exists (B7), a register
+  append is NOT proven safe by either command.** Derived at LR-137: **41 headings + 7
+  compact = 48 defined rules**, LR-090..LR-137, no gaps. Also derived: `LR-057` and
+  `LR-058` are cited in body text but have **no definition anywhere in this register**;
+  `[I]` they predate it, since it opens at LR-090.
 - `[V]` **Anchor uniqueness has TWO failure modes.** Duplicate lines (fixed by a
   different anchor) and **INDENTATION SUBSTRINGS** — in s3b a 24-space
   `analysis = json.loads(raw)` contains the 12-space copy. Anchor with a leading
