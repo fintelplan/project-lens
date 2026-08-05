@@ -54,7 +54,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Callable, Optional
 
 import requests
@@ -82,6 +82,8 @@ FIXTURE_DIR = os.path.join(REPO_ROOT, "probe_fixtures")
 # so this measurement is unrepeatable after that date -- always probe it first.
 BASELINE_PROVIDER = "groq"
 BASELINE_MODEL = "llama-3.3-70b-versatile"
+BASELINE_DEAD_ON = date(2026, 8, 16)  # Groq decommission. After this,
+# every baseline number that will ever exist is already banked.
 
 # Seconds between calls sharing one key. 60s window + 5s safety.
 PACING_SLEEP_S = 65
@@ -825,6 +827,16 @@ def resolve_candidate(role_key: str, which: str) -> Candidate:
 
     if which == "baseline":
         key_env = spec["key_env"]
+        today = datetime.now(timezone.utc).date()
+        if today >= BASELINE_DEAD_ON:
+            raise ProbeError(
+                f"Baseline {BASELINE_MODEL} was decommissioned on "
+                f"{BASELINE_DEAD_ON} and today is {today}. Every baseline "
+                f"measurement that will ever exist is already banked, so "
+                f"there is nothing left to measure -- a live call would only "
+                f"burn {key_env} quota against a dead model. Probe "
+                f"'primary' or 'fallback' instead."
+            )
         if spec["provider"] != "groq":
             raise ProbeError(
                 f"Baseline is Groq {BASELINE_MODEL}, but role '{role_key}' is a "
