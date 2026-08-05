@@ -591,3 +591,26 @@ commit. A silent read failure that looks like an empty result can hide for month
 The canary doctrine read "before changing anything in System 1", so agents working on
 Collection or Enrichment judged it irrelevant and skipped it for months. Scope a
 doctrine by what it PROTECTS, not by where it was discovered.
+
+---
+## LR-134 — A chat-written BUILD spec is a LEAD, not evidence (LENS-032)
+**Type**: Process | **Added**: LENS-032 | **Status**: RATIFIED
+Every factual claim inside a spec -- line numbers, line endings, anchor uniqueness,
+expected grep counts -- must be re-derived from bytes by the executor before any
+edit. LENS-032 shipped five CC specs and three carried a factual error: line endings
+recorded inverted, an anchor that appeared twice at the same indent, a gate count
+computed against the wrong version of the file, and a scratch-script count that was
+wrong in two successive documents. All were caught at BEV, none in execution. Scope:
+every CC block, in both directions, forever. The BEV step is not a courtesy to the
+spec -- it is the gate that actually works.
+
+---
+## LR-135 — Compute a gate against the file your change PRODUCES (LENS-032)
+**Type**: Process | **Added**: LENS-032 | **Status**: RATIFIED
+Not the file you read. CC-31's gate predicted grep -c "sambanova" -> 2; it read 5,
+because the same spec's own replacement text wrote the word into three notes. The
+gate's INTENT held, so the instrument was wrong rather than the change. Simulate the
+post-change file before writing the number, or express the gate as its intent -- zero
+fb_provider/fb_model/fb_key_env naming the dead provider -- instead of a raw count.
+Amends LR-128, which covers instruments built from existing data; this covers
+instruments built for data that does not exist yet.
