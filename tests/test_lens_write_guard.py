@@ -32,7 +32,7 @@ def valid_lens_reports_row():
                    "that passes minimum length checks.",
         "generated_at": "2026-04-18T01:28:00+00:00",
         "quality_score": 0.85,
-        "ai_model": "llama-3.3-70b",
+        "ai_model": "openai/gpt-oss-120b",
         "status": "pending",
         "system": "S1",
     }
