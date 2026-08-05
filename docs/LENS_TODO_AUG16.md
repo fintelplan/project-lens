@@ -28,9 +28,21 @@ Twelve days of slack remain to Aug 16. Nothing here needs to be rushed.
 
 ## TIER 1 — URGENT (finish the migration; all small, all mechanical, no rulings needed)
 
+> **TIER 1 COMPLETE 2026-08-05** -- `9301945` CC-30, `b1fb954` CC-31,
+> `c79f594` CC-32, `b8e920b` CC-33. CI green on `b8e920b`
+> (run `30969263288`, conclusion `success`, verified via `gh run list`
+> `--json databaseId,headSha,conclusion` -- not from a checkmark).
+
 Total realistic time: **2–3 hours.** Do these first; they close the migration honestly.
 
 ### 1.1 — `lens_framing_rubrics.py:68` — the last string that can still fire
+
+> **DONE `9301945` (CC-30).** Ruling #4 answered: the branch was DELETED,
+> not swept. The silent `GROQ_S2F_API_KEY` -> `GROQ_API_KEY` fallback and
+> the `:304` Cerebras lie went in the same commit, as specified below.
+> `S2F_PROVIDER` now has NO default -- unset or unrecognised returns
+> `(None, None, None)` and logs which case it was.
+
 Dormant **by accident, not design**: `lens-s2f-scoring.yml:75` pins
 `S2F_PROVIDER: "mistral"`, so the terminal groq branch (`:415`, `:423`) is never
 reached. One env-var change and it's a live 404 after Aug 16.
@@ -51,11 +63,32 @@ Ship in the same commit: the **silent key fallback at `:412-421`**
 and the stale doc line at `:304` claiming Cerebras serves llama-3.3-70b.
 
 ### 1.2 — `probe_lens_models.py:84 BASELINE_MODEL = "llama-3.3-70b-versatile"`
+
+> **DONE `c79f594` (CC-32).** `resolve_candidate()` raises `ProbeError`
+> when `today >= BASELINE_DEAD_ON` (2026-08-16), before the LR-094
+> provider check. Verified as a threshold, not a blanket refusal:
+> 2026-08-15 PASS, 2026-08-16 raise, 2027-01-01 raise.
+
 Our measuring instrument breaks on Aug 16: `--candidate baseline` starts 404ing.
 Every baseline that matters is already banked. Make the probe **announce that the
 baseline model is decommissioned** rather than fire a doomed request.
 
 ### 1.3 — Registry fallback rows still naming dead SambaNova
+
+> **DONE `b1fb954` (CC-31).**
+>
+> **CORRECTION 2026-08-05:** the paragraph below says TWO rows. There were
+> **THREE** -- `lens1` (`:79-80`), `lens4` (`:100-101`) and
+> **`s2a_injection`** (`:123-124`). `s2a_injection` is a LIVE CERTIFIED
+> position whose call site CC-14 had already given a Mistral fallback, so
+> that row was contradicting its own code. This undercount was copied into
+> the CC-31 spec and had to be caught during the build.
+>
+> All three now read `mistral` / `MISTRAL_SMALL` / `MISTRAL_API_KEY`.
+> `SAMBANOVA_LLAMA_33_70B` is KEPT with a tombstone comment -- deleting the
+> constant is provider retirement, a separate purpose. A rider in
+> `TestRegistryAlignment` now asserts the pair is absent from `_KNOWN_WIRE`.
+
 `lens1` and `lens4` carry `fb_provider: sambanova`. **SambaNova is dead** — HTTP 402,
 `balance_units 0`, since Jul 28.
 
@@ -79,12 +112,34 @@ Use `MISTRAL_SMALL` (the dated `mistral-small-2603`), **not** the `-latest` alia
 2603 has a LIMITS row and resolves a ceiling; the alias does not (see 3.5).
 
 ### 1.4 — `tests/test_lens_write_guard.py:35` hardcodes `"ai_model": "llama-3.3-70b"`
+
+> **DONE `b8e920b` (CC-33).** Now `"openai/gpt-oss-120b"`. Fixture string
+> only; the guard's behaviour does not depend on the value.
+
 Test-only, won't break production, but it will confuse the next grep. Sweep with 1.1.
 
 **After Tier 1, run the ledger and expect only proven-dead hits:**
 ```bash
 grep -rn "llama-3\.3-70b" --include=*.py --include=*.yml . | grep -v "/venv/"
 ```
+
+**LEDGER AT `b8e920b` (measured 2026-08-05):** **25 hits**, down from 28 at
+`e0d8568`. **Zero on any reachable path.** Executable, and all inert:
+
+| Site | Why it cannot fire |
+| --- | --- |
+| `code/lens_orchestrator.py:394-395` | `FALLBACKS` dict -- dead code, no delivery path to the child |
+| `code/lens_regular_report.py:62` | dead inside dead (`_FORCE_PROVIDER` written, never read) |
+| `probe_lens_models.py:84` | now behind CC-32's date refusal |
+| `tests/test_lens_quota_guard.py:441` | tombstone assertion (see below) |
+
+`lens_framing_rubrics.py:68` is **gone** -- CC-30 deleted the branch.
+
+**DO NOT SWEEP.** These are CORRECT statements, not stale strings:
+`code/lens_models.py:423`, `code/lens_quota_guard.py:81`,
+`tests/test_lens_quota_guard.py:441` (asserting the pair is ABSENT from
+`PROVIDER_LIMITS` -- sweeping it deletes the guard), `probe_lens_models.py:28`,
+and `probe_lens_models.py:1183` (the `--candidate` help text).
 
 ---
 
@@ -122,6 +177,15 @@ the same commit — they print "gemini-1.5-flash" and are lies (LR-111).
 Measured tonight in run `83856966602`: 399 Groq requests for 283 successful calls.
 Every 429 was absorbed by the SDK's internal retry, so nothing failed — but the run
 took **23m 42s vs #242's 12m 57s**.
+
+**WEAKENED 2026-08-05 -- measured, do not repeat this claim as-is.** Run
+`30703472197` ran **23m 35s on Aug 1, pre-CC-27**, and `30463762826` ran
+**27m 15s on Jul 29**, also pre-CC-27. Across 14 scheduled collect runs
+(Jul 29 - Aug 4) the split is by SLOT, not by commit: **evening runs are
+volatile (7m53s - 27m15s), morning runs are stable (11m00s - 12m57s)**.
+The `#242` in the line above is a MORNING run and `#243` is an EVENING one,
+so the comparison that produced this inference was cross-slot.
+**Compare matched slots or say nothing.**
 
 **Partly our doing, and the record must say so.** Groq's limiter counts *requested*
 tokens (prompt + max_tokens). CC-27 raised max_tokens 600 → 1600, taking each call
@@ -182,6 +246,18 @@ as a script.** The `tests/` tree has never run in CI (LR-123). Locally: **2 fail
 Rebuild those two fixtures from captured production output, **then** wire pytest into
 CI. Doing it in that order matters — wiring first turns CI red on a known-benign
 failure and trains everyone to ignore it.
+
+---
+
+### 2.5 — S2-F's mistral default is a floating alias
+`S2F_PROVIDER=mistral` with `MISTRAL_MODEL` unset yields
+**`mistral-medium-latest`** (`code/lens_framing_rubrics.py`) -- a floating
+alias, on a tier with **no registry row**, against D-015.
+
+Lower risk than the groq default CC-30 replaced -- a typo now fails closed
+with `(None, None, None)` instead of firing at a dead model -- but it is
+**the next landmine in that file**. Related to 3.5, which records the same
+disease at `mistral-small-latest`.
 
 ---
 
@@ -251,6 +327,11 @@ the brief's "Most active". **Fix at the extractor (2.2), never at collection.**
   mechanism found. **Direction is unknown — "lower" is not "worse."**
 - Two committed scratch scripts in repo root: `patch_article4_provider.py`,
   `patch_cerebras_model.py` (LR-093).
+  **CORRECTION 2026-08-05 (measured):** there are **21** tracked
+  `patch_*.py` scripts in the repo root, not two.
+  `git ls-files | grep -c "^patch_.*\.py$"` -> **21**. Only these two carry
+  a `llama-3.3-70b` string; the other 19 are the same LR-093 debt and are
+  invisible to the cliff ledger.
 - **Next cliff: `gemini-2.5-flash` dies Oct 16** and lens2 runs on it.
 
 ---
@@ -272,7 +353,12 @@ the brief's "Most active". **Fix at the extractor (2.2), never at collection.**
 - **`gh workflow run` fails: `HTTP 403 Must have admin rights`.** Manual dispatch must
   go through the GitHub web UI. `gh run list` and `gh run view --log` DO work.
 - **Cron lines lie about timing.** Collect `0 1`/`0 13` UTC, manage-analyze `28 1`/`28 13`,
-  but actual starts run **2.5–3.3 hours late** on the free tier.
+  but actual starts run late by an amount that **depends on the SLOT**
+  (measured over 26 scheduled runs, Jul 29 - Aug 4, both workflows):
+  - **01:00 / 01:28 UTC slot: 2.8 - 3.6 h late** -> lands **10:48 - 12:02 ICT**
+  - **13:00 / 13:28 UTC slot: 1.3 - 2.6 h late** -> lands **21:17 - 23:02 ICT**
+
+  A single blanket range is what made this wrong twice. Do not collapse it.
 - **ALWAYS check `headSha` before reading a cert log.** Two runs fooled me today: their
   greps came back empty and looked like a pass, but they carried pre-CC-27 code.
   **Absent RED is not GREEN.**
@@ -283,11 +369,26 @@ the brief's "Most active". **Fix at the extractor (2.2), never at collection.**
   Actions log, however correct the pattern.
 - **Fixtures have TWO worst-case axes** — prompt SIZE and output DEMAND. Maximising one
   can zero out the other (LR-117 amendment, earned on entity_extract).
-- `probe_lens_models.py` is **LF**; everything in `code/` is **CRLF**. Detect per file.
+- **LINE ENDINGS -- THIS WAS RECORDED BACKWARDS. Verified by bytes 2026-08-05:**
+  `probe_lens_models.py` is **CRLF** (1206/1206). The pure-**LF** files are
+  `tests/test_lens_write_guard.py` (0/312) and **both docs in `docs/`**.
+  `code/` is CRLF. **Detect per file from the bytes, never assume** -- the
+  inverted note cost real time in CC-32.
 - Patch anchors must be pure ASCII; use `chr(8220)`/explicit `\xe2\x80\x94` bytes for
   the em dashes these files contain (LR-101).
 - Guard on the NEW content's absence, not the anchor's presence — assume every patch
   script runs twice (LR-124).
+- **Never carry a line number between documents; re-grep it.** `FALLBACKS` in
+  `lens_orchestrator.py` is at **`:394-395`** and was at `:394` at `e0d8568`
+  too -- `git log e0d8568..1bbb6f3 -- code/` is EMPTY, so the `:377-378` in the
+  LENS-031 brief was wrong when written, not shifted afterwards.
+- **`gh run list` `databaseId` is NOT the id in the LENS-031 brief's CERTS
+  section** -- those are log/job ids. The run databaseIds are
+  **`30922934732`** (CC-27, Lens Collection Pipeline) and **`30926516684`**
+  (CC-29, Lens Manager + Analyze), both on `e0d8568`.
+- **Anchor uniqueness is not free.** `if which == "baseline":` appears TWICE
+  at the same indent in `probe_lens_models.py`. Assert `count == 1` and pick
+  a different anchor when it fails.
 
 ---
 

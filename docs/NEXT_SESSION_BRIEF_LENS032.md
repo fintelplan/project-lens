@@ -7,6 +7,32 @@ SUPERSEDES NEXT_SESSION_BRIEF_LENS031.md entirely.
 
 ---
 
+## CORRECTIONS (appended 2026-08-05 at LENS-032, verified by bytes)
+
+The following claims in this document are **FALSE**. The body below is left
+intact as the LENS-031 snapshot it is -- a close record is not rewritten.
+
+- **STRING LEDGER:** `lens_orchestrator.py` `FALLBACKS` is at **`:394-395`**,
+  not `:377-378`. `git log e0d8568..1bbb6f3 -- code/` is EMPTY, so this was
+  wrong when written, not shifted afterwards.
+- **HAZARDS:** the line endings are **INVERTED**. `probe_lens_models.py` is
+  **CRLF** (1206/1206); `tests/test_lens_write_guard.py` is the pure-**LF**
+  file (0/312).
+- **HAZARDS:** cron lag is not a single range. It splits by slot: the
+  **01:00/01:28 UTC** runs are **2.8-3.6 h** late, the **13:00/13:28 UTC**
+  runs are **1.3-2.6 h** late (26 scheduled runs, Jul 29 - Aug 4).
+- **CERTS:** `83856966602` and `83867608643` are log/job ids. The run
+  `databaseId`s are **`30922934732`** (CC-27) and **`30926516684`** (CC-29).
+- **INFERRED:** the CC-27 / 23m42s link is **weakened** -- a pre-CC-27 evening
+  run took 23m35s and another took 27m15s. The comparison was cross-slot.
+  See the TODO.
+- **LIVE vs BANKED:** the registry self-test now reads **24 roles / 9 wire
+  pairs / 5 limit rows** -- the SambaNova pair left `_KNOWN_WIRE` at CC-31.
+- The Aug-16 ledger has moved on. Head is **`b8e920b`**; **Tier 1 is
+  complete** (CC-30..CC-33) and the ledger reads 25 hits, zero reachable.
+
+---
+
 ## THE HEADLINE
 
 - [V] **THE AUG-16 MIGRATION IS COMPLETE AND CERTIFIED. Zero live `llama-3.3-70b`
