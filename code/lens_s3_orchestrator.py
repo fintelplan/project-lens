@@ -3,7 +3,7 @@ lens_s3_orchestrator.py
 Project Lens — System 3 Orchestrator
 
 S3-A  lens_s3a_patterns.py     daily      llama-3.3-70b   Groq/GROQ_S3_API_KEY
-S3-B  lens_s3b_truehistory.py  daily      gemini-2.0-flash Google/GEMINI_API_KEY
+S3-B  lens_s3b_truehistory.py  daily      gemini-2.0-flash Google/GEMINI_S3B_API_KEY
 S3-C  lens_s3c_biasdrift.py   weekly     command-r-plus-08-2024  Cohere/COHERE_API_KEY
 S3-D  lens_s3d_longterm.py     Mon+Thu    gpt-oss-120b    Cerebras/CEREBRAS_API_KEY
 S3-F  lens_s3f_countercheck.py  Mon+Thu    mistral-small   Mistral/MISTRAL_API_KEY

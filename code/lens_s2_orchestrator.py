@@ -9,7 +9,7 @@ All positions built in LENS-009. Orchestrator updated in LENS-010.
 
 Positions:
   S2-A  lens_s2a_injection.py    run_s2a()           llama-3.3-70b  GROQ_S2A_API_KEY (dedicated)
-  S2-B  lens_s2b_coordination.py run_s2b()           gemini-1.5-flash GEMINI_API_KEY
+  S2-B  lens_s2b_coordination.py run_s2b()           gemini-1.5-flash GEMINI_S2B_API_KEY
   S2-C  lens_s2c_emotion.py      run_s2c()           mistral-small  MISTRAL_API_KEY
   S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_API_KEY
   S2-E  lens_s2e_legitimacy.py   run_s2e()           llama-3.3-70b  GROQ_S2E_API_KEY

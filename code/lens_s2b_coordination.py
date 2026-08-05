@@ -1,7 +1,7 @@
 """
 lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
-Model: gemini-1.5-flash (Google — GEMINI_API_KEY)
+Model: gemini-1.5-flash (Google — GEMINI_S2B_API_KEY)
 Context: 1,000,000 tokens — holds ALL reports simultaneously
 Guard: GeminiRPMGuard (15 RPM free tier) + AFC disabled
 FIXED: gemini-1.5-flash per architecture doc Table 4 per architecture book
@@ -82,7 +82,13 @@ def get_supabase() -> Client:
 
 
 def get_gemini():
-    key = os.environ.get("GEMINI_S2B_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    key = os.environ.get("GEMINI_S2B_API_KEY", "")
+    if not key:
+        raise RuntimeError(
+            "GEMINI_S2B_API_KEY is not set. S2-B does NOT fall back to "
+            "GEMINI_API_KEY: that key belongs to lens2, System 1's Physical "
+            "Reality lens, and borrowing it merges the two RPD pools."
+        )
     return genai.Client(api_key=key)
 
 

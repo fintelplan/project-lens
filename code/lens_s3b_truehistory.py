@@ -1,7 +1,7 @@
 """
 lens_s3b_truehistory.py — System 3 Position B: True History Researcher
 Project Lens | LENS-010
-Model: gemini-2.0-flash (Google — GEMINI_API_KEY, large context)
+Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context)
 Reads: lens_reports (last 30 days) + True History database (built-in)
 Output: lens_system3_reports (position=S3-B, report_type=TYPE_B)
 
@@ -26,7 +26,7 @@ log = logging.getLogger("S3-B")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY") or os.environ.get("GEMINI_API_KEY")
+GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY", "")
 MODEL        = "gemini-2.0-flash"
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 28
@@ -153,7 +153,7 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     log.info(f"=== S3-B True History Researcher START | run_id={run_id} ===")
 
     if not GEMINI_KEY:
-        log.error("GEMINI_API_KEY not set")
+        log.error("GEMINI_S3B_API_KEY not set (no fallback to lens2's GEMINI_API_KEY)")
         return {"status": "ERROR", "run_id": run_id}
 
     sb     = create_client(SUPABASE_URL, SUPABASE_KEY)
