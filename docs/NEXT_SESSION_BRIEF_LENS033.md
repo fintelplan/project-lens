@@ -129,12 +129,13 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
 
 ## RULINGS JAMES OWES
 
-- `[V]` **LR-136 candidate** — a spec must not contain a number the executor can
-  derive; write the **COMMAND**, not the answer. Author-side duty; LR-134 is only the
-  executor-side duty. Eleven instances in one session.
-- `[V]` **LR-137 candidate** — the registry is the source of truth for what a call site
-  **SHOULD** use, **NOT** for a provenance field, which must come from the **WIRE**.
-  Conflating them writes a lie in the registry's name.
+> **RULED 2026-08-05 in `928d1f8` (CC-40) — these two are NO LONGER OWED.** LR-136
+> (a spec must not state a number its reader can derive; write the COMMAND, not the
+> answer) and LR-137 (provenance records the WIRE, not the registry; amends LR-105) are
+> **minted and RATIFIED** in `lens-DOC-002_rules.md` at `:619` and `:637`. LR-136 as
+> minted records **~13** such errors across nine specs; the "eleven instances" first
+> written here was an undercount taken before the session's last commits landed.
+
 - `[V]` **Gemini project-wide cap** — console only, and now much less urgent: if A3
   lands, MA stops calling Gemini entirely.
 - `[V]` **DAILY_BUDGET cross-wire** (TODO 2.3).
@@ -195,7 +196,19 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
 - `[V]` Everything unblocked was shipped. The next input — real token counts for a real
   prompt — arrives with the 21:17-23:02 wave and **cannot be computed before it**. That
   is not caution; there is nothing to compute.
-- `[V]` Nine assertion errors of mine were caught at BEV or by Claude Code today, none
-  reaching production. Every one was a **number, address, size or line-ending stated
-  with the confidence of a measurement**; none was a reasoning error. **The rate did
-  not decline across the session.**
+- `[V]` At the close I recorded **nine** such errors of mine caught at BEV or by Claude
+  Code, none reaching production. That number was itself written before the session
+  ended, and it was an undercount: LR-136 as minted records **~13 across nine specs**,
+  and three more surfaced afterwards — the register count (39 against a real 48), the
+  EOL claim (repository against working tree), and my own false alarm that LR-117..123
+  had gone missing from the register. Every one was a **number, address, size or
+  line-ending stated with the confidence of a measurement**; none was a reasoning error.
+  **The rate did not decline across the session** — the undercount is itself an instance.
+- `[V]` **OBSERVATION, deliberately not a numbered rule: a close brief written before a
+  session's last commits is stale on arrival.** Four doc-correction commits landed in
+  one day (`7457a92`, `0606fa1`, `e232c82`, and this one). The cause is structural, not
+  carelessness — CC-39 listed two rules as "candidates" in the same breath as asking for
+  a ruling on them, and the ruling landed the same afternoon. **A close brief should be
+  the LAST commit of a session, or it must not name anything still in flight.** Left as
+  an observation on purpose: two rules were minted today already, and a third on the
+  same day is rule inflation.
