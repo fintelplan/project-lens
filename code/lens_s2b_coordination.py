@@ -1,10 +1,12 @@
 """
 lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
-Model: gemini-1.5-flash (Google — GEMINI_S2B_API_KEY)
+Model: gemini-2.0-flash (Google — GEMINI_S2B_API_KEY), fallback mistral-small-latest
+NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
 Context: 1,000,000 tokens — holds ALL reports simultaneously
 Guard: GeminiRPMGuard (15 RPM free tier) + AFC disabled
-FIXED: gemini-1.5-flash per architecture doc Table 4 per architecture book
+Architecture doc Table 4 specified gemini-1.5-flash; the code has called gemini-2.0-flash
+since before LENS-031. This docstring said 1.5 until CC-37.
 Input: lens_reports (latest cycle)
 Output: injection_reports (analyst='S2-B')
 """
@@ -28,6 +30,11 @@ logging.basicConfig(
 log = logging.getLogger("s2b")
 
 MODEL            = "gemini-2.0-flash"
+# The fallback posts this exact string on the wire. The registry's
+# fallback("s2b_coordination") says mistral-small-2603; the wire says
+# -latest. Rows record what RAN, so they record this. Reconciling the two
+# is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
+MISTRAL_FALLBACK_MODEL = "mistral-small-latest"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 3
@@ -195,7 +202,13 @@ Format:
 
 
 # ── API call ──────────────────────────────────────────────────────────────────
-def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard) -> Optional[dict]:
+def call_coordination_analyzer(client, reports: list,
+                               rpm_guard: GeminiRPMGuard) -> Optional[tuple]:
+    """Returns (analysis, model_that_produced_it) or None.
+
+    The model is returned rather than assumed because the Mistral fallback
+    and the Gemini leg both reach the same save path.
+    """
     if len(reports) < 2:
         log.warning("Need at least 2 reports for coordination analysis")
         return None
@@ -206,7 +219,7 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             rpm_guard.wait_if_needed(label="S2-B")
-            log.info(f"S2-B calling gemini-1.5-flash (attempt {attempt})")
+            log.info(f"S2-B calling {MODEL} (attempt {attempt})")
 
             response = client.models.generate_content(
                 model=MODEL,
@@ -234,7 +247,7 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
             score    = parsed.get("overall_coordination_score", 0)
             narrative = parsed.get("dominant_coordinated_narrative", "none")[:60]
             log.info(f"S2-B result: {findings} findings, score={score}, narrative='{narrative}'")
-            return parsed
+            return parsed, MODEL
 
         except json.JSONDecodeError as e:
             log.warning(f"JSON parse error attempt {attempt}: {e}")
@@ -271,7 +284,7 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
             mr = _req.post(
                 "https://api.mistral.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
-                json={"model": "mistral-small-latest",
+                json={"model": MISTRAL_FALLBACK_MODEL,
                       "messages": [{"role": "user", "content": full_content_for_mistral}],
                       "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
                 timeout=120)
@@ -285,8 +298,9 @@ def call_coordination_analyzer(client, reports: list, rpm_guard: GeminiRPMGuard)
                 parsed = json.loads(raw)
                 findings = len(parsed.get("findings", []))
                 score = parsed.get("overall_coordination_score", 0)
-                log.info(f"S2-B Mistral fallback: {findings} findings, score={score}")
-                return parsed
+                log.info(f"S2-B Mistral fallback ({MISTRAL_FALLBACK_MODEL}): "
+                         f"{findings} findings, score={score}")
+                return parsed, MISTRAL_FALLBACK_MODEL
             log.warning(f"S2-B Mistral fallback {mr.status_code}: {mr.text[:200]}")
             time.sleep(20 * m_attempt)
         except Exception as me:
@@ -343,7 +357,8 @@ def build_correction_to_ma(analysis: dict) -> dict:
     }
 
 def save_coordination_report(
-    sb: Client, reports: list, analysis: dict, run_id: str, cycle: Optional[str]
+    sb: Client, reports: list, analysis: dict, run_id: str,
+    cycle: Optional[str], model_used: str
 ) -> bool:
     findings      = analysis.get("findings", [])
     overall_score = analysis.get("overall_coordination_score", 0.0)
@@ -358,7 +373,7 @@ def save_coordination_report(
                 "analyst_note":      analysis.get("analyst_note", "No coordination detected"),
                 "reports_analyzed":  len(reports),
                 "dominant_narrative": dominant,
-                "model": MODEL, "context": "1M",
+                "model": model_used, "context": "1M",
                 "correction_to_ma": build_correction_to_ma(analysis),
             },
             "confidence_score": 0.0, "flagged_phrases": [],
@@ -379,7 +394,7 @@ def save_coordination_report(
                     "actor_beneficiary":   finding.get("actor_beneficiary", "unclear"),
                     "overall_score":       overall_score,
                     "dominant_narrative":  dominant,
-                    "model": MODEL, "context": "1M",
+                    "model": model_used, "context": "1M",
                     "analyst_note": analysis.get("analyst_note", ""),
                     "correction_to_ma": build_correction_to_ma(analysis),
                 },
@@ -391,7 +406,7 @@ def save_coordination_report(
     try:
         result = sb.table("injection_reports").insert(rows).execute()
         saved  = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} S2-B rows (gemini-1.5-flash, 1M context)")
+        log.info(f"Saved {saved} S2-B rows ({model_used}, 1M context)")
         return True
     except Exception as e:
         log.error(f"Failed to save S2-B results: {e}")
@@ -424,12 +439,14 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         return {"status": "INSUFFICIENT_ARTICLES", "reports_analyzed": len(reports)}
 
     rpm_guard = GeminiRPMGuard(model=MODEL)
-    analysis  = call_coordination_analyzer(client, reports, rpm_guard)
+    result    = call_coordination_analyzer(client, reports, rpm_guard)
 
-    if analysis is None:
+    if result is None:
         return {"status": "ANALYSIS_FAILED", "reports_analyzed": len(reports)}
+    analysis, model_used = result
 
-    saved   = save_coordination_report(sb, reports, analysis, run_id, cycle)
+    saved   = save_coordination_report(sb, reports, analysis, run_id, cycle,
+                                       model_used)
     elapsed = round(time.time() - start, 1)
 
     summary = {
@@ -440,7 +457,7 @@ def run_s2b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "findings":                   len(analysis.get("findings", [])),
         "overall_coordination_score": analysis.get("overall_coordination_score", 0),
         "dominant_narrative":         analysis.get("dominant_coordinated_narrative", "none detected"),
-        "model":                      MODEL,
+        "model":                      model_used,
         "elapsed_seconds":            elapsed,
     }
     log.info(f"=== S2-B COMPLETE | {len(reports)} reports | {summary['findings']} findings | {elapsed}s ===")

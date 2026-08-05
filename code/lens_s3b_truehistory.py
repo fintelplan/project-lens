@@ -1,7 +1,8 @@
 """
 lens_s3b_truehistory.py — System 3 Position B: True History Researcher
 Project Lens | LENS-010
-Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context)
+Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context), fallback mistral-small-latest
+NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
 Reads: lens_reports (last 30 days) + True History database (built-in)
 Output: lens_system3_reports (position=S3-B, report_type=TYPE_B)
 
@@ -28,6 +29,11 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY", "")
 MODEL        = "gemini-2.0-flash"
+# The fallback posts this exact string on the wire. The registry's
+# fallback("s3b_history") says mistral-small-2603; the wire says
+# -latest. Rows record what RAN, so they record this. Reconciling the two
+# is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
+MISTRAL_FALLBACK_MODEL = "mistral-small-latest"
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 28
 
@@ -184,6 +190,8 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     log.info(f"Prompt: {len(prompt)} chars | Model: {MODEL}")
 
     analysis = None
+    model_used    = MODEL       # overwritten if the fallback is the one
+    provider_used = "google"    # that actually produces the analysis
     for attempt in range(1, 4):
         try:
             log.info(f"S3-B calling {MODEL} (attempt {attempt})")
@@ -212,11 +220,12 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         if mistral_key:
             for m_attempt in range(1, 3):
                 try:
-                    log.info(f"S3-B Mistral fallback (attempt {m_attempt})")
+                    log.info(f"S3-B Mistral fallback "
+                             f"({MISTRAL_FALLBACK_MODEL}, attempt {m_attempt})")
                     mr = _req.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
-                        json={"model": "mistral-small-latest",
+                        json={"model": MISTRAL_FALLBACK_MODEL,
                               "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                            {"role": "user", "content": prompt}],
                               "max_tokens": 2500, "temperature": 0.3},
@@ -226,7 +235,10 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                         import re as _re
                         raw = _re.sub(r"```json|```", "", raw).strip()
                         analysis = json.loads(raw)
-                        log.info(f"S3-B Mistral fallback OK: {len(str(raw))} chars")
+                        model_used    = MISTRAL_FALLBACK_MODEL
+                        provider_used = "mistral"
+                        log.info(f"S3-B Mistral fallback OK ({MISTRAL_FALLBACK_MODEL}): "
+                                 f"{len(str(raw))} chars")
                         break
                     log.warning(f"S3-B Mistral {mr.status_code}: {mr.text[:200]}")
                     import time as _t; _t.sleep(20 * m_attempt)
@@ -253,8 +265,8 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "summary":           analysis.get("summary", ""),
         "signals_to_watch":  json.dumps(analysis.get("signals_to_watch", [])),
         "corrections_to_s2": json.dumps([]),
-        "model_used":        MODEL,
-        "provider":          "google",
+        "model_used":        model_used,
+        "provider":          provider_used,
         "quality_score":     float(analysis.get("quality_score", 0.0)),
         "system_tag":        "S3-B",
         "source_reports":    json.dumps([r.get("id") for r in reports[:5]]),
