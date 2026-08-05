@@ -442,6 +442,15 @@ class TestRegistryAlignment:
                 ("gemini", "gemini-2.0-flash")}
         assert dead.isdisjoint(qg.PROVIDER_LIMITS.keys())
 
+    def test_dead_sambanova_pair_absent_from_known_wire(self):
+        """CC-31: SambaNova died 2026-07-28 (HTTP 402, balance_units 0).
+
+        Three fallback rows (lens1, lens4, s2a_injection) pointed at it.
+        _KNOWN_WIRE is built from those rows, so the pair reappearing here
+        means a retired fallback was re-wired.
+        """
+        assert ("sambanova", lm.SAMBANOVA_LLAMA_33_70B) not in lm._KNOWN_WIRE
+
     def test_unknown_limits_fall_through_to_failsafe(self):
         """F3: registry marks Gemini LIMITS_UNKNOWN, so S2-B must PROCEED.
 

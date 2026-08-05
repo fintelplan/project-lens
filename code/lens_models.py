@@ -37,6 +37,9 @@ GROQ_GPT_OSS_20B = "openai/gpt-oss-20b"
 CEREBRAS_GPT_OSS_120B = "gpt-oss-120b"
 CLOUDFLARE_GPT_OSS_120B = "@cf/openai/gpt-oss-120b"
 SAMBANOVA_LLAMA_33_70B = "Meta-Llama-3.3-70B-Instruct"  # SambaNova format, LR-005(A)
+# TOMBSTONE (CC-31): provider dead 2026-07-28 (HTTP 402, balance_units 0).
+# No ROLES row references it. Kept as a corpse marker so the id cannot be
+# silently re-wired; deleting it is provider retirement, a separate purpose.
 GEMINI_25_FLASH = "gemini-2.5-flash"            # dies 2026-10-16 (Google page)
 GEMINI_25_FLASH_LITE = "gemini-2.5-flash-lite"
 # Dated id, never an alias (D-015). No `mistral-small-latest` model card exists,
@@ -76,9 +79,9 @@ ROLES = {
     "lens1": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
         "key_env": "GROQ_API_KEY", "max_out": 2400,
-        "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
-        "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "was qwen/qwen3-32b (dead 2026-07-17); call site ran NO fallback -- lens1 produced nothing Jul 17 to Aug 2, see S1-001",
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "was qwen/qwen3-32b (dead 2026-07-17); call site ran NO fallback -- lens1 produced nothing Jul 17 to Aug 2, see S1-001; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
     },
     "lens2": {
         "provider": "gemini", "model": GEMINI_25_FLASH,
@@ -97,9 +100,9 @@ ROLES = {
     "lens4": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
         "key_env": "CEREBRAS_API_KEY", "max_out": 2400,
-        "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
-        "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "existing LR-005(A) pattern, kept",
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "the LR-005(A) sambanova pattern ended here -- not kept: fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
     },
     # ---- orchestrator watchdog ----
     "ai5_watchdog": {
@@ -120,9 +123,9 @@ ROLES = {
     "s2a_injection": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
         "key_env": "GROQ_S2A_API_KEY", "max_out": 4600,
-        "fb_provider": "sambanova", "fb_model": SAMBANOVA_LLAMA_33_70B,
-        "fb_key_env": "SAMBANOVA_API_KEY",
-        "note": "was MAX_TOKENS=1800",
+        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "was MAX_TOKENS=1800; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015. Row now matches the Mistral fallback CC-14 already gave the call site.",
     },
     "s2b_coordination": {
         "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
