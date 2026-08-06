@@ -467,7 +467,13 @@ def build_synthesis_prompt(
             total_chars += len(s3_section)
             log.info(f"S3 context added to MA prompt ({len(s3_section)} chars)")
         else:
-            log.info("S3 context skipped — prompt cap reached")
+            # CC-45: report WHAT was dropped and by how much, so the cap
+            # can be sized from measurement instead of guessed. Prefix is
+            # unchanged so existing log greps still match (LR-122).
+            _s3_over = total_chars + len(s3_section) - MAX_TOTAL_CHARS
+            log.info("S3 context skipped — prompt cap reached: "
+                     f"s3_chars={len(s3_section)} total_chars={total_chars} "
+                     f"cap={MAX_TOTAL_CHARS} overflow={_s3_over}")
 
     prompt = "".join(sections)
     log.info(f"Synthesis prompt: {len(prompt)} chars ({len(corrections)} corrections prepended)")
