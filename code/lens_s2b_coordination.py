@@ -34,6 +34,8 @@ MODEL            = "gemini-2.0-flash"
 # fallback("s2b_coordination") says mistral-small-2603; the wire says
 # -latest. Rows record what RAN, so they record this. Reconciling the two
 # is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
+from lens_text_utils import visible_text, extractor_name
+
 MISTRAL_FALLBACK_MODEL = "mistral-small-latest"
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
@@ -140,7 +142,10 @@ def build_prompt(reports: list) -> str:
     total_chars = 0
     for i, r in enumerate(reports, 1):
         title   = (r.get("title", "") or "")[:200]
-        body    = truncate_report(r.get("content", "") or "")
+        # CC-46: strip markup BEFORE the length clip, so the 8000-char
+        # budget is spent on text a model can read, not on tags and
+        # base64 tracking URLs. No article is dropped -- only markup.
+        body    = truncate_report(visible_text(r.get("content", "") or ""))
         source  = r.get("source_name", "Unknown")
         domain  = r.get("domain", "")
         pub_at  = r.get("published_at", r.get("collected_at", ""))[:19] if r.get("published_at") or r.get("collected_at") else "unknown"
@@ -152,6 +157,7 @@ def build_prompt(reports: list) -> str:
     combined = "\n".join(sections)
     pct = (total_chars / MAX_TOTAL_CHARS) * 100
     log.info(f"S2-B prompt: {len(sections)} raw articles, {total_chars} chars "
+             f"[visible-text via {extractor_name()}] "
              f"({pct:.1f}% of the {MAX_TOTAL_CHARS}-char MAX_TOTAL_CHARS budget)")
     return f"Analyze {len(reports)} intelligence reports for cross-source coordination patterns.\n\n{combined}\n\nReturn JSON only."
 
