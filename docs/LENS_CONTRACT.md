@@ -29,3 +29,21 @@ Warm long-term partnership ("my buddy"), rigorous underneath. Answer first, cut 
 
 ## VERSION LOG
 - v1 — born 2026-07-28 at LENS-028 close (written by Fable 5, the day the registry landed and CC-1 certified live). Shared discipline adopted from GNI CONTRACT v3 by reference-and-mirror, not blind copy — dual sources of truth are how S2-D died; process docs obey the same law.
+
+## MISSION AND SCOPE (added LENS-033, 2026-08-06)
+- MISSION (permanent): Project Lens produces valid intelligence on influence operations, with epistemic diversity intact (canary doctrine).
+- DEFINITION OF DONE: every scheduled wave produces valid intelligence, unattended, with NO SILENT FAILURE. Not "no defects." A system with logged, ordered, non-silent defects is done. A system with one silent failure is not.
+- NOT the mission: perfective maintenance for its own sake. Deprecation is weather (D-014), not a project.
+- The CURRENT TARGET and WORKING ORDER live in docs/LENS_TARGET_AND_ORDER.md, dated and regenerated. This contract holds the mission and the METHOD; that file holds the target instance and the path. Law changes rarely; the order changes every analysis.
+
+## DISCOVERY POLICY (added LENS-033, 2026-08-06)
+Findings are never suppressed. They are absorbed through five steps.
+1. FIND -- record every weak point with its evidence, immediately, whatever the session's mission. Suppressing a finding is worse than acting on it out of order.
+2. CLASSIFY -- against the DECLARED TARGET. ABSOLUTE: a defect causing a SILENT LIVE FAILURE is urgent under any target. RELATIVE: everything else is ranked by where the analysis places it on the path to the declared target, with a one-line written justification. Perishable evidence sets a DEADLINE, not a rank -- bank it wherever it sits.
+3. ANALYSE -- existing root, or new root? A new root may re-rank items above it.
+4. RE-ORDER -- regenerate root -> sub, dated, superseding, never appended. If the TARGET changed, regenerate the whole order and say why.
+5. WORK THE TOP OF THE ORDER -- not the newest finding, not the most interesting. FRESHNESS CONFERS NO PRIORITY.
+
+- WHEN TO ANALYSE: recording is always immediate; analysis happens at CLOSE. Test: "does this change what I should do in the next hour?" If no, record and continue. Three triggers override: (a) the finding is UPSTREAM of the current mission and would make the pending change harmful; (b) a live position is failing silently now; (c) perishable evidence -- bank it. NOT triggers: "this is interesting", "I'm already in the file." Default when unsure: record and continue.
+- STOPGAP vs ROOT FIX: an urgent symptom earns a stopgap now; the root keeps its own place in the order. A stopgap NEVER closes a root.
+- ONE MISSION PER SESSION, declared at open, closed against. A session that ships one thing and logs six is a SUCCESS.
