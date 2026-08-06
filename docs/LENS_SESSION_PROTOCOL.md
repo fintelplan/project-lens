@@ -1,24 +1,39 @@
-# Lens Session Protocol — standard open/close prompts
-**Purpose: token-thrifty session boundaries (mirrors GNI's ritual). Paste these verbatim; fill the <>. Adopted LENS-028, 2026-07-27.**
+# Lens Session Protocol -- standard open/close prompts
+**Purpose: token-thrifty session boundaries. Paste verbatim; fill the <>. Adopted LENS-028; rewritten LENS-033 2026-08-06 to anchor every session to a declared target.**
 
-## OPEN — paste as the first message of every Lens session
+## OPEN -- paste as the first message of every Lens session
 ```
 LENS-0XX OPEN | model: <model name>
-1) Read latest docs/NEXT_SESSION_BRIEF_*.md + docs/LENS_LCLIFF_DECISIONS.md + memory.
-2) Echo LOAD CHECK: expected head SHA | mission | first gate | gates ack
+1) Read docs/LENS_CONTRACT.md (law) + docs/LENS_TARGET_AND_ORDER.md
+   (target + roots + order) + latest docs/NEXT_SESSION_BRIEF_*.md
+   (session state) + memory.
+2) Echo LOAD CHECK:
+   CURRENT TARGET | THIS SESSION'S MISSION = top of the working order
+   | expected head SHA | first gate | gates ack
    (BEV, LR-078/080/092/094/099/101-104, L2 one-question).
-3) Then step-0 commands only. All brief claims = leads, BEV before acting.
-   If model differs from last session: LR-102 re-audit FIRST (trust tags reset).
+3) The mission is the TOP OF THE ORDER. It is not chosen freely and not
+   chosen by whatever looks most broken.
+4) Then step-0 commands only. All claims = leads, BEV before acting.
+   If model differs from last session: LR-102 re-audit FIRST.
 ```
 
-## CLOSE — paste when context reaches ~80%
+## CLOSE -- paste when context reaches ~80%
 ```
 LENS CLOSE (LR-101..104):
-1) Rewrite docs/NEXT_SESSION_BRIEF -- supersede, fold ALL live items, trust-tag every claim.
-2) Append LR entries earned this session.  3) Update memory.
-4) Ship-to-file, py_compile if code touched, one-purpose docs commit,
-   give push command + ls-remote verify.
-5) End with LIVE vs BANKED list written for the next model's hands.
+1) Did we complete the declared mission? Answer yes/no plainly.
+2) Record EVERY finding from this session with its evidence. Never suppress.
+3) Re-analyse: does each new finding join an existing root, or open a new
+   one? A new root may re-rank items above it.
+4) REGENERATE docs/LENS_TARGET_AND_ORDER.md -- dated, superseding, root to
+   sub. Classify each item against the DECLARED TARGET (absolute rule: a
+   silent live failure is urgent under any target). If the target itself
+   changed, regenerate the whole order and say why.
+5) Declare NEXT session's mission = new top of the order.
+6) Rewrite NEXT_SESSION_BRIEF as SESSION STATE ONLY -- what shipped with
+   SHAs, what is in flight, hazards found, LIVE vs BANKED. It must NOT
+   duplicate the order (dual sources of truth are how S2-D died).
+7) Append LR entries earned. Update memory. One-purpose docs commit,
+   push command + ls-remote verify.
 ```
 
 ## Notes

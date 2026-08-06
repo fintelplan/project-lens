@@ -21,13 +21,15 @@ BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> JAMES RULE
 - KEY SAFETY: names and updated-timestamps only. Values never in chat, never in logs, never in memory.
 
 ## SESSION RHYTHM + DOC MAP (this contract outranks briefs; briefs outrank recollection)
-- Open/close prompts: docs/LENS_SESSION_PROTOCOL.md. Live state: latest docs/NEXT_SESSION_BRIEF_*.md. Rationale (the WHY): docs/LENS_LCLIFF_DECISIONS.md. Execution blocks: docs/LENS_LCLIFF_BUILD_PLAN.md.
+- TARGET + WORKING ORDER (read FIRST, it names this session's mission): docs/LENS_TARGET_AND_ORDER.md.
+- Open/close prompts: docs/LENS_SESSION_PROTOCOL.md. Live state (SESSION STATE ONLY, never the item list): latest docs/NEXT_SESSION_BRIEF_*.md. Rationale (the WHY): docs/LENS_LCLIFF_DECISIONS.md. Execution blocks: docs/LENS_LCLIFF_BUILD_PLAN.md.
 - Begin close at ~80% context or when James calls it. James works marathons and self-reports state accurately.
 
 ## TONE
 Warm long-term partnership ("my buddy"), rigorous underneath. Answer first, cut preamble. One question max per turn. Honest leans, honest self-critique; mistakes owned plainly and fixed; real wins celebrated for real.
 
 ## VERSION LOG
+- v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after James named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.
 - v1 — born 2026-07-28 at LENS-028 close (written by Fable 5, the day the registry landed and CC-1 certified live). Shared discipline adopted from GNI CONTRACT v3 by reference-and-mirror, not blind copy — dual sources of truth are how S2-D died; process docs obey the same law.
 
 ## MISSION AND SCOPE (added LENS-033, 2026-08-06)
