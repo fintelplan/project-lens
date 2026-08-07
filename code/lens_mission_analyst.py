@@ -57,7 +57,16 @@ MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
 MAX_S1_CHARS     = 6000
 MAX_S2_CHARS     = 3000
-MAX_TOTAL_CHARS  = 28000
+# CC-47: S3 context is appended LAST and was being dropped whenever S2
+# filled the cap -- reopening the S1->S2->S3->MA circuit that closes at
+# fetch_s3_context(). Measured 2026-08-07 (run 31071967358 / MA #257):
+# the S3 section is 949 chars and MA ran at prompt=7741 completion=2606
+# total=10347, i.e. ~34% of the Cerebras 30,000-token ceiling. So the
+# circuit was being cut over ~3% of the budget while two thirds of the
+# envelope sat unused. S3 now gets a RESERVED slot, and the cap rises by
+# exactly that reserve so S2 keeps the same 28,000 it has today.
+S3_RESERVE_CHARS = 4000
+MAX_TOTAL_CHARS  = 32000
 
 # ── TPMGuard ──────────────────────────────────────────────────────────────────
 class TPMGuard:
@@ -436,8 +445,10 @@ def build_synthesis_prompt(
             f"Flagged: {flagged_str}\n"
             f"Evidence: {evidence_str}\n\n"
         )
-        if total_chars + len(entry) > MAX_TOTAL_CHARS:
-            log.info(f"Prompt cap reached at S2 entry for {analyst}")
+        if total_chars + len(entry) > MAX_TOTAL_CHARS - S3_RESERVE_CHARS:
+            log.info(f"Prompt cap reached at S2 entry for {analyst} "
+                     f"(total_chars={total_chars} s2_budget="
+                     f"{MAX_TOTAL_CHARS - S3_RESERVE_CHARS})")
             break
         sections.append(entry)
         total_chars += len(entry)
