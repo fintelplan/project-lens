@@ -16,7 +16,7 @@ d1acc5d. CI green. Working tree clean at close.
 | 670b61d | CC-46 S2-B strips markup -- CERTIFIED MA #257 |
 | 657f5cf | MISSION AND SCOPE + DISCOVERY POLICY + target file (shipped 2 of 3 it claimed) |
 | abe75ee | completed what 657f5cf's message already claimed |
-| d1acc5d | CC-47 S3 context reserved slot -- AWAITING CERT |
+| d1acc5d | CC-47 S3 context reserved slot (cert status: see the order) |
 
 ## IN FLIGHT
 Order item 1 is the declared next mission. The two riders at the end of the
