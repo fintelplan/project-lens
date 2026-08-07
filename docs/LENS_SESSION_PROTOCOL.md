@@ -28,6 +28,11 @@ LENS CLOSE (LR-101..104):
    sub. Classify each item against the DECLARED TARGET (absolute rule: a
    silent live failure is urgent under any target). If the target itself
    changed, regenerate the whole order and say why.
+   The regenerated order carries a CHANGED THIS REGENERATION section:
+   items closed, merged, retired, re-ranked -- one line each. git log -p
+   keeps every version; the section says WHY it changed.
+   If the target is ACHIEVED, run the PHASE TRANSITION ritual instead
+   (LENS_CONTRACT.md) -- James declares the new target, not Claude.
 5) Declare NEXT session's mission = new top of the order.
 6) Rewrite NEXT_SESSION_BRIEF as SESSION STATE ONLY -- what shipped with
    SHAs, what is in flight, hazards found, LIVE vs BANKED. It must NOT

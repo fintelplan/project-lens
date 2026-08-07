@@ -49,3 +49,33 @@ Findings are never suppressed. They are absorbed through five steps.
 - WHEN TO ANALYSE: recording is always immediate; analysis happens at CLOSE. Test: "does this change what I should do in the next hour?" If no, record and continue. Three triggers override: (a) the finding is UPSTREAM of the current mission and would make the pending change harmful; (b) a live position is failing silently now; (c) perishable evidence -- bank it. NOT triggers: "this is interesting", "I'm already in the file." Default when unsure: record and continue.
 - STOPGAP vs ROOT FIX: an urgent symptom earns a stopgap now; the root keeps its own place in the order. A stopgap NEVER closes a root.
 - ONE MISSION PER SESSION, declared at open, closed against. A session that ships one thing and logs six is a SUCCESS.
+
+## PHASE TRANSITION (added LENS-033, 2026-08-07)
+A target is FINISHED when its definition of done is met -- not when we get
+bored, and not when something more interesting appears. A half-finished phase
+abandoned for a new one is how the loop restarts under a different name.
+
+Regenerating the order is NOT changing the target. The phase ends only when
+the order has no urgent and no important items left -- only accepted retire
+candidates and lifecycle maintenance.
+
+When it does, four steps, in this order:
+1. DECLARE THE TARGET ACHIEVED, WITH EVIDENCE -- the specific runs and
+   measurements that prove it, not "we think we are done." Skipping this step
+   is exactly what happened after the Aug-16 cliff: it was achieved and
+   certified, never declared, and the working target drifted to a much larger
+   one undeclared. That drift is what grew the item list 13 -> 15 in a single
+   session.
+2. ARCHIVE THE COMPLETED ORDER -- git mv to
+   docs/archive/LENS_TARGET_AND_ORDER_<target-slug>.md. An archived order is
+   history and SHOULD be named; only the live one keeps the fixed path, so
+   the OPEN prompt can always name it and no agent has to hunt for the
+   current version.
+3. DECLARE THE NEW TARGET -- JAMES RULES THIS. A target states what Lens is
+   FOR at this stage. Claude proposes options with honest leans; James
+   decides. Claude does not choose a target.
+4. REGENERATE THE ORDER FROM SCRATCH AGAINST THE NEW TARGET. Ranks are
+   TARGET-RELATIVE, so every surviving item is RE-CLASSIFIED, never
+   inherited. Precedent: RT teasers ranked "able to wait" under the cliff
+   target and URGENT under the no-silent-failure target. The same reversal
+   will happen again.
