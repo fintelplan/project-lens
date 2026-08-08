@@ -411,12 +411,19 @@ def build_synthesis_prompt(
 ) -> str:
     sections = []
     total_chars = 0
+    _corr_chars = 0
+    _s1_chars = 0
+    _s1_in = 0
+    _s2_chars = 0
+    _s2_in = 0
+    _s3_chars = 0
 
     # ── Mandatory corrections FIRST (hard channel) ────────────────────────────
     corrections_block = format_corrections_for_prompt(corrections)
     if corrections_block:
         sections.append(corrections_block + "\n")
         total_chars += len(corrections_block)
+        _corr_chars = len(corrections_block)
 
     # ── S1 Reports ────────────────────────────────────────────────────────────
     sections.append("=== SYSTEM 1 REPORTS (Analytical Lenses — READ AFTER APPLYING CORRECTIONS) ===\n")
@@ -427,6 +434,8 @@ def build_synthesis_prompt(
             break
         sections.append(entry)
         total_chars += len(entry)
+        _s1_chars += len(entry)
+        _s1_in += 1
 
     # ── S2 Reports ────────────────────────────────────────────────────────────
     sections.append("\n=== SYSTEM 2 REPORTS (Psychological + Adversarial Intelligence) ===\n")
@@ -452,6 +461,8 @@ def build_synthesis_prompt(
             break
         sections.append(entry)
         total_chars += len(entry)
+        _s2_chars += len(entry)
+        _s2_in += 1
 
     # ── S3 Context (Pattern Intelligence + Structural Trends) ──────────────────
     if s3_context:
@@ -476,6 +487,7 @@ def build_synthesis_prompt(
         if total_chars + len(s3_section) <= MAX_TOTAL_CHARS:
             sections.append(s3_section)
             total_chars += len(s3_section)
+            _s3_chars = len(s3_section)
             log.info(f"S3 context added to MA prompt ({len(s3_section)} chars)")
         else:
             # CC-45: report WHAT was dropped and by how much, so the cap
@@ -488,6 +500,12 @@ def build_synthesis_prompt(
 
     prompt = "".join(sections)
     log.info(f"Synthesis prompt: {len(prompt)} chars ({len(corrections)} corrections prepended)")
+    log.info(f"MA prompt budget: corrections={_corr_chars} "
+             f"s1={_s1_chars} ({_s1_in}/{len(s1_reports)} reports) "
+             f"s2={_s2_chars} ({_s2_in}/{len(s2_reports)}) "
+             f"s3={_s3_chars} counted_total={total_chars} "
+             f"actual_prompt={len(prompt)} "
+             f"s1_allotment={int(MAX_TOTAL_CHARS * 0.6)} cap={MAX_TOTAL_CHARS}")
     return prompt
 
 
