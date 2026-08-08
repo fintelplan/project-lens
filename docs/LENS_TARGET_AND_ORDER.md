@@ -37,7 +37,7 @@ R5  The tests do not run. META-ROOT.
    the reset boundary. It is NOT derivable from what we hold.
    The fix is downstream of item 2.
 
-2  S2-E EXCLUDED FROM MISSION ANALYST, EVERY WAVE  [R3]
+1b S2-E EXCLUDED FROM MISSION ANALYST, EVERY WAVE  [R3]
    "Prompt cap reached at S2 entry for S2-E" fires in BOTH slots:
    total_chars=27664 evening 2026-08-07, 27465 morning 2026-08-08 against
    an s2_budget of 28000. S2 runs at ~98% of budget CHRONICALLY, so the
