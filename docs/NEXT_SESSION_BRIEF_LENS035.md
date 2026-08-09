@@ -67,5 +67,10 @@ remain.
   covers a live silent failure; my caution was stricter than the rule.
 - My mint script's heading counter is off by one (42 reported, 41 actual).
   Harmless only because the assertion was relative.
+- I told James that MA had been synthesising without S1 on EVERY wave, and
+  that it drives the daily brief and CRITICAL ALERT. ONE wave is measured
+  (#261); #260 is a strong inference; the brief/alert coupling is banked,
+  not verified this session. Order item 1 now carries the scope note and
+  item 1.5 is the retro test that would settle it.
 - ESTIMATE THAT HELD: I predicted the header undercount at "~150+" before
   measuring. It is exactly 149.

@@ -40,6 +40,16 @@ R6  PROPOSED, JAMES RULES: no position verifies that its INPUTS ARRIVED.
    MEASURED on MA #261: corrections=18560 s1=0 (0/4 reports) s2=9341 (3/30).
    All four S1 lenses and 27 of 30 S2 analysts were excluded, and the run
    reported SUCCESS. Silent live failure: absolute rule.
+   SCOPE, HONESTLY: ONE WAVE IS MEASURED (#261). The instrument did not
+   exist before edfe708, so no earlier wave has an s1 figure at all. #260 is
+   a STRONG INFERENCE ONLY -- same 27 corrections, total_chars=27878 leaving
+   ~9,318 for S1+S2 against #261's S2 alone at 9,341, which points at s1=0
+   but assumes #260's block matched #261's. CHRONIC IS NOT ESTABLISHED.
+   The MECHANISM is structural and lives in the code, not in one wave.
+   That MA drives the daily brief and the CRITICAL ALERT is BANKED from an
+   earlier session, not verified here. Commit messages 7b06437 and c6850f1
+   say "has been synthesising", which overstates duration -- the docs are
+   correctly scoped, those two messages are not.
    CANARY DOCTRINE: S1 is the canary. Its readings never reach synthesis,
    while the IMMUNE SYSTEM's output (S2 corrections) fills the prompt. MA
    synthesises from S2's verdicts about evidence it cannot see. Epistemic
@@ -59,6 +69,13 @@ R6  PROPOSED, JAMES RULES: no position verifies that its INPUTS ARRIVED.
         arrival check -- this is what makes the failure silent.
    1.4  injection_goal is also unclipped; next candidate if 1.1's measured
         corrections figure is still large.
+   1.5  CONVERT THE INFERENCE INTO A MEASUREMENT -- retro test, no wave
+        needed, runnable today. MA writes macro reports whose
+        evidence_sources name the S1 lens or S2 analyst supporting each
+        claim. Query lens_macro_reports back over weeks and count rows
+        citing any S1 lens. Zero S1 citations across the history = chronic,
+        MEASURED. This is the honest answer to "how long has this been
+        true", and it does not require waiting for a wave.
 
 2  GROQ TPD SATURATION IS CHRONIC  [R3/R4]
    Measurement CLOSED; the burn is not. Every Collection wave for 72+ hours
