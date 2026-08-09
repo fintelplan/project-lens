@@ -1,173 +1,159 @@
 # LENS - CURRENT TARGET AND WORKING ORDER
-Regenerated 2026-08-07 at LENS-033 close. SUPERSEDES the 2026-08-06 version.
+Regenerated 2026-08-09 at LENS-034 close. SUPERSEDES the 2026-08-07 version.
 Governed by LENS_CONTRACT.md (MISSION AND SCOPE + DISCOVERY POLICY).
 
 ## CURRENT TARGET  (unchanged)
 **Lens produces valid intelligence, unattended, with no silent failure.**
 Declared 2026-08-06. All ranks below are relative to THIS target.
 
-## ROOTS  (unchanged; no new root opened this session)
+## ROOTS
 R1  No source of truth about what the system IS.
 R2  Written-but-never-wired code, with no detector.
 R3  Numbers set once, never re-derived against reality.
-R4  Input quality never verified -- the collector does not check what it
-    collected.
+R4  Input quality never verified.
 R5  The tests do not run. META-ROOT.
+R6  PROPOSED, JAMES RULES: no position verifies that its INPUTS ARRIVED.
+    Distinct from R2 -- the code is wired and runs; its inputs vanish
+    between fetch and use. Evidence: MA's guard tests the FETCHED S1 list
+    while the prompt received zero; 27 of 30 S2 reports vanish unremarked.
 --  NOT A ROOT WE CONTROL: provider lifecycle (D-014 weather).
 
 ## CLOSED THIS SESSION
-- U1b -- S2-B strips markup. CERTIFIED on MA #257: 42,953 -> 18,352 prompt
-  tokens, 87.5% -> 38.7% of TPM, 200/200 articles kept, S2-B still 4 findings.
-- CC-47 -- S3 context reserved slot. CERTIFIED on MA 660da99 (14:31 UTC):
-  total_chars=27664 at the S2 break plus an 876-char S3 section = 28540,
-  which EXCEEDS the old 28000 cap -- without the reserve S3 would have
-  been dropped on that wave. S2's budget stayed at 28000.
-- CC-43 -- regular_report Groq leg 3 removed. CERTIFIED on Aug-7 morning wave.
+- ITEM 1 (Groq TPD) MEASUREMENT COMPLETE. No -day header exists on any Groq
+  response. Groq uses CONTINUOUS LEAKY-BUCKET REFILL at Limit/86400 per sec,
+  verified to the millisecond on 7 readings across 2 buckets. TPD refill =
+  2.3148 tokens/sec = 8,333/hour. THERE IS NO RESET BOUNDARY TO FIND.
+- 6d -- CC-48 shipped (edfe708) and CERTIFIED on MA #261: the budget line
+  sums exactly (18560+0+9341+975=28876) and the predicted 149-char header
+  undercount was confirmed.
+- RIDER "CC-47 cert" CLOSED on MA #260: the S2 break and the S3 add fired on
+  the same wave.
+- RIDER "S1 side-effect" ANSWERED: S1 was consuming ZERO, not eating S2's
+  budget. The corrections block was.
+- OLD ITEM 1b SUBSUMED into new item 1 -- S2-E exclusion is one symptom of a
+  larger starvation (3 of 30 S2 reports reach MA, not 29 of 30).
 
 ## WORKING ORDER
 
 ### URGENT
-1  GROQ TPD, ORG-SCOPED  [R3]
-   Limit 200000 / Used 199747, scoped to the organization -- LR-094 per-key
-   isolation does NOT cover TPD. Collection's entity storm can starve MA's
-   Groq positions, and it degraded entity enrichment INSIDE a run that
-   reported success. Absolute rule: silent live failure.
-   FIRST STEP IS A MEASUREMENT, NOT A FIX: read
-   x-ratelimit-remaining-tokens-day from a live Groq response and establish
-   the reset boundary. It is NOT derivable from what we hold.
-   The fix is downstream of item 2.
+1  MISSION ANALYST SYNTHESISES WITHOUT ITS INPUTS  [R3 + R6]
+   MEASURED on MA #261: corrections=18560 s1=0 (0/4 reports) s2=9341 (3/30).
+   All four S1 lenses and 27 of 30 S2 analysts were excluded, and the run
+   reported SUCCESS. Silent live failure: absolute rule.
+   CANARY DOCTRINE: S1 is the canary. Its readings never reach synthesis,
+   while the IMMUNE SYSTEM's output (S2 corrections) fills the prompt. MA
+   synthesises from S2's verdicts about evidence it cannot see. Epistemic
+   diversity at the synthesis position is ZERO -- structurally worse than
+   S1-001, where the denominator merely lied.
+   PERVERSITY: more S2 findings -> more corrections -> S1 more completely
+   excluded. Failure scales with upstream health, which is why it never
+   looked like failure.
+   1.1  CC-49 (7b06437) SHIPPED AS A STOPGAP -- mandatory reason clipped to
+        240. AWAITING CERT on the next wave. A stopgap NEVER closes a root.
+   1.2  ROOT FIX: replace MAX_TOTAL_CHARS * 0.6 with an ABSOLUTE S1
+        allotment, sized from CC-49's post-clip measurement, so S1's
+        presence stops depending on how large the corrections block is.
+        Do NOT ship the floor alone: at 18560 corrections an 8000 floor
+        leaves ~1440 for S2 and starves it instead.
+   1.3  The :659 guard tests the FETCHED list, not the prompt. Add an
+        arrival check -- this is what makes the failure silent.
+   1.4  injection_goal is also unclipped; next candidate if 1.1's measured
+        corrections figure is still large.
 
-1b S2-E EXCLUDED FROM MISSION ANALYST, EVERY WAVE  [R3]
-   "Prompt cap reached at S2 entry for S2-E" fires in BOTH slots:
-   total_chars=27664 evening 2026-08-07, 27465 morning 2026-08-08 against
-   an s2_budget of 28000. S2 runs at ~98% of budget CHRONICALLY, so the
-   break is systematic, not occasional. The loop breaks AT the S2-E entry,
-   so S2-E's evidence -- and anything ordered after it -- never reaches MA's
-   synthesis, while S2-E still writes 4 findings to the DB every wave.
-   Same intelligence-validity class as the dropped S3 circuit: the synthesis
-   position is not seeing its inputs. NOT strictly silent -- the log line
-   existed before CC-47 without the numbers and was simply never read.
-   HEADROOM EXISTS: MA total=10461 is ~35% of the Cerebras 30,000 ceiling;
-   a 45,000-char cap would sit near 58%.
-   BLOCKED ON 6d: raising MAX_TOTAL_CHARS again also moves the S1 loop's
-   * 0.6 fraction again -- the exact assumption that was wrong in CC-47.
-   Log S1's share FIRST, then size the cap with all three consumers visible.
+2  GROQ TPD SATURATION IS CHRONIC  [R3/R4]
+   Measurement CLOSED; the burn is not. Every Collection wave for 72+ hours
+   hit TPD: #248 Used 199742, #249 199632, #250 199458, #251 199439. The org
+   sits pinned at the 200,000 ceiling consuming refill as fast as it arrives.
+   429s log as ENTITY WARNING and never touch exit status.
+   THE FIX IS DOWNSTREAM OF ITEM 3 -- only cutting call volume stops it.
+   2.1  TPD SCOPE STILL UNPROVEN. The 429 names an organization, but the
+        SAME wording appears on buckets we measured as PER-KEY (918 vs 999
+        remaining-requests). Test: one ~700-token call on a second key while
+        the entity key is TPD-blocked mid-Collection. 200 => per-key.
 
 ### IMPORTANT
-2  INPUT-QUALITY CLUSTER  [R4] -- one problem, three faces, in this order
-   2.1  RT full-text fetch. RT is stored as RSS teasers ending
-        "Read Full Article at RT.com" while S2-F attributes influence
-        operations to it. Owner is fetch_text.py (NOT lens_fetch_tierc.py,
-        which is IMF/World Bank/UN Comtrade data).
-   2.2  U1a entity_extract visible-text gate -- ONLY after 2.1. As scoped it
-        drops 15 RT articles; after 2.1 it drops only the 45 Google News
-        link stubs, whose entire body is a base64 tracking URL.
-   2.3  TPD burn falls out of 2.2 -- eligible articles 116 -> 55 halves the
-        entity_extract call volume that produced item 1.
+3  INPUT-QUALITY CLUSTER  [R4] -- one problem, three faces, in this order
+   3.1  RT full-text fetch. Owner is fetch_text.py.
+   3.2  U1a entity_extract visible-text gate -- ONLY after 3.1.
+   3.3  TPD burn falls out of 3.2: eligible articles 116 -> 55.
 
-3  I5 -- CI  [R5 meta-root]
-   Rebuild the 2 stale response-guard fixtures from PRODUCTION output
-   (both positions write to injection_reports; real shapes live in the
-   evidence column), THEN wire pytest into CI. That order matters: wiring
-   first turns CI red on a known-benign failure and trains everyone to
-   ignore it. Local today: 2 failed / 182 passed. CI runs none of them.
+4  I5 -- CI  [R5 meta-root]
+   Rebuild the 2 stale response-guard fixtures from PRODUCTION output, THEN
+   wire pytest into CI. Local: 2 failed / 182 passed. CI runs none.
 
-4  DEAD-SYMBOL / UNWIRED-WRITE CI GATE  [R2]
-   Retires the class in both repos. Catches 4.1 and 4.2 mechanically.
-   4.1  CC-44 -- make get_llm_client() honour _FORCE_PROVIDER so Regular
-        Report has a real leg 2. Needs a Cerebras leg-2 probe at the real
-        71,286-char prompt first.
-   4.2  I6 DAILY_BUDGET ruling -- lean C (fix the timestamp, arm nothing,
-        relabel the counter honestly), then A or B once A3 has landed.
+5  DEAD-SYMBOL / UNWIRED-WRITE CI GATE  [R2]
+   5.1  CC-44 -- get_llm_client() must honour _FORCE_PROVIDER.
+   5.2  I6 DAILY_BUDGET ruling -- lean C, then A or B once A3 lands.
 
-5  GENERATED SYSTEM MAP  [R1]
-   5.1  The ten stale docstrings -- nearly free after 5, and they rot again
-        before it.
+6  GENERATED SYSTEM MAP  [R1]
+   6.1  The ten stale docstrings. NOTE: MA's module docstring still claims
+        "Input: lens_reports (S1) + injection_reports (S2)" -- item 1 proves
+        that false. A docstring that lies about INPUTS is not cosmetic.
+   6.2  SYMBOL COLLISION: MAX_TOTAL_CHARS is 32,000 in lens_mission_analyst
+        and 800,000 in the S2-B coordinator. Same name, two values. Any
+        cross-module reasoning about "the cap" is unsafe until renamed.
 
-6  LIFECYCLE
-   A3 -- delete the Gemini legs on s2b/s3b. NOW UNBLOCKED: S2-B has 30,648
-   tokens of headroom. Recovers ~7.5 min of every wave.
-   I7 -- gemini-2.5-flash dies Oct 16 and lens2 runs on it. Act ~Oct 10.
+7  LIFECYCLE
+   A3 -- delete the Gemini legs on s2b/s3b. Recovers ~7.5 min per wave.
+   I7 -- gemini-2.5-flash dies Oct 16; lens2 runs on it. Act ~Oct 10.
 
-### IMPORTANT (continued)
-6b REGISTER AND ROUTING  [R1/R5]
-   6b.1 REGISTER-INTEGRITY GATE (was B7 in the LENS-032 brief). It counts
-        rule DEFINITIONS across BOTH formats -- "^## LR-" headings AND the
-        compact "^LR-\d{3}\s" entries -- excluding prose cross-references,
-        then diffs against the expected unbroken sequence. Both gates in use
-        today pass on a register that has silently lost a rule; this is the
-        only thing that would have caught LR-124..126 vanishing. Lives in
-        tests/ so CI enforces it.
-        DECLARED: this item was DROPPED from the 2026-08-07 regeneration
-        without a retire decision. That was a violation of the RETIRE clause
-        in its first application. Restored here.
-   6b.2 MINT LR-138 -- an artifact is not verified by its own consistency.
-        Before committing a change AGREED in conversation, grep one
-        distinguishing phrase per agreed element and report the hits.
-        git log --stat proves message-vs-contents; it cannot prove
-        contents-vs-agreement. Evidence: 657f5cf described 3 changes and
-        shipped 2; fcde3ad shipped 1 of 6 agreed prompt changes and its
-        message was ACCURATE. Register is lens-DOC-002_rules.md in the repo
-        ROOT, CRLF 402 / bare_LF 248 -- append onto raw bytes, assert the
-        bare-LF count unchanged either side.
-   6b.3 AMEND LR-078 -- never pipe a heredoc into python (python - << EOF);
-        always cat > file << EOF then python file. Never place a literal
-        backtick in a heredoc body; build fences with chr(96). Evidence:
-        two stalls in one session, one of which produced 657f5cf.
-   6b.4 ADD THE ROUTING RULE to LENS_CONTRACT.md: a finding is routed ONCE
-        by what it is -- do (order) / learned (LR) / chosen (D) / true now
-        (brief). A finding in two homes is a routing error. Then promote the
-        durable hazards out of the briefs into the register: the HAZARDS
-        section has been acting as a rules register nobody promotes from,
-        which is why LENS-032 carried eleven hazards and the register has
-        not gained a rule since LR-137.
+8  REGISTER AND ROUTING  [R1/R5]
+   8.1  REGISTER-INTEGRITY GATE. Counts rule DEFINITIONS across BOTH
+        formats, excluding prose cross-references, diffed against the
+        expected unbroken sequence. Lives in tests/ so CI enforces it.
+   8.2  MINT LR-138 -- an artifact is not verified by its own consistency.
+        Register is lens-DOC-002_rules.md in the repo ROOT, CRLF 402 /
+        bare_LF 248 -- append onto raw bytes, assert bare-LF unchanged.
+   8.3  AMEND LR-078 -- never pipe a heredoc into python; never place a
+        literal backtick in a heredoc body; build fences with chr(96).
+   8.4  ADD THE ROUTING RULE to LENS_CONTRACT.md: a finding is routed ONCE
+        by what it is. Then promote durable hazards out of the briefs.
+   8.5  NEW LRs EARNED THIS SESSION, to mint with 8.2:
+        - A guard whose expected value is HAND-DERIVED is the same R3 defect
+          the guard exists to catch. Derive it from the edit list.
+        - Never put a rollback command in the same message as the apply
+          command. A rollback in a paste block is a rollback that gets run.
+        - Assert line endings RELATIVE to the file's state before the patch,
+          never absolutely: autocrlf will flip this repo's LF files on the
+          next Windows checkout.
 
-6c WAVE SEQUENCING -- NO ORDERING GUARANTEE  [R3]
-   Collect and Manage+Analyze are independently scheduled AND independently
-   lagged. MA is nominally 28 min behind Collect; Collect has measured
-   16m08s, 23m35s and 27m15s. Lag order is NOT guaranteed -- on Aug 5, S2-F
-   (cron 30) started BEFORE MA (cron 28). If MA starts before Collect
-   finishes it analyses the PREVIOUS wave's articles and reports SUCCESS,
-   which is a silent failure under the declared target. Also unexamined:
-   GDELT fires ~17 min into MA's ~27 min run, so enrichment writes land
-   mid-analysis; Compendium and Ref Export both fire at 30 2.
-
-6d S1 BREAK LOG -- the missing half of the CC-47 side-effect check  [R3]
-   The S1 loop uses MAX_TOTAL_CHARS * 0.6 and has NO break log, so S1's
-   share of total_chars is invisible. CC-47 raised the cap, moving S1's
-   allotment 16800 -> 19200; whether S1 consumes it cannot be answered
-   without this log. Tonight's total_chars=27664 is the FIRST measurement
-   of the S2 break, so there is no before-figure to compare against.
-   Promoted from OTHERS: it is the only way to settle whether CC-47 cost
-   S2 content.
+9  WAVE SEQUENCING -- NO ORDERING GUARANTEE  [R3]
+   Collect and MA are independently scheduled AND independently lagged. MA
+   is nominally 28 min behind Collect; Collect has run 27m15s. If MA starts
+   first it analyses the PREVIOUS wave and reports SUCCESS. Same R6 family.
 
 ### OTHERS
-7  B1/B2/B3 provenance (the 1M-context stamp, S2-B's prompt claiming 1M to a
-   128k model, S3-B's doubled system prompt) - the S1 loop has no break log,
-   so S1 truncation is invisible - LR-078 amendment (never pipe a heredoc to
-   python; never put a literal backtick in a heredoc body) - two hardcoded LR
-   ranges in the protocol, unverified against the current register -
-   analyze_lens_multi.py (fresh session only).
+10 total_chars UNDERCOUNTS the prompt by 149 chars (section headers and the
+   corrections newline are never counted) - check_groq_tpm is DEFINED TWICE
+   in lens_s2_orchestrator.py, byte-identical, second shadows first - four
+   near-duplicate copies of that helper across s2/s3 orchestrators -
+   GROQ_S2F_API_KEY referenced in code, absent from local env (lead, not a
+   verdict: local env is not Actions secrets) - B1/B2/B3 provenance - two
+   hardcoded LR ranges in the protocol - analyze_lens_multi.py (fresh
+   session only).
 
-8  RETIRE CANDIDATES -- decide at next regeneration
-   S3-B's 600-char summary cap (~5x unused headroom). This is an
-   IMPROVEMENT, not a defect; under the declared target it will never rank.
-   LR-093's 23 patch scripts in repo root -- now with a measured cost, they
-   contaminate the cliff ledger. Either that cost promotes it, or it closes.
+11 RETIRE CANDIDATES -- decide at next regeneration
+   S3-B's 600-char summary cap. LR-093's 23 patch scripts in repo root.
 
 ## RIDERS ON CLOSED ITEMS  (one grep each, not work items)
-- CC-47 cert: "S3 context added to MA prompt" must appear on a wave where S2
-  fills its budget.
-- S1 SIDE-EFFECT CHECK: the S1 loop uses MAX_TOTAL_CHARS * 0.6, so CC-47
-  moved S1's allotment 16,800 -> 19,200. I asserted S1 would not use it
-  WITHOUT MEASURING. If "Prompt cap reached at S2 entry" fires with
-  total_chars near 19,200, S1 is eating S2's budget and the S1 allotment
-  must become an absolute constant.
+- CC-49 cert: "MA prompt budget:" on the next wave -- corrections well below
+  18,560 and s1 NON-ZERO for the first time ever measured.
+- CC-48 remains certified; its numbers must keep summing to counted_total.
 
 ## STANDING BLOCKER
 CC-1d must not ship. CHARS_PER_TOKEN 3 -> 4 over-estimates capacity.
-Weakened but not retired: S2-B now sits at 38.7%, not 95.4%. Re-derive
-against measured ratios, never assume.
+Re-derive against measured ratios, never assume.
+
+## CHANGED THIS REGENERATION
+- Item 1 (Groq TPD) CLOSED as measured; its unfinished burn became item 2.
+- Item 1b SUBSUMED into the new item 1: it was one symptom of a wider
+  starvation, and its proposed 45,000 cap would NOT have fixed the cause.
+- 6d CLOSED (CC-48 shipped and certified); it produced the new item 1.
+- NEW item 1 opened at URGENT -- silent live failure, absolute rule.
+- R6 PROPOSED as a new root; James rules. It would re-rank item 9 upward.
+- Old 2->3, 3->4, 4->5, 5->6, 6->7, 6b->8, 6c->9, 7->10, 8->11. Numbering
+  verified unique: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.
+- Both riders from the previous order CLOSED, not carried.
 
 ## NEXT SESSION'S MISSION
-Item 1 -- the Groq TPD MEASUREMENT. Not a fix.
+Item 1.1 -- CERT CC-49 from the live wave. Then item 1.2, the root fix.

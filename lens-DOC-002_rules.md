@@ -648,3 +648,46 @@ drift. Where registry and wire disagree, that divergence is a SEPARATE defect wi
 own commit -- never resolved by writing the aspiration into a record of what happened.
 Scope: every DB write, log line or report field naming a model or provider. Recurs on
 every fallback leg in the registry. Amends LR-105.
+
+## LR-138 — An artifact is not verified by its own consistency (LENS-033)
+Agreement happens in conversation; the write happens separately; nothing checks that
+the write covers the agreement. git log --stat proves message-vs-contents. It cannot
+prove contents-vs-agreement. Evidence: 657f5cf described three changes and shipped two;
+fcde3ad shipped one of six agreed prompt changes and its message was ACCURATE. Before
+committing a change agreed in conversation, grep ONE DISTINGUISHING PHRASE PER AGREED
+ELEMENT and report the hits; absence of a hit means that element did not land. The
+presence check is not enough on its own: 53fe0e3 created a DUPLICATE item number and a
+presence-only checklist passed it, so also assert uniqueness whenever an ordered list
+gains an item.
+Scope: every document commit whose content was agreed in conversation before it was written.
+
+## LR-139 — A guard whose expected value is hand-derived is the defect it exists to catch (LENS-034)
+CC-48's patch script asserted a line delta of 13 that I had counted by hand. The real
+delta was 18. The guard fired and nothing was written, so it failed safe -- but the
+number was a banked estimate living inside a tool built to stop banked estimates, which
+is root R3 reproduced in the instrument. Derive the expectation from the same data the
+change is made from: sum over the edit list of new newlines minus old newlines. The same
+applies to line-ending assertions: assert RELATIVE to the file's state read at the start
+of the patch, never absolutely. This repo's autocrlf converts LF files to CRLF on the
+next Windows checkout, so a hardcoded must-be-LF assert starts failing on a file nobody
+touched.
+Scope: every assertion inside a patch script.
+
+## LR-140 — Never put a rollback command in the same message as the apply command (LENS-034)
+CC-48 applied cleanly and compiled. The emergency restore one-liner offered in the same
+message was then pasted along with everything else, reverting a good patch; the commit
+was lost for a turn and the whole state had to be re-established. A rollback sitting in a
+paste block is a rollback that gets run. Offer recovery separately, on request, and only
+after the apply has been verified.
+Scope: every patch or command block handed over for execution.
+
+## LR-141 — Verify what ARRIVED, not what was fetched (LENS-034)
+Mission Analyst's guard tests the FETCHED S1 list and passes when four reports come back.
+MA #261 measured what was actually assembled: corrections=18560 s1=0 (0/4 reports)
+s2=9341 (3/30). Zero analytical-lens input reached the synthesis prompt and the run
+reported SUCCESS. A position that counts its inputs at fetch time and never at use time
+cannot detect its own starvation, and the failure scales with upstream health -- more S2
+findings produce more corrections, which exclude S1 more completely. Where a consumer
+assembles inputs under a budget, log what was INCLUDED against what was AVAILABLE, and
+treat zero inclusion of a required input as a failure rather than a quiet loop break.
+Scope: every position that assembles bounded input from a larger fetched set.
