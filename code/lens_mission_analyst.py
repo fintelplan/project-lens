@@ -327,6 +327,13 @@ def apply_s2_corrections(s2_reports: list[dict]) -> tuple[list[dict], str]:
     return corrections, worst_depth
 
 
+# CC-49: mandatory correction prose is clipped. The advisory branch below
+# already clips at 120; mandatory gets twice that allowance because these
+# corrections are non-negotiable. 27 unclipped reasons filled 18,560 chars
+# and excluded ALL FOUR S1 reports from the synthesis prompt (MA #261).
+MAX_CORRECTION_REASON_CHARS = 240
+
+
 def format_corrections_for_prompt(corrections: list[dict]) -> str:
     """
     Format mandatory corrections as a hard-constraint block for the synthesis prompt.
@@ -352,7 +359,7 @@ def format_corrections_for_prompt(corrections: list[dict]) -> str:
             f"CORRECTION {i} [{c['action']}] — from {c['analyst']} "
             f"(contamination: {c['contamination_depth']}, confidence adjustment: {adj_str})"
         )
-        lines.append(f"  Reason: {c['reason']}")
+        lines.append(f"  Reason: {c['reason'][:MAX_CORRECTION_REASON_CHARS]}")
         if c.get("injection_goal") and c["injection_goal"] != "none detected":
             lines.append(f"  Injection goal was: {c['injection_goal']}")
         lines.append("")
