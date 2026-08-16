@@ -71,10 +71,22 @@ MAX_S2_CHARS     = 3000
 # the S3 section is 949 chars and MA ran at prompt=7741 completion=2606
 # total=10347, i.e. ~34% of the Cerebras 30,000-token ceiling. So the
 # circuit was being cut over ~3% of the budget while two thirds of the
-# envelope sat unused. S3 now gets a RESERVED slot, and the cap rises by
-# exactly that reserve so S2 keeps the same 28,000 it has today.
+# envelope sat unused. S3 now gets a RESERVED slot. The rest of that
+# sentence -- "so S2 keeps the same 28,000 it has today" -- was true until
+# CC-51 below gave S2 its own absolute allotment; the reserve now serves
+# only as a backstop alongside it.
 S3_RESERVE_CHARS = 4000
-MAX_TOTAL_CHARS  = 32000
+# CC-51: ABSOLUTE per-tier allotments. Measured on 16 waves (MA #261-#276):
+# the corrections block is assembled FIRST and was counted inside S1's
+# fraction-of-the-cap allowance, so S1 broke on its first iteration and
+# _s1_in NEVER exceeded 1 of 4. Sizes: S1 entries 4,015-5,193 (ceiling
+# ~6,060 with the wrapper), so four lenses need <= 24,240; S2 observed max
+# 12,738. MAX_TOTAL_CHARS is now a BACKSTOP, not an allocator: 56,000 keeps
+# fit_max_tokens at a full 5,000 (usable 27,600 - 60,129//3 = 7,557) and
+# TPMGuard quiet (20,043 + 5,000 = 25,043 < 25,500). Requires CC-50.
+MAX_S1_TOTAL_CHARS = 25000
+MAX_S2_TOTAL_CHARS = 12000
+MAX_TOTAL_CHARS  = 56000
 
 # ── TPMGuard ──────────────────────────────────────────────────────────────────
 class TPMGuard:
@@ -445,7 +457,10 @@ def build_synthesis_prompt(
     for r in s1_reports:
         text  = truncate(r.get("summary", ""), MAX_S1_CHARS)
         entry = f"--- {r.get('domain_focus', 'Unknown Lens')} ---\n{text}\n"
-        if total_chars + len(entry) > MAX_TOTAL_CHARS * 0.6:
+        if _s1_chars + len(entry) > MAX_S1_TOTAL_CHARS:
+            log.info(f"Prompt cap reached at S1 entry for "
+                     f"{r.get('domain_focus', 'Unknown Lens')} "
+                     f"(s1_chars={_s1_chars} s1_budget={MAX_S1_TOTAL_CHARS})")
             break
         sections.append(entry)
         total_chars += len(entry)
@@ -469,9 +484,11 @@ def build_synthesis_prompt(
             f"Flagged: {flagged_str}\n"
             f"Evidence: {evidence_str}\n\n"
         )
-        if total_chars + len(entry) > MAX_TOTAL_CHARS - S3_RESERVE_CHARS:
+        if (_s2_chars + len(entry) > MAX_S2_TOTAL_CHARS
+                or total_chars + len(entry) > MAX_TOTAL_CHARS - S3_RESERVE_CHARS):
             log.info(f"Prompt cap reached at S2 entry for {analyst} "
-                     f"(total_chars={total_chars} s2_budget="
+                     f"(s2_chars={_s2_chars} s2_budget={MAX_S2_TOTAL_CHARS} "
+                     f"total_chars={total_chars} backstop="
                      f"{MAX_TOTAL_CHARS - S3_RESERVE_CHARS})")
             break
         sections.append(entry)
@@ -520,7 +537,8 @@ def build_synthesis_prompt(
              f"s2={_s2_chars} ({_s2_in}/{len(s2_reports)}) "
              f"s3={_s3_chars} counted_total={total_chars} "
              f"actual_prompt={len(prompt)} "
-             f"s1_allotment={int(MAX_TOTAL_CHARS * 0.6)} cap={MAX_TOTAL_CHARS}")
+             f"s1_budget={MAX_S1_TOTAL_CHARS} "
+             f"s2_budget={MAX_S2_TOTAL_CHARS} cap={MAX_TOTAL_CHARS}")
     return prompt
 
 
