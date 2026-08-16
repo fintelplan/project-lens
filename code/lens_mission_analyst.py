@@ -54,7 +54,15 @@ log = logging.getLogger("mission_analyst")
 PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("mission_analyst")
 TEMPERATURE      = 0.3
 MAX_RETRIES      = 2
-RETRY_SLEEP      = 10
+# CC-50: 65s, not 10s, so a retry lands in a FRESH TPM window. Cerebras TPM
+# is 30,000/min; at 10s both attempts fall inside one window and BOTH count,
+# so the call had to fit TWICE -- which is what made four S1 lenses and a
+# full corrections block mutually exclusive. It also made TPMGuard sleep in
+# 10s increments on the retry, because tokens_in_last_60s still held the
+# first attempt. Only ONE sleep ever occurs (it is gated on
+# attempt < MAX_RETRIES) and the job timeout is 35 min against a ~22 min
+# run, so this costs at most 55 extra seconds, on a failure path only.
+RETRY_SLEEP      = 65
 MAX_S1_CHARS     = 6000
 MAX_S2_CHARS     = 3000
 # CC-47: S3 context is appended LAST and was being dropped whenever S2
