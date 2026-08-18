@@ -435,6 +435,7 @@ def build_synthesis_prompt(
     corrections: list[dict],
     cycle: Optional[str],
     s3_context: dict = None,
+    stats: Optional[dict] = None,
 ) -> str:
     sections = []
     total_chars = 0
@@ -539,6 +540,15 @@ def build_synthesis_prompt(
              f"actual_prompt={len(prompt)} "
              f"s1_budget={MAX_S1_TOTAL_CHARS} "
              f"s2_budget={MAX_S2_TOTAL_CHARS} cap={MAX_TOTAL_CHARS}")
+    if stats is not None:
+        stats.update({
+            "s1_in": _s1_in, "s1_available": len(s1_reports),
+            "s1_chars": _s1_chars,
+            "s2_in": _s2_in, "s2_available": len(s2_reports),
+            "s2_chars": _s2_chars,
+            "corr_chars": _corr_chars, "s3_chars": _s3_chars,
+            "counted_total": total_chars, "actual_prompt": len(prompt),
+        })
     return prompt
 
 
@@ -724,7 +734,37 @@ def run_mission_analyst(
     # ── Build prompt with corrections prepended ───────────────────────────────
     # FIX-3: fetch S3 context and pass to MA — closes S1→S2→S3→MA circuit
     s3_context = fetch_s3_context(sb)
-    prompt = build_synthesis_prompt(s1_reports, s2_reports, corrections, cycle, s3_context)
+    _prompt_stats: dict = {}
+    prompt = build_synthesis_prompt(s1_reports, s2_reports, corrections, cycle,
+                                    s3_context, stats=_prompt_stats)
+
+    # CC-53: ARRIVAL, not fetch. The guard at the top of this function
+    # tests what the DB returned; this tests what reached the prompt.
+    # Sixteen waves (MA #261-#276) ran with 0 or 1 of 4 lenses in the
+    # synthesis prompt while that guard passed and the run reported
+    # SUCCESS. WARN rather than abort: five downstream consumers read the
+    # latest macro row with no date floor, so writing no row would publish
+    # yesterday's synthesis as today's -- staleness is worse than absence.
+    _s1_arrived = _prompt_stats.get("s1_in", 0)
+    _s1_available = _prompt_stats.get("s1_available", 0)
+    _s1_zero = (_s1_arrived == 0)
+    _s1_partial = (0 < _s1_arrived < _s1_available)
+    if _s1_zero:
+        log.error(
+            f"S1 ZERO ARRIVAL: {_prompt_stats.get('s1_available', 0)} S1 "
+            f"reports were fetched but NONE reached the synthesis prompt "
+            f"(s1_chars={_prompt_stats.get('s1_chars', 0)} "
+            f"budget={MAX_S1_TOTAL_CHARS}). The macro report is being "
+            f"written WITHOUT the analytical lenses."
+        )
+    elif _s1_partial:
+        log.error(
+            f"S1 PARTIAL ARRIVAL: only {_s1_arrived} of {_s1_available} "
+            f"S1 reports reached the synthesis prompt "
+            f"(s1_chars={_prompt_stats.get('s1_chars', 0)} "
+            f"budget={MAX_S1_TOTAL_CHARS}). The S1 break line above names "
+            f"the dropped lens. Epistemic diversity is reduced this wave."
+        )
 
     analysis = call_mission_analyst(client, prompt, cycle)
     if analysis is None:
@@ -741,7 +781,12 @@ def run_mission_analyst(
 
     elapsed = round(time.time() - start, 1)
     summary = {
-        "status":               "COMPLETE" if saved else "SAVE_FAILED",
+        "status":               ("SAVE_FAILED" if not saved
+                                 else "S1_ZERO_ARRIVAL" if _s1_zero
+                                 else "S1_PARTIAL_ARRIVAL" if _s1_partial
+                                 else "COMPLETE"),
+        "s1_arrived":           _s1_arrived,
+        "s1_available":         _s1_available,
         "run_id":               run_id,
         "cycle":                cycle,
         "threat_level":         analysis.get("threat_level", "?"),
