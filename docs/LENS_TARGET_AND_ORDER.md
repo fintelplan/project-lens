@@ -145,6 +145,10 @@ R6  STILL PROPOSED, JAMES RULES: no position verifies that its INPUTS
         and GNI's ruling that **a close is a CHECKPOINT, not a hard stop,
         amendable only if the order is regenerated again** -- which
         answers Lens's own open question, twice demonstrated.
+        STATUS: the checkpoint ruling is ADOPTED (contract v3, 4c35347)
+        and the protocol drift is FIXED. What REMAINS of 9.4 is the
+        register half -- LR entries for the rules earned this session, and
+        the reciprocal wrongness-ledger step GNI now carries.
 
 10 WAVE SEQUENCING -- NO ORDERING GUARANTEE  [R3/R6]
    Collect and MA are independently scheduled AND independently lagged. If
@@ -186,6 +190,24 @@ CC-1d must not ship. `CHARS_PER_TOKEN = 3` OVER-estimates against the
 measured 3.435-4.064, which is the CONSERVATIVE direction. Changing 3 -> 4
 would make every estimator under-count and start overshooting the real
 limit. Re-derive against measured ratios, never assume.
+
+## AMENDED AFTER THIS REGENERATION  (per LENS_CONTRACT.md v3)
+2026-08-18, same day, logged rather than silent:
+- Contract v3 (4c35347): a close is a CHECKPOINT, not a hard stop.
+  Mirrored from GNI's S82 ruling; logged on both sides.
+- Protocol v2: only the OPEN is pasted now. The OPEN reads
+  LENS_SESSION_PROTOCOL.md, so the CLOSE is invoked by name and read from
+  the repo. Cause: the pasted close prompt had already lost two clauses
+  present in the file -- a dual source of truth inside the document
+  written to prevent one. OPEN also gains the canary gate, ls-remote as
+  the only HEAD source, and an elapsed-time/wave-count step. CLOSE gains
+  item-number uniqueness, hazards-promote-or-expire, and the LR-138 grep.
+- Item 9.4 half-closed, above.
+- NOTED FOR THE NEXT CLOSE: contract v3 says an amendment requires the
+  order be "regenerated again". Taken literally that means regenerating a
+  20-minute-old order to log a protocol fix. The clause's PURPOSE is that
+  the order must never describe a state that has passed, which this
+  section satisfies. The wording is heavier than the purpose -- refine it.
 
 ## CHANGED THIS REGENERATION
 - Item 1 REPLACED, not closed. The allocation defect is fixed and
