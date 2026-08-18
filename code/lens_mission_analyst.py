@@ -18,6 +18,7 @@ import re
 import json
 import time
 import logging
+import requests
 from collections import deque
 from datetime import datetime, timezone
 from typing import Optional
@@ -29,6 +30,7 @@ from supabase import create_client, Client
 from lens_models import (
     LensModelRegistryError,
     assert_model_known,
+    fallback,
     fit_max_tokens,
     limits_for,
     wire,
@@ -52,6 +54,11 @@ log = logging.getLogger("mission_analyst")
 # fit_max_tokens to its 768 floor on Groq (guaranteed silent-empty for a
 # reasoning model) and ~10,800 tokens/call exceeded the 8,000 ceiling outright.
 PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("mission_analyst")
+# CC-54: the registry has declared a second leg for every role since the
+# cliff, and NO call site in this repo has ever read one. Cerebras ended
+# its free tier on 2026-08-17 and MA produced nothing for two waves while
+# this fallback sat in lens_models.py, unreachable. Wired here.
+FB_PROVIDER, FB_MODEL, FB_KEY_ENV = fallback("mission_analyst")
 TEMPERATURE      = 0.3
 MAX_RETRIES      = 2
 # CC-50: 65s, not 10s, so a retry lands in a FRESH TPM window. Cerebras TPM
@@ -553,6 +560,64 @@ def build_synthesis_prompt(
 
 
 # ── Core analysis ─────────────────────────────────────────────────────────────
+def _call_fallback_leg(user_message: str, max_tokens: int) -> Optional[dict]:
+    """CC-54: the registry fb leg, via plain requests (the S2-C pattern).
+
+    Returns a parsed dict, or None so the caller's ANALYSIS_FAILED path is
+    unchanged when both legs are down."""
+    if FB_PROVIDER != "mistral":
+        log.error(f"MA fallback leg is {FB_PROVIDER}/{FB_MODEL}; only mistral is wired")
+        return None
+    key = os.environ.get(FB_KEY_ENV)
+    if not key:
+        log.error(f"{FB_KEY_ENV} not set -- MA fallback leg unavailable")
+        return None
+    try:
+        assert_model_known(FB_PROVIDER, FB_MODEL)
+        log.warning(
+            f"MA FALLBACK: primary {PROVIDER}/{MODEL} exhausted -- "
+            f"calling {FB_PROVIDER}/{FB_MODEL}"
+        )
+        resp = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers={"Authorization": "Bearer " + key,
+                     "Content-Type": "application/json"},
+            json={"model": FB_MODEL,
+                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                               {"role": "user", "content": user_message}],
+                  "max_tokens": max_tokens,
+                  "temperature": TEMPERATURE},
+            timeout=180)
+        if resp.status_code != 200:
+            log.error(f"MA fallback HTTP {resp.status_code}: {resp.text[:200]}")
+            return None
+        body  = resp.json()
+        usage = body.get("usage") or {}
+        log.info(
+            f"MA fallback usage: prompt={usage.get('prompt_tokens')} "
+            f"completion={usage.get('completion_tokens')} "
+            f"total={usage.get('total_tokens')}"
+        )
+        raw = body["choices"][0]["message"]["content"].strip()
+        fence = chr(96) * 3   # LR-078: never a literal backtick in a patch body
+        if raw.startswith(fence):
+            raw = raw.split(fence)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        parsed = json.loads(raw.strip())
+        vr = validate_parsed_response(parsed, "MA")
+        if not vr.valid:
+            log.warning(format_validation_for_log(vr))
+        log.info(
+            f"MA fallback result: threat={parsed.get('threat_level', '?')}, "
+            f"findings={len(parsed.get('key_findings', []))}"
+        )
+        return parsed
+    except Exception as e:
+        log.error(f"MA fallback failed: {e}")
+        return None
+
+
 def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[dict]:
     user_message = (
         f"Synthesize the following intelligence into a macro report.\n"
@@ -636,7 +701,7 @@ def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[
                     time.sleep(RETRY_SLEEP)
 
     log.error(f"Mission Analyst failed after {MAX_RETRIES} attempts")
-    return None
+    return _call_fallback_leg(user_message, max_tokens)
 
 
 # ── Save to Supabase ──────────────────────────────────────────────────────────
