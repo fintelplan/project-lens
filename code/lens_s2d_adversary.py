@@ -20,6 +20,7 @@ import re
 import json
 import time
 import logging
+import requests
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -27,6 +28,7 @@ from cerebras.cloud.sdk import Cerebras
 from lens_models import (
     LensModelRegistryError,
     assert_model_known,
+    fallback,
     fit_max_tokens,
     limits_for,
     wire,
@@ -46,6 +48,13 @@ log = logging.getLogger("s2d")
 # Wire values come from the registry (LR-105) — this file hardcodes no model
 # string, no key env, and no output budget. A migration is a registry edit.
 PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2d_adversary")
+# CC-56: the registry declared this leg since the cliff and no call site
+# read it. Cerebras ended its free tier 2026-08-17 and S2-D produced
+# nothing while mistral-small-2603 sat in lens_models.py, unreachable.
+# LR-142: fallback() returns None for a role with no leg -- unpack
+# defensively so a future copy of this block cannot raise at import.
+_FB = fallback("s2d_adversary") or (None, None, None)
+FB_PROVIDER, FB_MODEL, FB_KEY_ENV = _FB
 
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
@@ -462,8 +471,79 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
                     time.sleep(RETRY_SLEEP)
 
     log.error(f"S2-D failed after {MAX_RETRIES} attempts")
-    return None
+    return _call_fallback_leg(user_message, prompt_chars)
 
+
+def _call_fallback_leg(user_message: str, prompt_chars: int) -> Optional[dict]:
+    """CC-56: the registry fb leg, via plain requests (the CC-55 pattern).
+
+    Returns a parsed dict, or None so the caller's failure path is unchanged
+    when both legs are down. LR-142: fallback() returns None for a role with
+    no declared leg, so FB_PROVIDER may be None here -- guarded below.
+
+    NO response-guard call here, on purpose: S2-D's primary path has none,
+    and a leg that validates while the primary does not is an asymmetry
+    invented at the fallback rather than an improvement.
+
+    CALIBRATION, measured 2026-08-19 BEFORE wiring, on production's own
+    fixture: 3/3 stop, all fields present, budget_used 12%, ~7s. Per batch it
+    returned 6-7 key_claims against Cerebras' ~13.3, and consistency
+    0.85/0.70/0.70 against the Cerebras band 0.78-0.92. THIS LEG IS A
+    DIFFERENT EXTRACTOR, NOT A DROP-IN: claim counts roughly halve and
+    confidence_score steps down. Shipped documented because the alternative
+    is no adversary-narrative input to MA at all.
+    """
+    if FB_PROVIDER != "mistral":
+        log.error(f"S2-D fallback leg is {FB_PROVIDER}/{FB_MODEL}; only mistral is wired")
+        return None
+    key = os.environ.get(FB_KEY_ENV)
+    if not key:
+        log.error(f"{FB_KEY_ENV} not set -- S2-D fallback leg unavailable")
+        return None
+    fb_max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, FB_PROVIDER, FB_MODEL)
+    try:
+        assert_model_known(FB_PROVIDER, FB_MODEL)
+        log.warning(
+            f"S2-D FALLBACK: primary {PROVIDER}/{MODEL} exhausted -- "
+            f"calling {FB_PROVIDER}/{FB_MODEL}"
+        )
+        resp = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers={"Authorization": "Bearer " + key,
+                     "Content-Type": "application/json"},
+            json={"model": FB_MODEL,
+                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                               {"role": "user", "content": user_message}],
+                  "max_tokens": fb_max_tokens,
+                  "temperature": TEMPERATURE},
+            timeout=180)
+        if resp.status_code != 200:
+            log.error(f"S2-D fallback HTTP {resp.status_code}: {resp.text[:200]}")
+            return None
+        body  = resp.json()
+        usage = body.get("usage") or {}
+        log.info(
+            f"S2-D fallback usage: prompt={usage.get('prompt_tokens')} "
+            f"completion={usage.get('completion_tokens')} "
+            f"total={usage.get('total_tokens')}"
+        )
+        raw = body["choices"][0]["message"]["content"].strip()
+        if "<think>" in raw and "</think>" in raw:
+            raw = raw[raw.index("</think>") + 8:].strip()
+        fence = chr(96) * 3   # LR-078: never a literal backtick in a patch body
+        if raw.startswith(fence):
+            raw = raw.split(fence)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        parsed = json.loads(raw.strip())
+        log.info(
+            f"S2-D fallback result: claims={len(parsed.get('key_claims', []))} "
+            f"consistency={parsed.get('narrative_consistency_score', 0)}"
+        )
+        return parsed
+    except Exception as e:
+        log.error(f"S2-D fallback failed: {e}")
+        return None
 
 def save_adversary_report(
     sb: Client,
