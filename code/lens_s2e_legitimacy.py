@@ -12,6 +12,7 @@ import re
 import json
 import time
 import logging
+import requests
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -19,6 +20,7 @@ from cerebras.cloud.sdk import Cerebras
 from lens_models import (
     LensModelRegistryError,
     assert_model_known,
+    fallback,
     fit_max_tokens,
     limits_for,
     wire,
@@ -47,6 +49,13 @@ log = logging.getLogger("s2e")
 # exactly like a content refusal, which is how April's GNI evidence was
 # misread. max_out 10,000 set by D-017 (5,612 observed / 0.60).
 PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2e_legitimacy")
+# CC-55: the registry declared this leg since the cliff and no call site
+# read it. Cerebras ended its free tier 2026-08-17 and S2-E produced
+# nothing while mistral-small-2603 sat in lens_models.py, unreachable.
+# LR-142: fallback() returns None for a role with no leg -- unpack
+# defensively so a future copy of this block cannot raise at import.
+_FB = fallback("s2e_legitimacy") or (None, None, None)
+FB_PROVIDER, FB_MODEL, FB_KEY_ENV = _FB
 TEMPERATURE      = 0.15      # very low — legitimacy scoring should be consistent
 MAX_RETRIES      = 2
 RETRY_SLEEP      = 10
@@ -373,9 +382,76 @@ def call_legitimacy_filter(client, report: dict, guard: "TPMGuard") -> Optional[
                     time.sleep(RETRY_SLEEP)
 
     log.error(f"S2-E failed after {MAX_RETRIES} attempts for {lens_name}")
-    return None
+    return _call_fallback_leg(user_message, prompt_chars, lens_name)
 
 
+
+def _call_fallback_leg(user_message: str, prompt_chars: int,
+                       lens_name: str) -> Optional[dict]:
+    """CC-55: the registry fb leg, via plain requests (the CC-54 pattern).
+
+    Returns a parsed dict, or None so the caller's FAILED path is unchanged
+    when both legs are down. LR-142: fallback() returns None for a role with
+    no declared leg, so FB_PROVIDER may be None here -- guarded below.
+    """
+    if FB_PROVIDER != "mistral":
+        log.error(f"S2-E fallback leg is {FB_PROVIDER}/{FB_MODEL}; only mistral is wired")
+        return None
+    key = os.environ.get(FB_KEY_ENV)
+    if not key:
+        log.error(f"{FB_KEY_ENV} not set -- S2-E fallback leg unavailable")
+        return None
+    fb_max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, FB_PROVIDER, FB_MODEL)
+    try:
+        assert_model_known(FB_PROVIDER, FB_MODEL)
+        log.warning(
+            f"S2-E FALLBACK: primary {PROVIDER}/{MODEL} exhausted -- "
+            f"calling {FB_PROVIDER}/{FB_MODEL} for {lens_name}"
+        )
+        resp = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers={"Authorization": "Bearer " + key,
+                     "Content-Type": "application/json"},
+            json={"model": FB_MODEL,
+                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                               {"role": "user", "content": user_message}],
+                  "max_tokens": fb_max_tokens,
+                  "temperature": TEMPERATURE},
+            timeout=180)
+        if resp.status_code != 200:
+            log.error(f"S2-E fallback HTTP {resp.status_code}: {resp.text[:200]}")
+            return None
+        body  = resp.json()
+        usage = body.get("usage") or {}
+        log.info(
+            f"S2-E fallback usage: prompt={usage.get('prompt_tokens')} "
+            f"completion={usage.get('completion_tokens')} "
+            f"total={usage.get('total_tokens')}"
+        )
+        raw = body["choices"][0]["message"]["content"].strip()
+        fence = chr(96) * 3   # LR-078: never a literal backtick in a patch body
+        if raw.startswith(fence):
+            raw = raw.split(fence)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        parsed = json.loads(raw.strip())
+        vr = validate_parsed_response(parsed, "S2-E")
+        if not vr.valid:
+            log.warning(format_validation_for_log(vr))
+        actors = parsed.get("actors_assessed", [])
+        low_actors = parsed.get("low_legitimacy_actors_pushing_narrative", [])
+        # LENS-037: calibration logged every wave, on purpose. Changing this
+        # position's model moved actors/row 4.00 -> 8.50 at D-016 and nobody
+        # saw it for three weeks. Probed on mistral-small-2603 3/3 stop,
+        # actors 8/7/8, low 5/3/5 -- inside the Cerebras-era band.
+        log.info(
+            f"S2-E fallback result for {lens_name}: {len(actors)} actors, "
+            f"{len(low_actors)} LOW legitimacy"
+        )
+        return parsed
+    except Exception as e:
+        log.error(f"S2-E fallback failed: {e}")
+        return None
 
 def build_correction_to_ma(analysis: dict) -> dict:
     """
