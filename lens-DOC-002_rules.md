@@ -691,3 +691,115 @@ findings produce more corrections, which exclude S1 more completely. Where a con
 assembles inputs under a budget, log what was INCLUDED against what was AVAILABLE, and
 treat zero inclusion of a required input as a failure rather than a quiet loop break.
 Scope: every position that assembles bounded input from a larger fetched set.
+
+## LR-142 — Read a function before unpacking it; never infer its shape from a sibling (LENS-036)
+`wire()` returns four values, so `fallback()` was assumed to return four. It returns three
+— `(provider, model, key_env)` — and its docstring says "or None". The module raised
+ValueError at import and Mission Analyst was unimportable until corrected. The fix script
+that finally worked called `fallback()` and ASSERTED both arity and contents before writing
+a byte; that is the pattern to reuse. Corollary: `fallback()` returns bare `None` for a role
+with no declared leg, so a module-scope unpack of it crashes at import for eight of the
+twenty-four roles. Unpack defensively: `_FB = fallback(role) or (None, None, None)`.
+Scope: every call to a function whose signature you have not read this session.
+
+## LR-143 — Never predict grep counts for symbols you just authored (LENS-036)
+Two miscounts in one session, both on freshly written code: `_s1_available` predicted 3,
+actual 4; `FB_PROVIDER` predicted 4, actual 5. A predicted count is a hand-derived value
+(LR-139) and hand-derived values are the ones that are wrong. Derive counts from the
+patch's own `new_str`, not from memory of what you wrote. Both misses failed SAFE only
+because the expected count was stated in advance, which is the entire argument for the
+check. See LR-147 for the correct arithmetic.
+Scope: every LR-138 verification block.
+
+## LR-144 — AMENDS LR-119: the delivery audit, run repo-wide (LENS-036)
+**LR-119 already said this** — "Fallback SELECTION is not fallback DELIVERY. Two
+independent mechanisms in this repo compute the right fallback and never hand it over.
+Audit every fallback for delivery." (LENS-030). It was live in the register and got
+re-derived from scratch at LENS-036 because nobody opened the register. This entry
+records what LR-119's audit actually found when finally run repo-wide, and is filed as
+an amendment rather than a new rule so the duplication stays visible.
+Every role in `lens_models.py` declared `fb_provider`/`fb_model`/`fb_key_env` from the
+cliff migration onward, and a grep for those keys outside the registry returned NOTHING.
+Not one call site had ever read a leg. A documented two-leg chain sat on paper while a
+provider death took five positions down. Every redundancy claim needs a grep proving
+reachability, and a leg that is reachable but points at a model already ruled out or
+already dead is redundancy on paper too.
+LR-120's corollary held too: every leg wired at LENS-036/037 logs a WARNING naming both
+the exhausted primary and the leg being called, so no fallback in this repo is silent.
+Scope: every claim that a position has a fallback, a retry path, or a second provider.
+
+## LR-145 — Provider lifecycle mail is an operational input (LENS-036)
+Cerebras announced the end of its free API tier on 2026-07-17 by email. It ended on
+2026-08-17. Lens produced no intelligence for a full day and nobody knew until a query
+happened to count rows. Record the EOL date in the registry note AND as a dated watch item
+at ANNOUNCEMENT, not at death. Deprecation is weather (D-014), but weather has forecasts.
+Scope: every provider email, deprecation notice, and model card change.
+
+## LR-146 — `git diff` without `--no-pager` swallows every command after it (LENS-036)
+In a multi-command block, `git diff` opens a pager, and everything after it in the block
+silently does not run. Three commands were lost this way in one session — the same class
+as the multi-block paste hazard, where absence of output looks like absence of a problem.
+Always `git --no-pager diff` inside a block meant to be pasted.
+Scope: every git command that can page — diff, log, show, blame.
+
+## LR-147 — Derive grep counts as DELTAS from the edit list, and assert before writing (LENS-037)
+LR-143 says do not predict counts by hand. This is how to compute them. A patch script that
+accumulated the replacement text and counted totals predicted `fit_max_tokens` at 4 when the
+true value was 3: the edit `    fit_max_tokens,` -> `    fallback,\n    fit_max_tokens,`
+re-emits its own anchor, so the occurrence already counted in `pre` was counted twice. The
+correct form is a delta sum:
+`add = sum(new.count(sym) - old.count(sym) for old, new in edits)`, then assert
+`pre + add == final` for every symbol, print a `pre / delta / pred / final` table, and put
+the assert BEFORE `write_bytes` so a miss leaves the file untouched. This caught its error
+before a byte moved — the first time in three sessions that happened. Note the trap: a
+symbol whose `old` text contains zero occurrences passes under BOTH formulas, so a green
+row is not evidence that the arithmetic is right.
+Scope: every LR-078 patch script.
+
+## LR-148 — Never put an angle-bracket placeholder in a block meant to be pasted (LENS-037)
+`gh run view <RUN_ID> --log > /tmp/x.log` is not a template; bash reads `<RUN_ID>` as input
+redirection, the command dies with "No such file or directory", and every command after it
+in the block runs against a file that was never created — producing four confident-looking
+"not found" lines and zero information. The session protocol's Notes already recorded this
+as having happened twice; this was the third. Assign the value to a shell variable on its
+own line, or derive the ID inside the command. Promoted from a protocol note to a rule
+because a hazard carried unchanged into a third occurrence is a rule nobody registered.
+STRONGER FORM, earned twice more in the same session: I then handed over `MA=32000000000   # replace this number` and `cp /path/to/downloads/...`. A dummy value and an invented path are placeholders too. FILE PLACEMENT AND ID SELECTION ARE HUMAN STEPS AND GET PROSE, NOT CODE. Only what the script can itself derive or verify belongs in a command block.
+Scope: every command block handed over for execution.
+
+## LR-149 — Chained `sed -e` rules are order-dependent; never stream-edit one instrument into another (LENS-037)
+Deriving an S2-D probe from the S2-E probe with four chained `-e` rules: the first rule
+rewrote the module name, which destroyed the anchor the third rule needed, so the alias
+stayed `s2e` while pointing at the s2d module. It compiled and would have run. A measuring
+instrument that silently mislabels what it measured is worse than no instrument, and this
+is the same dual-source disease the registry cured. Write the second instrument fresh from
+the production functions it is meant to exercise.
+Scope: every probe, fixture, and verification script.
+
+## LR-150 — A cert on mechanics alone is not a cert for a position that scores or extracts (LENS-037)
+D-016 moved S2-E and S2-D to Cerebras on 2026-07-28. Both certs passed: 3/3 finish_reason
+stop, valid JSON, budget_used 26-43%. Both positions then changed substantially and nobody
+noticed for three weeks. S2-E's actors/row went 4.00 -> 8.50 the next day and stayed there;
+S2-D's key_claims/row went 8.8 -> 26.6 while `narrative_consistency_score` — the headline
+metric, stored as `confidence_score` — moved only 0.834 -> 0.853, so the obvious number
+looked stable while the instrument changed. S2-D's `emotional_tone` also changed SHAPE, from
+a repeated categorical label to a unique sentence per row, breaking any grouping built on it.
+Mechanics prove a position RUNS. A band drawn from the position's own stored history proves
+it still BEHAVES. Every migration cert states both, and the band comes from the DB — it is
+free, it is months deep, and `probe_results.jsonl` cannot substitute because it banks
+`content_head` and a sha, not the parsed response. Where the incumbent is already dead, say
+plainly that no paired A/B is possible rather than dressing a mechanics probe as a
+calibration one.
+Scope: every provider migration, model swap, and budget change on a position that produces
+scores, counts, or extractions.
+
+## LR-151 — Never spell a string with `chr()` arithmetic to dodge quote nesting (LENS-037)
+Twice in one session. Avoiding a nested single quote inside an f-string inside a patch-script
+literal produced (a) a dead `X if False else Y` conditional whose unreachable branch called
+`usage.get('')`, which py_compile accepted and which was caught only by re-reading the diff,
+and (b) two dictionary keys spelled as `chr(107)+chr(101)+...`. Escaped single quotes inside
+a double-quoted f-string work and were already in use two lines away. If the construct is
+contorted enough to need explaining, that is the defect smell — build the string differently.
+`chr(96) * 3` for a markdown fence remains the ONE legitimate use, because a literal backtick
+in a patch body stalls the shell (LR-078 amendment).
+Scope: every string built inside a patch script.

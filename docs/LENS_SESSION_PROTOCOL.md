@@ -15,7 +15,7 @@ inside the document written to prevent it. One home, improvable in the repo.
 ## OPEN -- paste as the first message of every Lens session
 ```
 LENS-0XX OPEN | model: <model name>
-1) Read docs/LENS_CONTRACT.md (law) + docs/LENS_TARGET_AND_ORDER.md
+1) Read docs/LENS_CONTRACT.md (law) + latest docs/LENS_TARGET_AND_ORDER_*.md
    (target + roots + order) + docs/LENS_SESSION_PROTOCOL.md (this file --
    it holds the CLOSE) + latest docs/NEXT_SESSION_BRIEF_*.md (session
    state) + memory.
@@ -46,7 +46,7 @@ LENS-0XX OPEN | model: <model name>
 2) Record EVERY finding from this session with its evidence. Never suppress.
 3) Re-analyse: does each new finding join an existing root, or open a new
    one? A new root may re-rank items above it.
-4) REGENERATE docs/LENS_TARGET_AND_ORDER.md -- dated, superseding, root to
+4) REGENERATE as docs/LENS_TARGET_AND_ORDER_LENS0XX.md, named for the session that will CONSUME it -- dated, superseding, root to
    sub. Classify each item against the DECLARED TARGET (absolute rule: a
    silent live failure is urgent under any target). If the target itself
    changed, regenerate the whole order and say why.

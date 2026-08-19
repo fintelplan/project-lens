@@ -21,7 +21,7 @@ BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> JAMES RULE
 - KEY SAFETY: names and updated-timestamps only. Values never in chat, never in logs, never in memory.
 
 ## SESSION RHYTHM + DOC MAP (this contract outranks briefs; briefs outrank recollection)
-- TARGET + WORKING ORDER (read FIRST, it names this session's mission): docs/LENS_TARGET_AND_ORDER.md.
+- TARGET + WORKING ORDER (read FIRST, it names this session's mission): latest docs/LENS_TARGET_AND_ORDER_*.md, named for the session that consumes it.
 - Open/close prompts: docs/LENS_SESSION_PROTOCOL.md. Live state (SESSION STATE ONLY, never the item list): latest docs/NEXT_SESSION_BRIEF_*.md. Rationale (the WHY): docs/LENS_LCLIFF_DECISIONS.md. Execution blocks: docs/LENS_LCLIFF_BUILD_PLAN.md.
 - Begin close at ~80% context or when James calls it. James works marathons and self-reports state accurately.
 - A CLOSE IS A CHECKPOINT, NOT A HARD STOP. Work may legitimately continue after a close -- it has happened three times across Lens and GNI, each time for a good reason. An amendment is valid ONLY if the order is regenerated again and the amendment is logged in its CHANGED THIS REGENERATION section. What harmed us was never the continuing; it was continuing WITHOUT regenerating, which leaves the order describing a state that has already passed.
@@ -30,6 +30,7 @@ BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> JAMES RULE
 Warm long-term partnership ("my buddy"), rigorous underneath. Answer first, cut preamble. One question max per turn. Honest leans, honest self-critique; mistakes owned plainly and fixed; real wins celebrated for real.
 
 ## VERSION LOG
+- v4 -- 2026-08-19, LENS-037. JAMES'S RULING: the working order is NAMED for the session that consumes it (docs/LENS_TARGET_AND_ORDER_LENS0XX.md), matching the brief convention, and the OPEN prompt resolves the latest by glob. Reason: a fixed filename plus a renamed regeneration silently leaves the OPEN prompt reading the previous session's order -- which happened at this close. Every hardcoded path moved in the same commit; a convention that lives in two places is the dual source this contract exists to prevent.
 - v3 -- 2026-08-18, LENS-035. A close is a CHECKPOINT, not a hard stop. This was the open question LENS-033 left unruled, and it was demonstrated twice afterwards (LENS-033 closed at abcb38d then shipped three more commits; LENS-034 closed at c6850f1 then shipped 89e7fde). Settled by MIRRORING GNI's S82 ruling of 2026-08-17, per the SHARED DISCIPLINE sync rule -- and logged on both sides, which is the point. First rule to travel the full circuit: Lens sent GNI the target/order/discovery machinery in August, GNI adopted it as its CONTRACT v4/v5 and ruled this clause from it, Lens mirrors it back.
 - v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after James named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.
 - v1 — born 2026-07-28 at LENS-028 close (written by Fable 5, the day the registry landed and CC-1 certified live). Shared discipline adopted from GNI CONTRACT v3 by reference-and-mirror, not blind copy — dual sources of truth are how S2-D died; process docs obey the same law.
@@ -38,7 +39,7 @@ Warm long-term partnership ("my buddy"), rigorous underneath. Answer first, cut 
 - MISSION (permanent): Project Lens produces valid intelligence on influence operations, with epistemic diversity intact (canary doctrine).
 - DEFINITION OF DONE: every scheduled wave produces valid intelligence, unattended, with NO SILENT FAILURE. Not "no defects." A system with logged, ordered, non-silent defects is done. A system with one silent failure is not.
 - NOT the mission: perfective maintenance for its own sake. Deprecation is weather (D-014), not a project.
-- The CURRENT TARGET and WORKING ORDER live in docs/LENS_TARGET_AND_ORDER.md, dated and regenerated. This contract holds the mission and the METHOD; that file holds the target instance and the path. Law changes rarely; the order changes every analysis.
+- The CURRENT TARGET and WORKING ORDER live in docs/LENS_TARGET_AND_ORDER_LENS0XX.md, named for the consuming session, dated and regenerated. This contract holds the mission and the METHOD; that file holds the target instance and the path. Law changes rarely; the order changes every analysis.
 
 ## DISCOVERY POLICY (added LENS-033, 2026-08-06)
 Findings are never suppressed. They are absorbed through five steps.
@@ -70,9 +71,12 @@ When it does, four steps, in this order:
    session.
 2. ARCHIVE THE COMPLETED ORDER -- git mv to
    docs/archive/LENS_TARGET_AND_ORDER_<target-slug>.md. An archived order is
-   history and SHOULD be named; only the live one keeps the fixed path, so
-   the OPEN prompt can always name it and no agent has to hunt for the
-   current version.
+   history and belongs out of the working folder. EVERY order is named for the
+   session that consumes it (v4, 2026-08-19, James's convention) and the OPEN
+   prompt resolves the LATEST by glob, exactly as it already does for briefs.
+   A fixed filename was the old mechanism; it failed the moment a regenerated
+   order was placed beside it under a different name and the fixed path kept
+   serving the previous session's list.
 3. DECLARE THE NEW TARGET -- JAMES RULES THIS. A target states what Lens is
    FOR at this stage. Claude proposes options with honest leans; James
    decides. Claude does not choose a target.
