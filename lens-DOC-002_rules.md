@@ -803,3 +803,101 @@ contorted enough to need explaining, that is the defect smell — build the stri
 `chr(96) * 3` for a markdown fence remains the ONE legitimate use, because a literal backtick
 in a patch body stalls the shell (LR-078 amendment).
 Scope: every string built inside a patch script.
+
+## LR-152 — A clock reading is a banked number the moment it is read (LENS-038)
+`date -u` was read once at step 0 and reused hours later to tell James the run
+list contradicted his statement that the evening wave had finished. It had
+finished. The session had been running about sixteen hours; the commit stamp
+proved it afterwards. A timestamp describes the instant it was taken and
+nothing else — it decays exactly like a banked number (LR-121), and turn count
+is not a clock. Pair every claim about what has or has not happened yet with a
+fresh `date -u` IN THE SAME BLOCK as the claim. Corollary: when the operator's
+account of the world disagrees with your derivation, suspect the derivation
+first — he is standing in the world and you are reading a transcript.
+Scope: every schedule estimate, wave-count, "should have landed by now", and
+any correction issued to James about timing.
+
+## LR-153 — Report the split, never the sum: one label over two quantities can indict neither (LENS-038)
+A table-size query reported `pg_total_relation_size - pg_relation_size` as a
+single column named `idx_toast`. It read 1090 MB — which could have been a
+runaway index, a TOAST of real data, or dead-tuple bloat, three problems with
+three different fixes and one of them destructive. The instrument could not
+tell them apart and neither could any conclusion drawn from it. Splitting it
+(`pg_indexes_size` vs the TOAST relation, plus `n_dead_tup`) took one query and
+changed the answer from "probably bloat, VACUUM it" to "all real data, rewrite
+the column". If a measurement combines two things you would act on differently,
+it is not a measurement.
+Scope: every derived or subtracted metric, in SQL or in a script.
+
+## LR-154 — Prove the instrument can match a value you KNOW is present, before trusting what it did not find (LENS-038)
+The grep built to enumerate every status string the S2 tier returns was
+`"[A-Z][A-Z0-9_]{3,}"` over `code/lens_s2*.py`. Both halves were broken: the
+quantifier requires four-plus characters after the leading capital, so `"OK"`
+could not match — and `OK` is returned by S2-GAP on every single wave; and the
+glob excluded `lens_s3*.py`, hiding `SKIPPED`, `SKIPPED_CADENCE` and
+`SKIPPED_CI` entirely. That output was the input to an ALLOWLIST, where a
+missed success value silently becomes a failure. The fix is not care, it is a
+positive control: before believing an enumeration, feed it one value you
+already know is there and confirm it comes back. R-S81-1's zero-match rule
+generalises — a WRONG match set indicts the pattern just as a zero match does.
+Scope: every enumeration, census, or "these are all the X" claim.
+
+## LR-155 — AMENDS LR-145: the quota that kills you may not be the one the email names (LENS-038)
+LR-145 said provider lifecycle mail is an operational input, recorded at
+ANNOUNCEMENT. It was broken a second time: Supabase notifies at 20% from a
+limit, that warning was never read, and the system went fully offline. Three
+additions the Cerebras case did not teach. (a) The email's number was 1.1 GB;
+the dashboard meter said 0.5 GB at 287%. Read the METER, never the mail's
+figure. (b) The limit was evaluated per ORGANIZATION, summing every project —
+so one project's growth can kill a sibling that did nothing wrong, and the
+first question after any org-level restriction is "what else is in this org?"
+(c) It was scored on the AVERAGE DAILY size across the billing period, so
+reducing usage did NOT lift the restriction; only the cycle reset did. A quota
+with a time-averaged denominator cannot be fixed by acting on the day you
+notice it.
+Scope: every provider email, dashboard meter, and quota-shaped outage.
+
+## LR-156 — Before deleting data to reclaim space, prove the data is DUPLICATED, not unique (LENS-038)
+The proposal on the table was to delete old `lens_raw_articles`. Two checks
+killed it. Arithmetic: the whole table was 139 MB against a 1.434 GB problem,
+so deleting all 113,263 rows still left 2.4x the quota — the fix could not
+work. And reference resolution: the actual fix, shrinking `articles_used` to
+ids, is only safe BECAUSE all 14,234 referenced ids resolve against that very
+table, so the two plans destroyed each other. The winning move deleted NOTHING
+— 14,234 distinct articles had been stored as ~519,000 entries, so the space
+was duplication, and a rewrite recovered 76% of the database with zero loss.
+Ask "is this big because it is unique, or because it repeats?" before reaching
+for DELETE.
+Scope: every storage-pressure decision.
+
+## LR-157 — A consumer's READ WINDOW bounds a migration's blast radius (LENS-038)
+Rewriting five months of a column looked dangerous until `get_s1_selected()`
+was read: it filters `.gte("generated_at", cutoff)` with a six-hour cutoff, as
+does `lens_s1_report.py`. Nothing in the repo reads that column beyond six
+hours, so historical rows had no live consumer at all and the rewrite could not
+break anything — a fact that no amount of reasoning about the column's shape
+would have produced. Establish WHAT TIME RANGE each reader actually queries
+before estimating the risk of changing old rows; it is often the difference
+between a blocked item and a safe one.
+Scope: every data migration, backfill, or historical rewrite.
+
+## LR-158 — A sample never authorises a destructive write (LENS-038)
+The reference-resolution check first ran with `limit 500`, returning 1,711 ids
+with `missing = 0`. That is evidence for a hypothesis, not permission to
+destroy a gigabyte. Re-run without the limit: 14,234 ids, still zero missing —
+same answer, but now it covered the rows actually being rewritten. The cost was
+one query. The failure mode it guards against is specific: a sample is drawn
+from the rows that are easiest to reach, which are rarely the rows that break.
+Scope: every check whose result gates an irreversible operation.
+
+## LR-159 — Preserve the ENCODING shape when rewriting a value, and put the idempotency guard in the WHERE clause (LENS-038)
+`articles_used` is jsonb containing a JSON *string* — double-encoded, which is
+why `lens_ref_system.py:202` reads `json.loads(raw) if isinstance(raw, str)`.
+A rewrite that produced a jsonb OBJECT would have satisfied every size check
+and broken every consumer, silently, months later. `to_jsonb(<text>)` keeps the
+shape. Second half, same statement: the UPDATE's WHERE carried
+`exists (... e ? 'url')`, so a re-run matched nothing instead of re-processing
+already-migrated rows. An idempotency guard in the WHERE is free, needs no
+bookkeeping, and makes a partially-completed migration safe to simply repeat —
+which matters most when the operation runs in a dashboard with no transcript.
+Scope: every UPDATE that transforms a stored structure.
