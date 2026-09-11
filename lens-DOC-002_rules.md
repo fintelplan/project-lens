@@ -901,3 +901,189 @@ already-migrated rows. An idempotency guard in the WHERE is free, needs no
 bookkeeping, and makes a partially-completed migration safe to simply repeat —
 which matters most when the operation runs in a dashboard with no transcript.
 Scope: every UPDATE that transforms a stored structure.
+
+# LR APPEND -- LENS-039 (2026-09-11)
+
+Append the blocks below to the END of `lens-DOC-002_rules.md`, unchanged.
+Register goes 70 -> 77 rules, LR-090..166 contiguous. Run the gap check after
+appending; do not trust this line for the count.
+
+---
+
+## LR-160 -- A vendor's stated window is not a measurement
+
+**Rule.** A date, duration or threshold that comes from a provider's banner,
+email or documentation is a CLAIM. It is banked the moment it is read, it gets
+no privileged status from being official, and any order item that depends on it
+carries a step to re-measure it.
+
+**Earned.** Supabase's dashboard said the restriction would lift at the 11 Sep
+cycle reset. Both LENS-039 close documents wrote "OFFLINE AND WILL STAY OFFLINE
+UNTIL 11 SEPTEMBER 2026" in bold, and the order contained no step anywhere that
+would have checked. The run list shows the first recovered wave at 2026-08-31
+07:18Z -- eleven days early, sixteen dead waves instead of thirty-eight. Eleven
+days of live intelligence were treated as unavailable while the system was in
+fact running.
+
+**Second half, and it is the harder half.** The banked model ("the quota scores
+AVERAGE DAILY size, so only the reset lifts it") cannot explain 31 August
+either: the cycle average was still roughly twice quota on that date. So the
+correct record is not a better story. It is **UNKNOWN**. Replacing a wrong
+vendor explanation with a plausible invented one is the same error wearing our
+own handwriting.
+
+**Kin.** LR-145 (read the meter, not the mail). LR-152 (a clock reading is a
+banked number the moment it is read). This is the same family: an external
+number, believed because of its source rather than its provenance.
+
+---
+
+## LR-161 -- A failing scheduled job is a free liveness detector
+
+**Rule.** Before disabling a scheduled job that is failing because of an
+external dependency, ask what will announce the dependency's RECOVERY. If the
+answer is "that job", it stays enabled. A red run that nobody reads is a
+smaller loss than a silence nobody can interpret.
+
+**Earned.** LENS-039's order item 1.5 leaned DISABLE, reasoning that two red
+runs a day for nineteen days is how a real red stops being read. The reasoning
+is sound and the conclusion was wrong. The green run at #305 on 31 August is
+the ONLY artefact that dated the recovery. Had the crons been paused, the
+system would have sat dead until someone manually checked on 11 September,
+losing eleven further days for the sake of tidier run history.
+
+**Corollary, and it is worth more than the rule.** If the failing job is a
+detector, INSTRUMENT it instead of muting it. Across 16 dead and 22 live
+manage-analyze runs the separation is absolute: dead runs finish in 19-27
+seconds, healthy runs take 21-32 minutes. A duration threshold of 60 seconds
+distinguishes "database unreachable" from "wave ran" with no new code at all --
+the signal was already in the run list for eight days, unread.
+
+**Kin.** LR-059 and the canary doctrine: the unprotected canary is valuable
+BECAUSE it dies visibly. Disabling a failing cron is putting a gas mask on the
+canary.
+
+---
+
+## LR-162 -- A removal is proved only by a zero, and the comment counts
+
+**Rule.** When a change removes a symbol, the receipt is that symbol's count
+reaching ZERO. A count of 1 is not "nearly removed"; it is a different fact
+that needs explaining. And the replacement comment is part of the file: a
+comment that NAMES the token it is removing keeps the count at 1 forever and
+destroys the only clean proof available.
+
+**Earned.** CC-59 v2 asserted the removed key's count would reach 0 in both
+files. It reached 1 in each. The survivor in both cases was the replacement
+comment, which explained the removal by naming the thing removed. The
+expectation was not relaxed to 1; the comments were reworded to describe the
+removed structure instead ("the second list, every collected article"), and the
+count then reached 0 honestly.
+
+**Second half.** A patch script that measures a token must not itself contain
+that token, or its own docstring pollutes any repo-wide count that includes it.
+Build such tokens at runtime (`b"all_" + b"collected"`) so the instrument
+cannot register itself.
+
+**Kin.** LR-138 (state the grep count before running the grep). LR-147 (assert
+the delta table before write_bytes). This is what those two rules are FOR.
+
+---
+
+## LR-163 -- An anchor read from one window is not unique in the file
+
+**Rule.** A code block read through `sed -n 'A,Bp'` is evidence about lines A
+to B and about nothing else. Before using it as a patch anchor, either count it
+across the WHOLE file or widen it with a line that cannot repeat.
+
+**Earned.** CC-59 v1 anchored on three lines -- `url`, `title`, `domain` --
+read from `analyze_lens.py` lines 370-395. The identical three lines also sit
+at :245-248 inside `fetch_all_article_links()`. The `count == 1` assertion
+fired and nothing was written. Without it, `replace(old, new, 1)` would have
+patched the wrong occurrence, left the other untouched, and produced one file
+containing two shapes with no record of which was intended.
+
+**The fix is structural, not vigilance.** Widen the anchor until it includes a
+line that is unique by construction -- here, the comprehension's binding line
+`for a in articles if a.get("id")` against the other's
+`for a in all_articles if a.get("url")`.
+
+**Third half, the good kind.** When a patch must remove ONE of two identical
+blocks, assert the survivor too. CC-59 v3 asserted that block's count goes
+2 -> 1, not 2 -> 0. A zero there would have meant both were removed, and
+`py_compile` would have said nothing about it.
+
+---
+
+## LR-164 -- Uniform fallbacks converge; the fallback's limit becomes the system's
+
+**Rule.** When many roles share one fallback model behind one key, they share
+its rate limit too. That is invisible while the primaries are healthy -- one or
+two fallback calls per wave -- and becomes total the moment the primaries fail
+together. Quota isolation that covers only primaries covers nothing on the day
+it matters. Cost a uniform-fallback ruling at BOTH ends: the normal case and
+the all-primaries-dead case.
+
+**Earned.** D-015 made every fallback mistral-small, uniformly, for a good
+reason (gpt-oss-20b shares the reasoning-starvation failure mode). Cerebras then
+died and stayed dead. On wave 34505961936 the pattern is identical at every
+position: primary returns 402, fallback returns HTTP 429 `code 1300`. Seven
+fallback attempts, seven rate-limit rejections, inside four minutes, through
+one key. S2-B, S2-D and Mission Analyst have failed on five consecutive waves.
+The provider is not misbehaving -- we are bursting.
+
+**Note on blame.** D-015 was a correct ruling on the evidence it had. This rule
+is not an argument to reverse it; reversing it without re-reading the
+starvation evidence would trade a rate limit for a quality failure. The rule is
+that a uniformity ruling must be priced against the degenerate case at the time
+it is made.
+
+**Kin.** LR-094 (quota isolation). R4 (epistemic diversity is assumed, not
+verified) -- this is R4 in its availability form rather than its analysis form.
+
+---
+
+## LR-165 -- "Sub-result, not top-level status" is half an answer
+
+**Rule.** When a status-string sweep classifies a value as a per-item
+sub-result rather than a position's top-level status, the sweep is NOT finished.
+It must then ask: does the top level DERIVE its status from those sub-results?
+If not, the position can report success over its own failures, and the
+orchestrator -- however correct its allowlist -- will believe it.
+
+**Earned.** The LENS-038 sweep found `FAILED` and `OK` at
+`lens_s2c_emotion.py:369,379` and `lens_s2e_legitimacy.py:595,607` and recorded
+them as per-lens sub-results, not top-level statuses. Accurate, and it stopped
+one question early. Five weeks later, wave 34505961936 shows S2-E returning
+`"status": "COMPLETE"` in the same JSON object as `"reports_saved": 0` and four
+sub-results of `"status": "FAILED"`, with `elapsed_seconds: 304.3`. The
+orchestrator printed a green tick. CC-58's allowlist was right to accept
+`COMPLETE`; the lie was inside the position, upstream of every guard.
+
+**Generalisation.** Any status a component computes and then does not use is a
+place a silent failure can live. The sweep question is not "what strings
+exist?" but "for each computed judgement, what reads it?"
+
+**Kin.** R2 (written but never wired) applied to a VALUE rather than to a
+function -- the sub-results are computed, formatted, printed, and then ignored
+by the very line that summarises them.
+
+---
+
+## LR-166 -- A `+` in a URL query value arrives as a space
+
+**Rule.** When building a query string by concatenation, `+` is not a literal.
+ISO-8601 offsets (`+00:00`) must be percent-encoded or the value must be passed
+through a parameter encoder. The failure is silent at the client and loud only
+in the response body.
+
+**Earned.** Two live call sites log
+`HTTP 400 {"code":"22007"} invalid input syntax for type timestamp with time
+zone: "2026-09-10T00:00:00 00:00"` -- the offset's `+` reached Postgres as a
+space. Both queries returned `[]`.
+
+**The instrumentation that saved this is worth copying.** The client logs
+`-- returning [] (NOT 'no rows')`. An empty list from a failed request and an
+empty list from a genuinely empty result are indistinguishable to the caller,
+and this logger refuses to let them look alike. Any wrapper that swallows an
+error and returns a neutral value should say so in the same breath.
