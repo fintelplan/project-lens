@@ -347,7 +347,7 @@ def save_report(supabase, summary, food_for_thought, article_ids,
     }
     response  = supabase.table("lens_reports").insert(record).execute()
     report_id = response.data[0]["id"] if response.data else "unknown"
-    print(f"[save] Saved — id: {report_id} | cycle: {cycle} | selected: {len(article_ids.get('selected', []))} | total: {len(article_ids.get('all_collected', []))}")
+    print(f"[save] Saved — id: {report_id} | cycle: {cycle} | selected: {len(article_ids.get('selected', []))}")
     return report_id
 
 
@@ -375,16 +375,18 @@ def main():
     selected_articles = [
         {
             "id":     a.get("id", ""),
-            "url":    a.get("url", ""),
-            "title":  (a.get("title") or "")[:200],
-            "domain": a.get("domain", "")
+            "url":    a.get("url", "")
         }
         for a in articles if a.get("id")
     ]
 
+    # CC-59 (LENS-039, item 1.3, D-023): ids + urls only.
+    # title/domain were ~95% of lens_reports storage and are recoverable
+    # from lens_raw_articles by id.  The second list (every collected
+    # article) was written here and read by nothing in the repo, so it
+    # is no longer stored.
     article_ids = {
-        "selected":      selected_articles,
-        "all_collected": all_article_links
+        "selected": selected_articles
     }
 
     print(f"[lens] Collected: {len(all_article_links)} | Selected for AI: {len(selected_articles)}")

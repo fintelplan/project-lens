@@ -1253,17 +1253,14 @@ async def main():
     user_prompt          = build_prompt(domain_blocks, total, date_str, counts)
 
     # Article IDs for saving
+    # CC-59 (LENS-039, item 1.3, D-023): ids + urls only.  The second
+    # list (every collected article) is no longer built or stored --
+    # nothing in the repo ever read it back.
     selected_ids = [
-        {"id": a.get("id",""), "url": a.get("url",""),
-         "title": (a.get("title") or "")[:200], "domain": a.get("domain","")}
+        {"id": a.get("id",""), "url": a.get("url","")}
         for a in balanced if a.get("id")
     ]
-    all_ids = [
-        {"id": a.get("id",""), "url": a.get("url",""),
-         "title": (a.get("title") or "")[:200], "domain": a.get("domain","")}
-        for a in all_articles if a.get("url")
-    ]
-    article_ids = {"selected": selected_ids, "all_collected": all_ids}
+    article_ids = {"selected": selected_ids}
 
     print(f"[lens] {total} articles -> 4 lenses firing in parallel...")
     print("=" * 60)
