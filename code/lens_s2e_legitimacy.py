@@ -613,8 +613,21 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     elapsed = round(time.time() - start, 1)
 
+    # CC-60 (LENS-039, order item 1): the status is DERIVED from the work.
+    # It used to be a hardcoded success constant, so four FAILED lenses and
+    # reports_saved 0 still reported success and the orchestrator was right
+    # to believe it.  Three-way, following S2-A at lens_s2a_injection.py:504
+    # and using the DEGRADED label CC-58 already allowlists.  NO_REPORTS is
+    # not a branch: this function already returned early in that case.
+    if saved_count == 0:
+        final_status = "ANALYSIS_FAILED"
+    elif saved_count < len(reports):
+        final_status = "DEGRADED"
+    else:
+        final_status = "COMPLETE"
+
     summary = {
-        "status":           "COMPLETE",
+        "status":           final_status,
         "run_id":           run_id,
         "cycle":            cycle,
         "reports_analyzed": len(reports),
@@ -624,7 +637,7 @@ def run_s2e(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "results":          results,
     }
 
-    log.info(f"=== S2-E COMPLETE | {len(reports)} reports | "
+    log.info(f"=== S2-E {final_status} | {len(reports)} reports | "
              f"{total_low} LOW legitimacy actors | {elapsed}s ===")
     print(json.dumps(summary, indent=2))
     return summary
