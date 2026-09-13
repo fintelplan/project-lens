@@ -428,3 +428,123 @@ Item 2 is the proximate cause of the failures those positions are hiding, and
 fixed S2-E will simply report FAILED until the fallback has capacity. Take the
 ruling first, ship item 1, and let the next wave certify both at once against
 the prediction banked at 1.5.
+
+---
+
+# ADDENDUM — appended 2026-09-13, after this file was generated
+
+This file's header says "generated at the LENS-039 close (2026-09-11)". That
+was true when it was written and the session did not end there. The commit
+stamps are the truth:
+
+| SHA | Stamped |
+| --- | --- |
+| `2a9639c` CC-59 | 2026-09-11 10:57 +0700 |
+| `0044305` close docs | 2026-09-11 17:34 +0700 |
+| `85f1988` CC-60 | **2026-09-13 22:56 +0700** |
+
+## ⏱ FIRST, THE INSTRUMENT FAILURE THAT MATTERS MOST
+
+`date -u` was read ONCE, at 2026-09-11 02:41Z, and everything afterwards was
+written as though that reading were still current. The close ran across
+roughly two and a half days. **LR-152 — a clock reading is a banked number
+the moment it is read — broken in the same session that cites it, on a rule
+James himself earned by being right when the stale clock said he was wrong.**
+
+**CONSEQUENCE, AND IT IS LOAD-BEARING: every figure in this file tagged
+"measured 2026-09-11" is now up to 2.5 days stale.** Specifically —
+
+- Database 374 MB, `lens_reports` 3,949 rows, `lens_raw_articles` 122,577.
+- The ~1.6 MB/day post-CC-59 growth rate, and the ~47-day / late-October
+  projection to the 450 MB trigger that rests on it.
+- The five-wave `['S2-B', 'S2-D', 'Mission Analyst']` series. **Roughly five
+  more waves have run since, unread.** Item 2's Mistral 429 finding may have
+  cleared, worsened, or changed shape; nobody has looked.
+- `NEXT_SESSION_BRIEF_LENS040.md` carries the same staleness throughout.
+
+**RE-MEASURE ALL OF THESE AT THE LENS-040 OPEN BEFORE USING ANY OF THEM.**
+They are BANKED, not LIVE. Do not re-plan the retention timetable, re-rank on
+growth grounds, or describe the failure pattern from the numbers above.
+
+## ITEM 1 — SHIPPED, UNCERTIFIED
+
+**`85f1988` (CC-60).** `lens_s2c_emotion.py` and `lens_s2e_legitimacy.py` now
+derive their top-level status from `saved_count`, three ways: full ->
+`COMPLETE`, partial -> `DEGRADED`, zero -> `ANALYSIS_FAILED`. The hardcoded
+log claim went with it. `grep -rn '"status": *"COMPLETE",$' code/*.py` now
+returns zero across the package.
+
+- 1.6 **CC-60 FALSIFIABLE PREDICTION, BANKED 2026-09-13 (unread).** On the
+  next wave in which S2-E's lenses all fail: the top-level status is NOT a
+  success value; `❌ S2-E` appears in the orchestrator summary; S2-E's name is
+  inside the `did not complete:` list; `grep -c "All positions complete"` is
+  still 0; and the S2-E log line reads the derived status rather than
+  `=== S2-E COMPLETE`. If any lens succeeds while others fail, the status is
+  `DEGRADED` and CC-58's DEGRADED path fires live for the first time — which
+  discharges **item 9.4** if it does. If `reports_saved: 0` ever again sits
+  beside a success status, CC-60 did not take.
+- 1.7 **THE REST OF ITEM 1 IS NOT DONE.** 1.4 called for auditing every other
+  position for the same shape. The sweep did that for the *hardcoded literal*
+  pattern and found exactly two. It did NOT check whether the eighteen
+  correct-looking derivations are each correct in substance — e.g. whether
+  `saved` in `"COMPLETE" if saved else "SAVE_FAILED"` actually tracks the work
+  in every one of them. That is unexamined.
+
+## R10 — EVIDENCE AGAINST, RECORDED BEFORE JAMES RULES
+
+The sweep run after R10 was proposed weakens it. Twenty top-level status
+literals across `code/`: **eighteen already derive the status from the work**,
+including a three-way at `lens_s2a_injection.py:504`. Two hardcoded it, and
+`saved_count` appears in exactly those two files.
+
+That reads as **two departures from a sound convention**, not a structural
+root. A root that describes two instances against eighteen counter-instances
+guides nothing.
+
+**My lean has changed and is recorded as changed: RULE R10 OUT.** It was
+proposed on two instances before the denominator was measured. The proposal
+stands for James to rule either way; the evidence against it is above, and
+the fix shipped regardless.
+
+**The one thing that survives if R10 is ruled out:** the convention was right
+and nothing enforced it. Two departures lived for weeks. That is a gate
+question (item 15, CI proves compilation not behaviour), not a root.
+
+## ITEM 18 — NEW SUB-ITEM
+
+- 18.4 **THE REPO HAS MIXED LINE ENDINGS, FILE BY FILE.** Measured:
+  `lens_s2c_emotion.py` pure LF (411 bare, 0 CRLF); `lens_s2e_legitimacy.py`
+  pure CRLF (636, 0 bare); `analyze_lens.py` and `analyze_lens_multi.py` pure
+  CRLF; `lens-DOC-002_rules.md` MIXED (655 CRLF, 248 bare LF). Two files in
+  the same package, two conventions. Every patch script must therefore MEASURE
+  the line ending rather than assume it — CC-60 v1 assumed and aborted. A
+  `.gitattributes` would close this; `git` is already warning on every touch.
+
+## MISSION — SUPERSEDES THE "NEXT SESSION'S MISSION" SECTION ABOVE
+
+That section names item 1. Item 1 is shipped. **The LENS-040 mission is
+item 2 — the fallback convergence, and the ruling at 2.3.**
+
+Order of work at the LENS-040 open:
+
+1. **Re-measure.** Fresh `date -u`, `ls-remote`, `gh run list`, database size
+   and row counts, and the current failure list. Everything in this file is
+   banked until then.
+2. **Certify CC-60** against the prediction at 1.6, from the first wave dated
+   after 2026-09-13 15:56Z. Read the prediction BEFORE the log.
+3. **Take the 2.3 ruling**, then work item 2. A correctly-reporting S2-E will
+   now say `ANALYSIS_FAILED` honestly on every wave until the fallback has
+   capacity — the fix makes the failure visible, it does not make it stop.
+4. **R10 and 2.3 are both James's to rule.** Do not work either as though it
+   were already decided.
+
+## CLOSE DISCIPLINE NOTE
+
+Shipping code after the close docs were committed is not the normal shape and
+it happened on James's explicit call, with the reasoning recorded: the sweep
+context (18 vs 2, S2-A's precedent, CC-58's DEGRADED vocabulary, the link to
+item 9.4) existed only inside that session and would have cost most of
+LENS-040 to rebuild. This addendum exists because that decision put the order
+out of date the moment it was taken. The alternative — leaving the order
+saying item 1 was the mission when item 1 was shipped — is the failure this
+whole discipline exists to prevent.
