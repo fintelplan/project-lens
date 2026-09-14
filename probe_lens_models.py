@@ -911,8 +911,24 @@ def refusal_flag(content: str) -> bool:
 # ---------------------------------------------------------------------------
 # Wire calls
 # ---------------------------------------------------------------------------
+def _payload(model, messages, max_tokens, temperature, json_mode):
+    """LENS-040: ministral-8b emitted an unescaped quote inside a string
+    twice in six trials -- both times on the token IMF "caved" lifted from
+    the source report. The API has a server-side JSON constraint we have
+    never sent, on the probe OR on any of the twelve production Mistral
+    legs; mistral-small simply never needed it. Opt-in so runs with and
+    without it stay comparable in the jsonl.
+    """
+    body = {"model": model, "messages": messages,
+            "max_tokens": max_tokens, "temperature": temperature}
+    if json_mode:
+        body["response_format"] = {"type": "json_object"}
+    return body
+
+
 def call_openai_compatible(endpoint: str, api_key: str, model: str,
-                           fixture: Fixture, max_tokens: int) -> dict:
+                           fixture: Fixture, max_tokens: int,
+                           json_mode: bool = False) -> dict:
     """Groq / SambaNova. Raw requests so LR-095 can read r.text on errors."""
     messages = []
     if fixture.system:
@@ -923,8 +939,8 @@ def call_openai_compatible(endpoint: str, api_key: str, model: str,
         endpoint,
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type": "application/json"},
-        json={"model": model, "messages": messages,
-              "max_tokens": max_tokens, "temperature": fixture.temperature},
+        json=_payload(model, messages, max_tokens, fixture.temperature,
+                      json_mode),
         timeout=180,
     )
     out = {"http_status": r.status_code, "content": "", "finish_reason": None,
@@ -985,10 +1001,11 @@ def call_gemini(api_key: str, model: str, fixture: Fixture,
 
 
 def execute_trial(cand: Candidate, api_key: str, fixture: Fixture,
-                  max_tokens: int) -> dict:
+                  max_tokens: int, json_mode: bool = False) -> dict:
     if cand.provider in PROVIDER_ENDPOINTS:
         return call_openai_compatible(PROVIDER_ENDPOINTS[cand.provider],
-                                      api_key, cand.model, fixture, max_tokens)
+                                      api_key, cand.model, fixture, max_tokens,
+                                      json_mode=json_mode)
     if cand.provider == "gemini":
         return call_gemini(api_key, cand.model, fixture, max_tokens)
     raise ProbeError(
@@ -1005,7 +1022,9 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
         raw_max_tokens: Optional[int] = None,
         override_provider: Optional[str] = None,
         override_model: Optional[str] = None,
-        override_key_env: Optional[str] = None) -> int:
+        override_key_env: Optional[str] = None,
+        save_output: Optional[str] = None,
+        json_mode: bool = False) -> int:
     if role_key not in ROLES:
         raise ProbeError(f"Unknown role '{role_key}'. Known roles: "
                          f"{', '.join(sorted(ROLES))}")
@@ -1101,7 +1120,7 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
         print(f"  trial {trial}/{trials} ...")
         started = time.time()
         try:
-            res = execute_trial(cand, api_key, fixture, max_tokens)
+            res = execute_trial(cand, api_key, fixture, max_tokens, json_mode)
         except requests.RequestException as e:
             res = {"http_status": None, "content": "", "finish_reason": None,
                    "usage": {}, "error_text": f"{type(e).__name__}: {e}"[:200]}
@@ -1139,6 +1158,7 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
             "max_out_override": max_out_override,
             "starvation_retest": bool(max_out_override),
             "raw_budget": bool(raw_max_tokens),
+            "json_mode": json_mode,
             "raw_usage": res.get("raw_usage"),
             "completion_ratio": completion_ratio,
             "d017_marginal": d017_marginal,
@@ -1158,6 +1178,23 @@ def run(role_key: str, which: str, trials: int, dry_run: bool,
         with open(RESULTS_PATH, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
         written += 1
+
+        # LENS-040: the jsonl banks content_head[:400] and a sha256,
+        # which cannot score analytical agreement -- D-016 moved S2-E
+        # actors/row 4.00 -> 8.50 on a model swap and nobody saw it for
+        # three weeks. Opt-in, AFTER the permanent record is written, so
+        # a failure here can never cost a measurement. The probe still
+        # only measures: scoring the body is the reader's job.
+        if save_output:
+            os.makedirs(save_output, exist_ok=True)
+            safe_model = cand.model.replace("/", "_")
+            out_path = os.path.join(
+                save_output,
+                "%s__%s__%s__t%d.txt" % (role_key, which, safe_model, trial))
+            with open(out_path, "w", encoding="utf-8") as oh:
+                oh.write(content)
+            print("    saved body -> %s (%d chars)"
+                  % (os.path.relpath(out_path, REPO_ROOT), len(content)))
 
         ratio_str = (f"{completion_ratio:.0%}" if completion_ratio is not None
                      else "n/a")
@@ -1204,6 +1241,13 @@ def main() -> int:
     p.add_argument("--model", default=None, help="override wire model ID")
     p.add_argument("--key-env", default=None,
                    help="override key env var name (value never printed)")
+    p.add_argument("--save-output", default=None,
+                   help="directory to write each trial's FULL response body "
+                        "to, for scoring analytical agreement the jsonl "
+                        "cannot capture. Off by default.")
+    p.add_argument("--json-mode", action="store_true",
+                   help="send response_format json_object (OpenAI-compatible "
+                        "providers only). Tagged json_mode in the jsonl.")
     p.add_argument("--dry-run", action="store_true",
                    help="build fixture + show budget and pacing, no wire calls")
     args = p.parse_args()
@@ -1214,7 +1258,9 @@ def main() -> int:
                    raw_max_tokens=args.raw_max_tokens,
                    override_provider=args.provider,
                    override_model=args.model,
-                   override_key_env=args.key_env)
+                   override_key_env=args.key_env,
+                   save_output=args.save_output,
+                   json_mode=args.json_mode)
     except ProbeError as e:
         print(f"\nPROBE ABORTED: {e}", file=sys.stderr)
         return 2
