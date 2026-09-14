@@ -95,6 +95,12 @@ PROVIDER_ENDPOINTS = {
     # cerebras-cloud-sdk instead; the raw endpoint is used HERE so LR-095 can
     # read r.text on errors and so the usage object arrives unwrapped.
     "cerebras": "https://api.cerebras.ai/v1/chat/completions",
+    # Mistral is OpenAI-compatible on /v1. VERIFIED-wire 2026-09-14:
+    # this exact payload shape returned 200 on ministral-8b-2512 and
+    # ministral-3b-2512, and 429 on mistral-small-2603, on one key.
+    # Absent until LENS-040: Mistral was fallback for 8 roles and the
+    # probe pack could never measure it.
+    "mistral": "https://api.mistral.ai/v1/chat/completions",
 }
 
 REFUSAL_PATTERN = re.compile(
