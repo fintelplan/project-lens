@@ -232,7 +232,7 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                     mr = _req.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
-                        json={"model": MISTRAL_FALLBACK_MODEL,
+                        json={"model": MISTRAL_FALLBACK_MODEL, "response_format": {"type": "json_object"},
                               "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                            {"role": "user", "content": prompt}],
                               "max_tokens": 2500, "temperature": 0.3},

@@ -511,7 +511,7 @@ def _call_fallback_leg(user_message: str, prompt_chars: int) -> Optional[dict]:
             "https://api.mistral.ai/v1/chat/completions",
             headers={"Authorization": "Bearer " + key,
                      "Content-Type": "application/json"},
-            json={"model": FB_MODEL,
+            json={"model": FB_MODEL, "response_format": {"type": "json_object"},
                   "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                {"role": "user", "content": user_message}],
                   "max_tokens": fb_max_tokens,

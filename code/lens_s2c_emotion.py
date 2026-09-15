@@ -188,7 +188,7 @@ def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Option
                 "https://api.mistral.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {client}",
                          "Content-Type": "application/json"},
-                json={"model": MODEL,
+                json={"model": MODEL, "response_format": {"type": "json_object"},
                       "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                    {"role": "user",   "content": user_message}],
                       "max_tokens": MAX_TOKENS,

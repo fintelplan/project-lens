@@ -263,7 +263,7 @@ def call_mistral(prompt: str) -> Optional[str]:
                 "https://api.mistral.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {MISTRAL_KEY}", "Content-Type": "application/json"},
                 json={
-                    "model": MODEL,
+                    "model": MODEL, "response_format": {"type": "json_object"},
                     "messages": [
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt},

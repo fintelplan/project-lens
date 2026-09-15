@@ -297,7 +297,7 @@ def call_coordination_analyzer(client, reports: list,
             mr = _req.post(
                 "https://api.mistral.ai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
-                json={"model": MISTRAL_FALLBACK_MODEL,
+                json={"model": MISTRAL_FALLBACK_MODEL, "response_format": {"type": "json_object"},
                       "messages": [{"role": "user", "content": full_content_for_mistral}],
                       "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
                 timeout=120)
