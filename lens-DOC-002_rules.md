@@ -1087,3 +1087,127 @@ space. Both queries returned `[]`.
 empty list from a genuinely empty result are indistinguishable to the caller,
 and this logger refuses to let them look alike. Any wrapper that swallows an
 error and returns a neutral value should say so in the same breath.
+
+## LR-167 — A 429 CAN BE SCOPED TO A MODEL NAME, NOT TO USAGE
+**Rule:** Before treating an HTTP 429 as a rate or quota problem, make a COLD
+call — zero concurrent traffic — and call a SECOND model on the same key. If
+the cold call is refused, it is not a burst. If one model answers and another
+refuses on the same key in the same minute, it is not usage at all.
+**Evidence (2026-09-13/14):** Mistral refused `mistral-small-2603` on a cold
+call nine hours after the last wave, while `ministral-8b-2512` answered 200
+seconds later on the same key. `mistral-small-2506` and `mistral-small-2503`
+also returned 429 **and are not in the account's model list at all** — a usage
+limit cannot be exceeded on a model the account cannot address. Models outside
+the tier return an honest `403 tier_not_allowed`, so the refused ones are
+inside the tier and refused anyway.
+**Scope:** every provider error that names a limit. The error's own wording is
+a claim, not a diagnosis. Kin to the Gemini `limit: 0` finding (LENS-029) and
+to LR-153: two different causes wearing one label.
+
+## LR-168 — A VENDOR'S LIMITS PAGE STATES THE CEILING, NOT WHAT IS ENFORCED
+**Rule:** A console "Limits" page is a published intention. It does not tell
+you what your account is actually allowed to do today. Read USAGE and
+SUBSCRIPTION as well, and then make a live call. Three sources; the call wins.
+**Evidence (2026-09-14):** Mistral's Limits page listed `mistral-small-2603` at
+TPM 20,000 / RPS 1.00. Our cold call used 0.5% of that TPM and one request, and
+was refused. The Subscription page showed $0.16 of a $10 monthly allowance with
+17 days remaining. Nothing on any page explained the refusal, and the pages did
+not contradict each other — they simply did not describe the enforced behaviour.
+**Scope:** amends LR-160 from vendor *banners* to vendor *dashboards*. Same
+disease, more official-looking source.
+
+## LR-169 — THREE TRIALS IS NOT A CERTIFICATION
+**Rule:** Probe a candidate at least FIVE times on the real prompt and record
+the PARSE RATE, not a pass/fail. A model that passes 3/3 has not been shown to
+pass; it has been shown not to fail three times.
+**Evidence (2026-09-14):** `ministral-8b-2512` returned 3/3 valid JSON on
+s2e_legitimacy's real 9,457-char prompt, then **1/3** on byte-identical input
+hours later. Stopping at three would have wired a model that fails a third of
+the time, and the failure would have surfaced as an S2-E that dies on some
+waves and not others — the hardest shape to diagnose.
+**Scope:** every LR-106 probe. Extends LR-107: a probe certifies the prompt
+SIZE it held and now also the RATE at which it held it.
+
+## LR-170 — AN INSTRUMENT NEEDS ITS OWN CENSUS
+**Rule:** Before trusting a measuring tool, enumerate what it can and cannot
+reach, and compare that list against what production actually depends on. A
+gap in the instrument is invisible in its output.
+**Evidence (2026-09-14):** `probe_lens_models.py` carried transports for Groq,
+SambaNova, Cerebras and Gemini. It had **no Mistral transport** while Mistral
+was the declared fallback for eight roles — so the one tool that certifies a
+model before it is wired could not reach the one provider everything falls back
+to. Present since the pack was built on 2026-07-28; found 47 days later, by
+trying to use it. Two further gaps surfaced the same day: the jsonl banked only
+`content_head[:400]`, so analytical agreement could not be scored at all, and
+the dry-run validated preparation without feasibility (LR-172).
+**Scope:** probes, guards, detectors, generators — anything whose output is
+read as evidence. R2's sibling: not "written and never wired" but "built and
+never aimed".
+
+## LR-171 — NEVER ACCEPT A PROVIDER'S DEFAULTS WHERE IT OFFERS A GUARANTEE
+**Rule:** If an API can enforce a property you depend on, ask for it. Parsing
+the output and hoping is a choice, and it is the worse one.
+**Evidence (2026-09-14):** `response_format` appears **zero** times in all of
+`code/`, across twelve Mistral legs that `json.loads` the response. Mistral has
+offered server-side JSON constraint the whole time. Measured on one model, one
+prompt: **4/6 parse without it, 5/5 with it.** Both failures were an unescaped
+`"` inside a string, both on `IMF "caved"` lifted from the source report — so
+the trigger is CONTENT, and influence-operation analysis is full of quotations.
+`mistral-small-2603` never needed it, which is exactly why the gap survived.
+**Scope:** proposed as root R11. Applies beyond JSON: any `seed`, `stop`,
+schema or determinism control the provider exposes and we do not send.
+
+## LR-172 — A DRY-RUN THAT VALIDATES PREPARATION BUT NOT FEASIBILITY GRANTS
+FALSE PERMISSION
+**Rule:** A dry-run must check that the real run COULD execute, not merely that
+its inputs assembled. If a run is impossible, the dry-run must say so.
+**Evidence (2026-09-14):** `probe_lens_models.py --dry-run` printed a full
+budget and pacing plan for a `mistral` candidate — prompt chars, token
+estimate, sleep schedule — for a provider it had no transport for. The
+transport check lived only on the `--provider` override path, not on the normal
+`--candidate fallback` path. The plan looked correct and described a run that
+could not happen.
+**Scope:** every `--dry-run`, `--check`, `--plan` and preflight. Kin to LR-105's
+`verify_registry_alignment`: a check that cannot fail is not a check.
+
+## LR-173 — SAVING A PREFIX PROVES IT ANSWERED, NOT WHAT IT SAID
+**Rule:** Evidence that a model responded is not evidence of what it produced.
+If a decision will turn on the CONTENT, persist the whole body.
+**Evidence (2026-09-14):** `probe_results.jsonl` banked `content_head[:400]`
+and a sha256 of a 10,432-char body. The LENS-037 calibration band
+(actors 8/7/8, low 5/3/5) could not be scored from it at all, and D-016 — a
+model swap that moved S2-E's actors/row 4.00 → 8.50 and went unnoticed for
+three weeks — is precisely the failure that band exists to catch. Fixed by
+`--save-output`, written AFTER the permanent record so a failure there cannot
+cost a measurement.
+**Scope:** probe output, cert evidence, anything perishable. The sha256 proves
+identity between trials; it recovers nothing.
+
+## LR-174 — A RED SCHEDULED WORKFLOW IS A REPORT NOBODY READS
+**Rule:** LR-161 says a failing scheduled job is a free liveness detector. That
+is only true if something READS it. A detector with no reader is not a
+detector; add the alarm when you add the reliance.
+**Evidence (2026-09-14):** Lens Regular Report failed on **eleven consecutive
+days**, 2026-09-04 to 2026-09-14, each run ending `{"status":"FAILED"}` with
+exit code 1, red on the Actions wall. Nothing announced it. It was found by
+looking at a screenshot of the workflow list during an unrelated question. The
+daily intelligence deliverable had not been produced for eleven days and the
+system that produced it was reporting that fact correctly the whole time.
+**Scope:** every scheduled workflow. Cheapest reader available: alarm on any
+`conclusion: failure`, plus the under-60s rule from the size-monitoring item.
+
+## LR-175 — `finish_reason=length` IS A SILENT FAILURE WEARING AN HTTP 200
+**Rule:** Treat `finish_reason=length` as a FAILURE, not a completion. A
+truncated response parses, saves, delivers and looks like success. Assert on
+`stop`, and log completion tokens at every call site so truncation is visible
+after the fact.
+**Evidence (2026-09-14):** Six Regular Report trials across two models returned
+HTTP 200 with `finish_reason=length` and `budget_used=100%`, `tokens=23479`
+identical on all six. Every body stopped mid-sentence inside PART 2; **PART 3
+and PART 4 — including the entire reference list — were never generated.** The
+position logs no usage at all, so whether this predates the provider failure is
+UNKNOWN and unknowable from the record.
+**Scope:** every call site. Directly blocks the obvious fix for that position:
+swapping the model would have produced a green workflow delivering a report
+missing half its content, which is the target's absolute rule breached on
+purpose.
