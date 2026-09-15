@@ -1,7 +1,7 @@
 """
 lens_regular_report.py
 Project Lens — Regular Report (Free Tier)
-Model: mistral-small-latest (free) -> Cerebras fallback
+Model: ministral-8b-2512 (free) -> Cerebras fallback (UNREACHABLE, CC-44)
 NOTE (CC-43): Groq leg 3 removed -- this position's real prompt exceeds
   Groq's TPM ceiling several times over. The Cerebras leg is also NOT
   reachable on an API failure: _FORCE_PROVIDER is written, never read.
@@ -56,11 +56,17 @@ TELEGRAM_CAPTION_CAP = 950
 MAX_REFS             = 400
 MAX_RETRIES          = 3
 
-# Provider chain: mistral-small -> cerebras  (groq leg 3 removed, CC-43)
+# Provider chain: ministral-8b -> cerebras  (groq leg 3 removed, CC-43;
+# the cerebras leg is unreachable, CC-44)
 PROVIDERS = [
     {
         "name": "mistral",
-        "model": "mistral-small-latest",
+        "model": "ministral-8b-2512",   # CC-68. mistral-small* has 429d
+        # on a healthy key since 2026-09-04 and this position has not
+        # delivered since 2026-09-03. Hardcoded, like the rest of this
+        # chain: the file never imports lens_models (item 2.6). The
+        # registry regular_report row still reads mistral-small-latest
+        # and is decorative here. Do not read that row as truth.
         "key_env": "MISTRAL_API_KEY",
         "base_url": "https://api.mistral.ai/v1",
     },
@@ -185,7 +191,7 @@ def fetch_references(sb) -> list:
 
 # ── Prompt builder ────────────────────────────────────────────────────────────
 def build_prompt(s1_reports: list, s3_reports: dict, references: list) -> str:
-    """Build full prompt for mistral-small S2+MA synthesis."""
+    """Build full prompt for the S2+MA synthesis (CC-68: ministral-8b)."""
 
     # S1 block
     s1_text = f"SYSTEM 1 — LENS REPORTS ({len(s1_reports)} reports, last 24h):\n\n"
