@@ -253,10 +253,11 @@ Investigative questions for GCSP educators to hold while watching these voices.
 3-5 open questions. No predictions. Evidence-based only.
 
 PART 4 — REFERENCES
-List every REF ID cited in Parts 1-2 with source name and title.
-Format: [REF-ID] Source — Title
+Leave this section empty — write only the header line above.
+The references are auto-appended after rendering, listing every REF ID
+you cited in Parts 1-2. Do not write them yourself.
 
-Length: 4-5 pages, ~2000-2500 words. Exhaustive detection depth.
+Length: PARTS 1-3 only, 4-5 pages, ~2000-2500 words. Exhaustive depth.
 Tone: Parts 1-2 intelligence-briefing formal. Part 3 investigative-journalism narrative.
 """
 
@@ -369,13 +370,15 @@ def validate_citations(text: str, references: list) -> tuple:
         "valid_citations": len(valid),
         "invalid_stripped": len(invalid),
         "invalid_ids": sorted(invalid),
+        "valid_ids": sorted(valid),
     }
     log.info(f"Citation validation: attempted={len(found)} valid={len(valid)} stripped={len(invalid)}")
     return cleaned, stats
 
 
 # ── DOCX renderer ─────────────────────────────────────────────────────────────
-def render_docx(report_text: str, date_str: str, references: list) -> str:
+def render_docx(report_text: str, date_str: str, references: list,
+                valid_cited_refs: list) -> str:
     """Render report text to docx. Returns temp file path."""
     try:
         from docx import Document
@@ -426,6 +429,33 @@ def render_docx(report_text: str, date_str: str, references: list) -> str:
             p = doc.add_paragraph(line_stripped)
             p.paragraph_format.space_after = Pt(6)
 
+    # PART 4 is built here, not by the model (item 2.2, ruled D). The pool is
+    # already in the prompt; asking for it back cost roughly 2,000 output
+    # tokens against a 4,096 cap, and PART 3 and PART 4 never survived.
+    # Pattern copied from lens_forensic_report.py render_docx, which has done
+    # this since April. That version reads ref["url"]; fetch_references here
+    # selects ref_id,title,source_name,domain,collected_date and has no url,
+    # so domain is the fallback label. Only validated, cited ids are listed.
+    if valid_cited_refs:
+        ref_lookup = {r["ref_id"]: r for r in references if r.get("ref_id")}
+        doc.add_paragraph()
+        listed = 0
+        for ref_id in sorted(valid_cited_refs):
+            ref = ref_lookup.get(ref_id)
+            if not ref:
+                continue
+            src = ref.get("source_name") or ref.get("domain") or ""
+            title = ref.get("title") or ""
+            p = doc.add_paragraph()
+            r1 = p.add_run(ref_id + "  ")
+            r1.bold = True
+            r1.font.size = Pt(9)
+            r2 = p.add_run(src + " — " + title)
+            r2.font.size = Pt(9)
+            p.paragraph_format.space_after = Pt(3)
+            listed += 1
+        log.info("PART 4 built in code: %s of %s cited refs resolved",
+                 listed, len(valid_cited_refs))
     # Save to temp file
     fname = f"{date_str.replace('-', '')}_ProjectLens_Regular_DC2210.docx"
     tmp_path = os.path.join(tempfile.gettempdir(), fname)
@@ -574,7 +604,8 @@ def run_regular_report(dry_run: bool = False) -> dict:
 
     # Render docx
     try:
-        docx_path = render_docx(report_text, date_str, references)
+        docx_path = render_docx(report_text, date_str, references,
+                                citation_stats.get("valid_ids", []))
     except Exception as e:
         msg = f"DOCX render failed: {e}"
         log.error(msg)
