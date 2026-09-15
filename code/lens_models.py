@@ -45,12 +45,19 @@ GEMINI_25_FLASH_LITE = "gemini-2.5-flash-lite"
 # Dated id, never an alias (D-015). No `mistral-small-latest` model card exists,
 # and -latest aliases carry far lower limits than dated ids (medium-latest
 # 25,000 TPM vs medium-2508 356,250). An alias is an unpinned wire id.
-# Higher-throughput option if a fallback ever needs it: mistral-small-2506
-# (TPM 2,250,000, RPS 5.00). Not wired -- recorded only.
+# mistral-small-2506 was recorded here as a higher-throughput option.
+# It is NOT one -- it returned 429 on a cold call 2026-09-13, like every
+# other mistral-small* id. Do not wire it.
 MISTRAL_SMALL = "mistral-small-2603"
 MISTRAL_SMALL_LATEST = "mistral-small-latest"  # FLOATING alias -- what
 # production actually sets (lens-s2f-scoring.yml, lens_regular_report.py).
 # Can change model without a commit. Pin it when there is time.
+MINISTRAL_8B = "ministral-8b-2512"
+# D-026: probed on S2-E real 9,457-char prompt, 5/5 with
+# response_format, actors 7/6/8/7/8 against the banked band. CTX
+# 262,144, deprecation None (model card 2026-09-14). The whole
+# mistral-small* class has returned 429 on a healthy key since
+# 2026-09-04 and the reason is UNKNOWN.
 COHERE_CMD_R_PLUS = "command-r-plus-08-2024"
 
 # Budget-fitting constants (D-015). The old GROQ_REQUEST_CEILING = 8192 is gone:
@@ -79,14 +86,14 @@ ROLES = {
     "lens1": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
         "key_env": "GROQ_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "was qwen/qwen3-32b (dead 2026-07-17); call site ran NO fallback -- lens1 produced nothing Jul 17 to Aug 2, see S1-001; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
     },
     "lens2": {
         "provider": "gemini", "model": GEMINI_25_FLASH,
         "key_env": "GEMINI_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "gemini-2.5-flash dies 2026-10-16 -> one-line edit here in Oct",
     },
@@ -100,7 +107,7 @@ ROLES = {
     "lens4": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
         "key_env": "CEREBRAS_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "the LR-005(A) sambanova pattern ended here -- not kept: fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
     },
@@ -123,14 +130,14 @@ ROLES = {
     "s2a_injection": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
         "key_env": "GROQ_S2A_API_KEY", "max_out": 4600,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "was MAX_TOKENS=1800; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015. Row now matches the Mistral fallback CC-14 already gave the call site.",
     },
     "s2b_coordination": {
         "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
         "key_env": "GEMINI_S2B_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "was gemini-2.0-flash (shut down 2026-06-01); needs long"
                 " context -- probe the 200-article prompt on flash-lite",
@@ -144,7 +151,7 @@ ROLES = {
     "s2d_adversary": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
         "key_env": "CEREBRAS_API_KEY", "max_out": 8000,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "D-016: moved to Cerebras 2026-07-28. On Groq's 8,000 ceiling"
                 " it could never analyse more than ~23 articles per call and"
@@ -156,7 +163,7 @@ ROLES = {
     "s2e_legitimacy": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
         "key_env": "CEREBRAS_API_KEY", "max_out": 16_000,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "D-016: moved to Cerebras 2026-07-28. On Groq it returned ZERO"
                 " characters 3/3 at a 2400 budget -- ~2,000 tokens of reasoning"
@@ -175,7 +182,7 @@ ROLES = {
     "mission_analyst": {
         "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
         "key_env": "CEREBRAS_API_KEY", "max_out": 5_000,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "D-016: moved to Cerebras 2026-07-28. Its ~30,000-char synthesis"
                 " prompt (~6,900 tokens) collapsed fit_max_tokens to the 768"
@@ -243,7 +250,7 @@ ROLES = {
     "s3b_history": {
         "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
         "key_env": "GEMINI_S3B_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MISTRAL_SMALL,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
         "note": "was gemini-2.0-flash (shut down 2026-06-01)",
     },
@@ -323,6 +330,10 @@ LIMITS = {
     # ^ TPM/RPS VERIFIED-console 2026-07-28 (RPS 0.83). CTX is VERIFY, not
     #   VERIFIED: 128k comes from the Mistral Small 3.1/3.2 cards, and this is
     #   a dated id -- re-read the card before upgrading the tag.
+    ("mistral", MINISTRAL_8B): {"METER": "tokens", "TPM": 625_000,
+                                "RPS": 3.13, "CTX": 262_144},
+    # ^ VERIFIED-console 2026-09-14. Mistral has no RPD axis at all;
+    #   RPS is the request limit. CTX from the model card.
     ("cohere", COHERE_CMD_R_PLUS): {"METER": "requests", "RPM": 20,
                                     "RPD": 1_000, "CTX": 128_000},
     # ^ 20 req/min VERIFIED-docs 2026-07-28; no TPM exists on trial keys.
