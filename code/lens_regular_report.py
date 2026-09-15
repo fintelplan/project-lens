@@ -436,9 +436,15 @@ def render_docx(report_text: str, date_str: str, references: list,
             doc.add_paragraph()
             continue
 
-        # Detect headings
-        if line_stripped.startswith("PART ") and "—" in line_stripped:
-            p = doc.add_heading(line_stripped, level=1)
+        # Detect headings. CC-69: the model emits markdown, measured across
+        # 15 probe bodies -- 38 as "### **PART N — NAME**" and 3 as
+        # "**PART N — NAME**". The old test was startswith("PART "),
+        # which matched NONE of the 41: catches=0, misses=41. Strip the
+        # leading hashes and the bold markers, then test. The stripped
+        # text is what goes in the heading, so ** never reaches the docx.
+        heading_text = line_stripped.lstrip("#").strip().strip("*").strip()
+        if heading_text.startswith("PART ") and "—" in heading_text:
+            p = doc.add_heading(heading_text, level=1)
         elif line_stripped.isupper() and len(line_stripped) < 60 and ":" not in line_stripped:
             p = doc.add_heading(line_stripped, level=2)
         else:
