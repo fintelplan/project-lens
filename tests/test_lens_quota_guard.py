@@ -29,10 +29,22 @@ import lens_models as lm
 # registry constants so a model migration cannot leave green tests behind
 # asserting on a corpse (T25 asserted ("cerebras","qwen-3-235b") and was RED
 # on Jul 27 2026 while the guard had already moved to gpt-oss-120b).
-GROQ_MODEL     = lm.GROQ_GPT_OSS_120B
-GEMINI_MODEL   = lm.GEMINI_25_FLASH_LITE
-MISTRAL_MODEL  = lm.MISTRAL_SMALL
-CEREBRAS_MODEL = lm.CEREBRAS_GPT_OSS_120B
+# CC-72: importing a registry CONSTANT is one level too shallow. The
+# comment above was written after T25 asserted a corpse, and T25 broke
+# AGAIN on 2026-09-15 when CC-71 moved S2-C from mistral-small-2603 to
+# ministral-8b-2512: lm.MISTRAL_SMALL is a constant in the registry, not
+# the model S2-C is wired to. Derive from the POSITION the test names,
+# the way positions_on() below already does, and a migration moves the
+# fixture with it instead of leaving an assertion on the old wire.
+def model_for(position):
+    """The (provider, model) pair this position is wired to, live."""
+    provider, model, _est = qg.POSITION_CONSUMPTION[position]
+    return provider, model
+
+GROQ_MODEL     = model_for("S2-A")[1]
+GEMINI_MODEL   = model_for("S2-B")[1]
+MISTRAL_MODEL  = model_for("S2-C")[1]
+CEREBRAS_MODEL = model_for("S3-D")[1]
 
 # The Groq TPD the guard will actually apply, straight from the registry
 # (200_000 as of 2026-07-27 — double the old 70b tier, D-002). Tests that
