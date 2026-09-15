@@ -1,0 +1,119 @@
+```json
+{
+  "analyst": "S2-E",
+  "lens_id": "0b6380cf-54ae-45af-bcc6-e711481752ee",
+  "lens_name": "Geopolitical Tensions & Maritime Chokepoints",
+  "actors_assessed": [
+    {
+      "actor_name": "United States",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 1.0, "note": "Free and fair elections with multi-party participation (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 1.0, "note": "Independent judiciary and legal system (World Justice Project 2023)."},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Strong press freedom but partisan media polarization (RSF 2023: 'Partly Free')."},
+        "CIVIL_SOCIETY": {"score": 0.9, "note": "Vibrant civil society with some restrictions on advocacy (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.9, "note": "Checks and balances function, though executive overreach exists (Freedom House 2023)."},
+        "INTERNATIONAL_NORMS": {"score": 0.7, "note": "Complies with UN Charter but selectively enforces norms (e.g., sanctions, military interventions)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.8, "note": "Protects GCSP rights but surveillance/privatization of essentials (e.g., healthcare, education) erodes autonomy."}
+      },
+      "legitimacy_score": 0.86,
+      "legitimacy_tier": "HIGH",
+      "actor_type_note": "FUNCTIONING_DEMOCRACY",
+      "narrative_role_in_report": "Justifies military deployments (e.g., Hormuz) and financial dominance (IMF appointment) as 'global stability' measures."
+    },
+    {
+      "actor_name": "Iran",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Supreme Leader and Guardian Council control political process (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to regime; no independent courts (HRW 2023)."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; journalists imprisoned (RSF 2023: 'Not Free')."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent crushed; protests violently suppressed (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; military and clergy dominate governance (Freedom House 2023)."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Violates UN Charter via proxy wars (Yemen), ballistic missile programs, and maritime aggression (UNSC resolutions)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "PHI-002: Oppresses GCSP rights—surveillance, censorship, and economic coercion (e.g., sanctions on dissent)."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as 'victim' in Hormuz Strait incident; state media justifies attacks on commercial ships as 'legitimate defense.'"
+    },
+    {
+      "actor_name": "Saudi Arabia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No elections; monarchy rules via hereditary succession (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to Crown; no judicial independence (HRW 2023)."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; journalists jailed (RSF 2023: 'Not Free')."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and activists targeted; women’s rights restricted (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; security apparatus answers only to Crown (Freedom House 2023)."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Violates UN Charter via Yemen war (airstrikes, blockade), human rights abuses (UN reports)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "PHI-002: Crushed GCSP rights—surveillance, arbitrary detention, and economic marginalization of dissenters."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Justifies airstrikes in Yemen as 'counterterrorism' while framing Hormuz Strait tensions as 'regional security' concern."
+    },
+    {
+      "actor_name": "Russia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; United Russia dominates via repression (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary politicized; FSB controls legal system (HRW 2023)."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State media monopoly; independent outlets banned (RSF 2023: 'Not Free')."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs labeled 'foreign agents'; protests violently suppressed (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; security services answer to Kremlin (Freedom House 2023)."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Violates UN Charter via Ukraine invasion, annexations, and cyber warfare (ICC warrants)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "PHI-002: Oppresses GCSP rights—mobilization laws, censorship, and war crimes (UN reports)."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "State media frames Ukraine strikes as 'counter-terrorism' and 'logistics disruptions' to justify war."
+    },
+    {
+      "actor_name": "BRICS Nations (collective)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.5, "note": "Mixed—some members (Brazil, India) have flawed democracies; others (China, Russia) are authoritarian (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 0.5, "note": "Inconsistent—China and Russia suppress courts; South Africa has some independence (HRW 2023)."},
+        "PRESS_FREEDOM": {"score": 0.3, "note": "Partially free in Brazil/India; fully suppressed in China/Russia (RSF 2023)."},
+        "CIVIL_SOCIETY": {"score": 0.4, "note": "Some members (Brazil) allow NGOs; others (China) criminalize dissent (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.3, "note": "No unified checks—collective decisions dominated by China/Russia (transnational authoritarianism)."},
+        "INTERNATIONAL_NORMS": {"score": 0.5, "note": "Partial compliance—China/Russia violate norms; India/Brazil generally adhere (UN reports)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "PHI-002: Mixed—some members (Brazil) protect GCSP rights; others (China) suppress them via surveillance/censorship."}
+      },
+      "legitimacy_score": 0.43,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Pushed as 'alternative financial system' to challenge US-led institutions, framing it as 'economic sovereignty' for Global South."
+    },
+    {
+      "actor_name": "United Nations",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Not applicable—no electoral legitimacy; membership based on geopolitical power (V-Dem 2023)."},
+        "RULE_OF_LAW": {"score": 0.7, "note": "ICJ and Security Council operate under UN Charter; enforcement inconsistent (World Justice Project 2023)."},
+        "PRESS_FREEDOM": {"score": 0.9, "note": "Independent media access to UN operations; some reporting restrictions (RSF 2023)."},
+        "CIVIL_SOCIETY": {"score": 0.8, "note": "NGOs and observers participate in UN processes (CIVICUS 2023)."},
+        "ACCOUNTABILITY": {"score": 0.6, "note": "Checks exist (e.g., GA vetoes, ICJ rulings) but great powers often bypass them (Freedom House 2023)."},
+        "INTERNATIONAL_NORMS": {"score": 0.8, "note": "Primary custodian of UN Charter; enforcement varies by Security Council dynamics (UN reports)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "PHI-002: Serves great power interests over people’s rights (e.g., vetoes on human rights resolutions)."}
+      },
+      "legitimacy_score": 0.63,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Not directly mentioned but implied as a 'Western-dominated' institution in BRICS' critique."
+    }
+  ],
+  "low_legitimacy_actors_pushing_narrative": [
+    "Iran",
+    "Saudi Arabia",
+    "Russia",
+    "BRICS Nations (collective)"
+  ],
+  "legitimacy_gap_signal": "The report frames **LOW legitimacy actors (Iran, Saudi Arabia, Russia, BRICS)** as 'regional actors' or 'alternative systems' while downplaying their authoritarian control over people’s sovereignty. This creates a **narrative gap**: physical disruptions (e.g., Hormuz Strait attacks) are justified as 'security' or 'economic sovereignty' by actors with **zero PEOPLES_SOVEREIGNTY compliance**, obscuring their role in destabilizing global trade and human rights.",
+  "analyst_note": "Authoritarian actors dominate physical disruptions while framing them as 'legitimate'—a classic **legitimacy inversion** tactic."
+}
+```

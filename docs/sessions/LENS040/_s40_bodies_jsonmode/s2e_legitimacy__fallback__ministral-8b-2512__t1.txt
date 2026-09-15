@@ -1,0 +1,134 @@
+{
+  "analyst": "S2-E",
+  "lens_id": "0b6380cf-54ae-45af-bcc6-e711481752ee",
+  "lens_name": "Geopolitical Tensions & Maritime Chokepoints",
+  "actors_assessed": [
+    {
+      "actor_name": "United States",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 1.0, "note": "Free and fair elections with multi-party competition (Freedom House: Free)"},
+        "RULE_OF_LAW": {"score": 1.0, "note": "Independent judiciary and strong legal protections (V-Dem: High)"},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Strong press freedom with some restrictions (RSF: Partly Free, but high media diversity)"},
+        "CIVIL_SOCIETY": {"score": 1.0, "note": "Vibrant civil society and NGO space (Freedom House: Free)"},
+        "ACCOUNTABILITY": {"score": 0.9, "note": "Strong checks and balances, though recent executive overreach concerns exist"},
+        "INTERNATIONAL_NORMS": {"score": 0.7, "note": "Complies with UN Charter but selectively enforces norms (e.g., drone strikes, sanctions) (PHI-002: Mixed)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.9, "note": "Protects GCSP rights but faces systemic inequality and mass incarceration issues"}
+      },
+      "legitimacy_score": 0.87,
+      "legitimacy_tier": "HIGH",
+      "actor_type_note": "FUNCTIONING_DEMOCRACY",
+      "narrative_role_in_report": "Framed as dominant financial/institutional actor (IMF influence, potential Hormuz deployment)"
+    },
+    {
+      "actor_name": "Iran",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Supreme Leader and Guardian Council control political process (V-Dem: Electoral Democracy Score = 0)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to political leadership; no independent courts (Freedom House: Not Free)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalists imprisoned (RSF: Not Free)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/cracks down on activism"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; Supreme Leader and Revolutionary Guard dominate decision-making"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., regional aggression, human rights abuses) (PHI-002: Violates GCSP rights)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, limits economic freedoms, and restricts cultural expression"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Strait of Hormuz (commercial ship strike narrative)"
+    },
+    {
+      "actor_name": "Saudi Arabia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; monarchy rules without popular mandate (V-Dem: Electoral Democracy Score = 0)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to monarchy; no independent courts (Freedom House: Not Free)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalism heavily restricted (RSF: Not Free)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/cracks down on activism"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; monarchy and security apparatus dominate decision-making"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., Yemen war, human rights abuses) (PHI-002: Violates GCSP rights)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, limits economic freedoms, and restricts cultural expression"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Yemen (58 airstrikes on governorates)"
+    },
+    {
+      "actor_name": "Russia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Putin regime manipulates electoral process (V-Dem: Electoral Democracy Score = 0)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to state; no independent courts (Freedom House: Not Free)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalists imprisoned (RSF: Not Free)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/cracks down on activism"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; Putin and security apparatus dominate decision-making"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., Ukraine invasion, human rights abuses) (PHI-002: Violates GCSP rights)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, limits economic freedoms, and restricts cultural expression"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Ukraine (logistics/power site strikes narrative)"
+    },
+    {
+      "actor_name": "BRICS Nations (Collective)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.5, "note": "Mixed: Some members (India, Brazil) have flawed but functional democracies; others (China, Russia) are authoritarian"},
+        "RULE_OF_LAW": {"score": 0.5, "note": "Mixed: Some members (South Africa) have independent judiciaries; others (China) do not"},
+        "PRESS_FREEDOM": {"score": 0.3, "note": "Mixed: Some members (India) have press freedom issues; others (China, Russia) suppress media"},
+        "CIVIL_SOCIETY": {"score": 0.4, "note": "Mixed: Some members (Brazil) allow civil society; others (China) suppress it"},
+        "ACCOUNTABILITY": {"score": 0.3, "note": "Mixed: Some members (India) have checks and balances; others (China) do not"},
+        "INTERNATIONAL_NORMS": {"score": 0.5, "note": "Mixed: Some members (Brazil) comply; others (Russia) violate norms"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "PHI-002: Serves collective economic interests but lacks unified democratic mandate; some members oppress internally"}
+      },
+      "legitimacy_score": 0.41,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Framed as alternative financial system challenger (joint settlement centers, national currencies)"
+    },
+    {
+      "actor_name": "United Nations",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Not applicable (not an elected body); legitimacy derived from member state consensus"},
+        "RULE_OF_LAW": {"score": 0.8, "note": "Independent legal frameworks (ICJ, ICC) operate under UN Charter"},
+        "PRESS_FREEDOM": {"score": 0.9, "note": "Supports press freedom globally; some internal restrictions"},
+        "CIVIL_SOCIETY": {"score": 0.8, "note": "Supports civil society globally; some operational restrictions in member states"},
+        "ACCOUNTABILITY": {"score": 0.7, "note": "Checks via Security Council vetoes and General Assembly oversight"},
+        "INTERNATIONAL_NORMS": {"score": 1.0, "note": "Founded on UN Charter; enforces international law (PHI-002: Serves global sovereignty rights)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "PHI-002: Serves great power interests over people's rights in some cases (e.g., veto abuse)"}
+      },
+      "legitimacy_score": 0.67,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Not explicitly mentioned in this report"
+    },
+    {
+      "actor_name": "Yemen Government (Recognized by Saudi Arabia)",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; power controlled by Saudi-backed coalition and Hadi government (V-Dem: Electoral Democracy Score = 0)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Collapsed legal system; no independent judiciary (Freedom House: Not Free)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalism nonexistent (RSF: Not Free)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed by coalition forces"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on power; Saudi-backed military and political elite dominate"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., war crimes, humanitarian violations) (PHI-002: Violates GCSP rights)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, limits economic freedoms, and restricts cultural expression"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as target of Saudi airstrikes (Yemeni governorates)"
+    }
+  ],
+  "low_legitimacy_actors_pushing_narrative": [
+    "Iran",
+    "Russia",
+    "Saudi Arabia",
+    "Yemen Government (Recognized by Saudi Arabia)"
+  ],
+  "legitimacy_gap_signal": "The report heavily features **LOW legitimacy actors (Iran, Russia, Saudi Arabia, Yemen Government)** pushing narratives of aggression, piracy, and sectarian conflict in critical chokepoints (Strait of Hormuz, Bab el-Mandeb). This creates a **legitimacy gap**—authoritarian actors dominate physical and narrative control, while democratic institutions (e.g., UN, US) are sidelined in direct conflict framing. The **BRICS collective** emerges as a **MIXED legitimacy** alternative, but its internal contradictions undermine its sovereignty-protective claims.",
+  "analyst_note": "Authoritarian actors dominate physical and narrative control in chokepoints, while democratic legitimacy is absent from direct conflict framing."
+}

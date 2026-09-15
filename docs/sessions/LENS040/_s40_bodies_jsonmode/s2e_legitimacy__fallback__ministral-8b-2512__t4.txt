@@ -1,0 +1,134 @@
+{
+  "analyst": "S2-E",
+  "lens_id": "0b6380cf-54ae-45af-bcc6-e711481752ee",
+  "lens_name": "Geopolitical Tensions & Maritime Chokepoints",
+  "actors_assessed": [
+    {
+      "actor_name": "United States",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 1.0, "note": "Free and fair elections with multi-party competition."},
+        "RULE_OF_LAW": {"score": 1.0, "note": "Independent judiciary and constitutional checks."},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Strong press freedom with some restrictions (e.g., national security laws)."},
+        "CIVIL_SOCIETY": {"score": 0.9, "note": "Vibrant civil society with some political polarization."},
+        "ACCOUNTABILITY": {"score": 1.0, "note": "Strong checks and balances (Congress, Supreme Court, media)."},
+        "INTERNATIONAL_NORMS": {"score": 0.7, "note": "Generally compliant but selectively violates norms (e.g., drone strikes, sanctions)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.9, "note": "Protects individual rights but has historical and ongoing systemic inequities."}
+      },
+      "legitimacy_score": 0.87,
+      "legitimacy_tier": "HIGH",
+      "actor_type_note": "FUNCTIONING_DEMOCRACY",
+      "narrative_role_in_report": "Framed as dominant financial/institutional actor (IMF influence, potential Hormuz deployment)."
+    },
+    {
+      "actor_name": "Iran",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Supreme Leader and Guardian Council control political process."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to political leadership; no true independence."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalism heavily restricted."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/criminalizes activism."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No meaningful checks; Supreme Leader and Revolutionary Guard dominate."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., regional aggression, human rights abuses)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, restricts freedoms, and oppresses GCSP rights."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor (commercial ship strike near Strait of Hormuz)."
+    },
+    {
+      "actor_name": "Saudi Arabia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No elections; monarchy rules by decree."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary lacks independence; security courts operate outside constitutional checks."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalism criminalized."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/criminalizes activism."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No meaningful checks; monarchy and security apparatus dominate."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Violates UN Charter (e.g., Yemen war crimes, human rights abuses)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, restricts freedoms, and oppresses GCSP rights."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor (58 airstrikes in Yemen)."
+    },
+    {
+      "actor_name": "Russia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Putin’s regime manipulates political process."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to state; no true independence."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalism criminalized."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; state monitors/criminalizes activism."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No meaningful checks; Putin and security apparatus dominate."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequently violates UN Charter (e.g., Ukraine invasion, annexations)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses dissent, restricts freedoms, and oppresses GCSP rights."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor (Ukrainian logistics strikes)."
+    },
+    {
+      "actor_name": "BRICS Nations (collective)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.5, "note": "Mixed electoral systems; some members democratic, others authoritarian."},
+        "RULE_OF_LAW": {"score": 0.5, "note": "Varies by member; some independent judiciaries, others not."},
+        "PRESS_FREEDOM": {"score": 0.3, "note": "Press freedom varies; some members suppress, others allow."},
+        "CIVIL_SOCIETY": {"score": 0.4, "note": "Civil society varies; some members suppress, others allow."},
+        "ACCOUNTABILITY": {"score": 0.5, "note": "Checks and balances vary; some members have them, others do not."},
+        "INTERNATIONAL_NORMS": {"score": 0.5, "note": "Some members comply, others violate norms."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "Collective serves economic interests but lacks unified commitment to GCSP rights."}
+      },
+      "legitimacy_score": 0.47,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Framed as alternative financial system challenger (joint settlement centers)."
+    },
+    {
+      "actor_name": "International Monetary Fund (IMF)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Not applicable; appointed leadership."},
+        "RULE_OF_LAW": {"score": 0.5, "note": "Operates under international treaties but lacks domestic judicial oversight."},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Independent media coverage of IMF operations."},
+        "CIVIL_SOCIETY": {"score": 0.7, "note": "NGOs monitor IMF policies but lack direct influence."},
+        "ACCOUNTABILITY": {"score": 0.5, "note": "Partially accountable to member states; some transparency gaps."},
+        "INTERNATIONAL_NORMS": {"score": 0.7, "note": "Generally compliant but influenced by US/Western powers."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.3, "note": "Serves great power interests over sovereign people’s economic rights."}
+      },
+      "legitimacy_score": 0.53,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Framed as US-influenced institution (chief economist appointment)."
+    },
+    {
+      "actor_name": "Yemen Government (recognized by Saudi Arabia)",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Saudi-backed regime lacks legitimacy."},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Collapsed state; no functioning judiciary."},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; no independent journalism."},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; war-torn environment."},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks; dominated by Saudi-backed military factions."},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Violates UN Charter (e.g., war crimes, humanitarian crises)."},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively oppresses people’s sovereignty; war-torn governance."}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as target of Saudi airstrikes (Yemeni governorates)."
+    }
+  ],
+  "low_legitimacy_actors_pushing_narrative": [
+    "Iran",
+    "Saudi Arabia",
+    "Russia",
+    "Yemen Government (recognized by Saudi Arabia)"
+  ],
+  "legitimacy_gap_signal": "Report frames LOW legitimacy actors (Iran, Saudi Arabia, Russia, Yemen Government) as primary aggressors in maritime chokepoints and Ukraine/Yemen conflicts, while omitting critical scrutiny of their authoritarian governance and human rights violations. Narrative justifies military escalation without addressing underlying legitimacy gaps.",
+  "analyst_note": "Low-legitimacy actors dominate geopolitical framing, risking narrative distortion of conflict drivers."
+}

@@ -1,0 +1,136 @@
+```json
+{
+  "analyst": "S2-E",
+  "lens_id": "0b6380cf-54ae-45af-bcc6-e711481752ee",
+  "lens_name": "Unknown",
+  "actors_assessed": [
+    {
+      "actor_name": "United States",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 1.0, "note": "Free and fair elections with multi-party competition (V-Dem 2023)"},
+        "RULE_OF_LAW": {"score": 1.0, "note": "Independent judiciary and constitutional checks (Freedom House 2023)"},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Strong press freedom with some partisan media bias (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 1.0, "note": "Vibrant civil society with legal protections (Freedom House 2023)"},
+        "ACCOUNTABILITY": {"score": 1.0, "note": "Strong checks and balances (Congress, Supreme Court, media)"},
+        "INTERNATIONAL_NORMS": {"score": 0.9, "note": "Generally compliant with UN Charter; occasional violations (e.g., drone strikes) (UNGA 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.9, "note": "Protects GCSP rights (e.g., healthcare, education) but faces systemic inequality (PHI-002)"}
+      },
+      "legitimacy_score": 0.93,
+      "legitimacy_tier": "HIGH",
+      "actor_type_note": "FUNCTIONING_DEMOCRACY",
+      "narrative_role_in_report": "Justified IMF appointment as US influence; framed as dominant financial actor"
+    },
+    {
+      "actor_name": "Iran",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No free elections; Supreme Leader and Guardian Council control process (V-Dem 2023)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to regime; no independent courts (Human Rights Watch 2023)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; independent journalists imprisoned (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed; mass arrests of activists (Freedom House 2023)"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on Supreme Leader or Revolutionary Guard (RG)"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequent violations (e.g., drone strikes, nuclear program) (UNSC 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses GCSP rights (e.g., protests, LGBTQ+, women’s rights) (PHI-002)"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Strait of Hormuz (commercial ship strike narrative)"
+    },
+    {
+      "actor_name": "Saudi Arabia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "No elections; hereditary monarchy (V-Dem 2023)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary subservient to Crown; no independent courts (HRW 2023)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "State-controlled media; journalists imprisoned (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent suppressed (e.g., MBS crackdowns) (Freedom House 2023)"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on royal authority or security apparatus (e.g., MBS)"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequent violations (e.g., Yemen war, human rights abuses) (UNHRC 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses GCSP rights (e.g., women’s rights, labor) (PHI-002)"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Yemen (58 airstrikes); no mention of legitimacy gaps"
+    },
+    {
+      "actor_name": "Russia",
+      "actor_type": "government",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Stolen elections; Putin’s regime ensures no real competition (V-Dem 2023)"},
+        "RULE_OF_LAW": {"score": 0.0, "note": "Judiciary and media under Kremlin control (HRW 2023)"},
+        "PRESS_FREEDOM": {"score": 0.0, "note": "Independent media banned; journalists killed (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.0, "note": "NGOs and dissent criminalized (e.g., Navalny, LGBTQ+ groups) (Freedom House 2023)"},
+        "ACCOUNTABILITY": {"score": 0.0, "note": "No checks on Putin or security apparatus (e.g., FSB, Wagner)"},
+        "INTERNATIONAL_NORMS": {"score": 0.0, "note": "Frequent violations (e.g., Ukraine war, annexations) (UNGA 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.0, "note": "Actively suppresses GCSP rights (e.g., protests, education, dissent) (PHI-002)"}
+      },
+      "legitimacy_score": 0.0,
+      "legitimacy_tier": "LOW",
+      "actor_type_note": "AUTHORITARIAN",
+      "narrative_role_in_report": "Framed as aggressor in Ukraine (logistics strikes narrative)"
+    },
+    {
+      "actor_name": "BRICS Nations (collective)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.5, "note": "Mixed—some members (India, Brazil) have flawed democracies; others (China, Russia) are authoritarian (V-Dem 2023)"},
+        "RULE_OF_LAW": {"score": 0.5, "note": "Varies by member; no unified legal system (HRW 2023)"},
+        "PRESS_FREEDOM": {"score": 0.3, "note": "Suppressed in China/Russia; partial in India/Brazil (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.4, "note": "Suppressed in China/Russia; contested in India/Brazil (Freedom House 2023)"},
+        "ACCOUNTABILITY": {"score": 0.3, "note": "No unified checks; dominated by authoritarian members (China, Russia)"},
+        "INTERNATIONAL_NORMS": {"score": 0.5, "note": "Partial compliance; China/Russia violate norms (e.g., Xinjiang, Ukraine) (UNGA 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.5, "note": "Serves great power interests over people’s sovereignty in some members (PHI-002)"}
+      },
+      "legitimacy_score": 0.43,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Framed as alternative financial system challenger to US-led institutions"
+    },
+    {
+      "actor_name": "International Monetary Fund (IMF)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Not applicable (non-democratic institution)"},
+        "RULE_OF_LAW": {"score": 0.8, "note": "Operates under legal frameworks; some transparency (but dominated by US/EU)"},
+        "PRESS_FREEDOM": {"score": 0.7, "note": "Internal communications restricted; external reporting varies (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.6, "note": "Some engagement with NGOs; limited accountability (Transparency International)"},
+        "ACCOUNTABILITY": {"score": 0.5, "note": "Partially accountable to member states; US/EU dominance (V-Dem 2023)"},
+        "INTERNATIONAL_NORMS": {"score": 0.7, "note": "Generally compliant; occasional structural inequality issues (e.g., debt relief)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.3, "note": "Serves great power economic interests over people’s sovereignty (PHI-002)"}
+      },
+      "legitimacy_score": 0.53,
+      "legitimacy_tier": "MIXED",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Framed as US-influenced institution (IMF "caved" narrative)"
+    },
+    {
+      "actor_name": "United Nations (UN)",
+      "actor_type": "institution",
+      "dimensions": {
+        "ELECTORAL": {"score": 0.0, "note": "Not applicable (non-democratic institution)"},
+        "RULE_OF_LAW": {"score": 0.9, "note": "Operates under UN Charter; ICJ provides legal oversight (UNGA 2023)"},
+        "PRESS_FREEDOM": {"score": 0.8, "note": "Internal restrictions; external reporting varies (RSF 2023)"},
+        "CIVIL_SOCIETY": {"score": 0.7, "note": "Engages with NGOs; some accountability mechanisms (e.g., UPR)"},
+        "ACCOUNTABILITY": {"score": 0.6, "note": "Partially accountable to member states; P5 veto power (V-Dem 2023)"},
+        "INTERNATIONAL_NORMS": {"score": 1.0, "note": "Foundational compliance with UN Charter (UNGA 2023)"},
+        "PEOPLES_SOVEREIGNTY": {"score": 0.7, "note": "Generally serves people’s rights but constrained by great power politics (PHI-002)"}
+      },
+      "legitimacy_score": 0.73,
+      "legitimacy_tier": "HIGH",
+      "actor_type_note": "INTERNATIONAL_BODY",
+      "narrative_role_in_report": "Not explicitly mentioned in this report"
+    }
+  ],
+  "low_legitimacy_actors_pushing_narrative": [
+    "Iran",
+    "Saudi Arabia",
+    "Russia",
+    "International Monetary Fund"
+  ],
+  "legitimacy_gap_signal": "Report frames **LOW legitimacy actors (Iran, Saudi Arabia, Russia, IMF)** as dominant actors shaping global narratives (e.g., 'piracy and banditry' justifications, financial architecture shifts) while **HIGH legitimacy actors (US, UN)** are sidelined in physical conflict framing. This creates a **legitimacy gap**—authoritarian states and institutions are positioned as primary drivers of geopolitical disruption without scrutiny of their oppressive governance models.",
+  "analyst_note": "Authoritarian states exploit maritime chokepoints while democratic institutions are marginalized in physical conflict narratives."
+}
+```
