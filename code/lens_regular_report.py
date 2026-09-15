@@ -272,6 +272,29 @@ Generate the full 4-part Project Lens Regular Report. Cite [REF-ID] throughout P
 
 
 # ── LLM call with retry ───────────────────────────────────────────────────────
+def _log_completion(resp, provider, model):
+    """LR-175: finish_reason=length is a silent failure wearing an HTTP 200.
+
+    This position has never logged its own consumption. Item 2.4 could not be
+    answered -- whether mistral-small was ALSO truncating -- because the last
+    green log (33726430126, Sep 3) carries no usage and no finish_reason at
+    all. Instrument first; every later claim about this report rests on it.
+    """
+    try:
+        fr = resp.choices[0].finish_reason
+    except Exception:
+        fr = "?"
+    u  = getattr(resp, "usage", None)
+    pt = getattr(u, "prompt_tokens", None) if u else None
+    ct = getattr(u, "completion_tokens", None) if u else None
+    tt = getattr(u, "total_tokens", None) if u else None
+    pct = f"{round(100 * ct / MAX_TOKENS)}%" if isinstance(ct, int) else "?"
+    log.info(f"REGULAR usage: {provider}/{model} prompt={pt} "
+             f"completion={ct} total={tt} budget_used={pct} finish_reason={fr}")
+    if fr == "length":
+        log.error(f"TRUNCATED: {provider}/{model} stopped at max_tokens="
+                  f"{MAX_TOKENS}. PART 3 and PART 4 are NOT in this report.")
+
 def call_llm(system_prompt: str, user_msg: str) -> str:
     """Call LLM with retry + provider fallback. Returns report text."""
     client, model, provider = get_llm_client()
@@ -289,6 +312,7 @@ def call_llm(system_prompt: str, user_msg: str) -> str:
                 temperature=TEMPERATURE,
                 timeout=300,
             )
+            _log_completion(resp, provider, model)
             text = resp.choices[0].message.content.strip()
             words = len(text.split())
             log.info(f"{provider} done: {len(text)} chars / ~{words} words")
@@ -320,6 +344,7 @@ def call_llm(system_prompt: str, user_msg: str) -> str:
                             temperature=TEMPERATURE,
                             timeout=300,
                         )
+                        _log_completion(resp, provider, model)
                         return resp.choices[0].message.content.strip()
                     except Exception as e2:
                         log.error(f"Fallback also failed: {e2}")
