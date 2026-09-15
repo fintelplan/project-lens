@@ -1,0 +1,401 @@
+regular-report	UNKNOWN STEP	﻿2026-09-10T07:14:41.4627879Z Current runner version: '2.337.0'
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4648312Z ##[group]Runner Image Provisioner
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4649127Z Hosted Compute Agent
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4649772Z Version: 20260828.587
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4650372Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4651183Z Build Date: 2026-08-28T16:44:25Z
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4651835Z Worker ID: {94498789-4f53-444f-9c8f-6f8fb928347b}
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4652550Z Azure Region: centralus
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4653302Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4654585Z ##[group]Operating System
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4655230Z Ubuntu
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4655708Z 24.04.5
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4656247Z LTS
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4656989Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4657600Z ##[group]Runner Image
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4658200Z Image: ubuntu-24.04
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4658737Z Version: 20260907.300.1
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4659899Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4661241Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4662134Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4663378Z ##[group]GITHUB_TOKEN Permissions
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4665460Z Contents: read
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4665995Z Metadata: read
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4666563Z Packages: read
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4667101Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4668844Z Secret source: Actions
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4669714Z Cache mode: write
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4670401Z Prepare workflow directory
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4946965Z Prepare all required actions
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.4988056Z Getting action download info
+regular-report	UNKNOWN STEP	2026-09-10T07:14:41.7386743Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.0195747Z Download action repository 'actions/setup-python@v6' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2236669Z Complete job name: regular-report
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2852943Z ##[group]Run actions/checkout@v5
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2854026Z with:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2854611Z   repository: fintelplan/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2858686Z   token: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2859253Z   ssh-strict: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2860173Z   ssh-user: git
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2860758Z   persist-credentials: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2861366Z   clean: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2861933Z   sparse-checkout-cone-mode: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2862611Z   fetch-depth: 1
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2863286Z   fetch-tags: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2863873Z   show-progress: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2864435Z   lfs: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2864983Z   submodules: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2865546Z   set-safe-directory: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2866168Z   allow-unsafe-pr-checkout: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.2867046Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3776877Z Syncing repository: fintelplan/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3779817Z ##[group]Getting Git version info
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3781380Z Working directory is '/home/runner/work/project-lens/project-lens'
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3783520Z [command]/usr/bin/git version
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3815613Z git version 2.55.0
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3832051Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3842056Z Temporarily overriding HOME='/home/runner/work/_temp/e884b739-b601-41b6-9ba1-0e3cbe621143' before making global git config changes
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3844565Z Adding repository directory to the temporary git global config as a safe directory
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3846496Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/project-lens/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3894749Z Deleting the contents of '/home/runner/work/project-lens/project-lens'
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3900725Z ##[group]Initializing the repository
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.3904150Z [command]/usr/bin/git init /home/runner/work/project-lens/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4101191Z hint: Using 'master' as the name for the initial branch. This default branch name
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4103284Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4105208Z hint: to use in all of your new repositories, which will suppress this warning,
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4106648Z hint: call:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4107552Z hint:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4108488Z hint: 	git config --global init.defaultBranch <name>
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4109508Z hint:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4110501Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4112128Z hint: 'development'. The just-created branch can be renamed via this command:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4113587Z hint:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4114374Z hint: 	git branch -m <name>
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4115677Z hint:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4117437Z hint: Disable this message with "git config set advice.defaultBranchName false"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4119684Z Initialized empty Git repository in /home/runner/work/project-lens/project-lens/.git/
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4122620Z [command]/usr/bin/git remote add origin https://github.com/fintelplan/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4149534Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4150501Z ##[group]Disabling automatic garbage collection
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4153999Z [command]/usr/bin/git config --local gc.auto 0
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4179035Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4180608Z ##[group]Setting up auth
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4184851Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4211037Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4546610Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4573500Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4737391Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4764108Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4939865Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4969809Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4971117Z ##[group]Fetching the repository
+regular-report	UNKNOWN STEP	2026-09-10T07:14:42.4980756Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b70861387e442c9da6ad631ed480ee2fb1d7a0aa:refs/remotes/origin/main
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1940941Z From https://github.com/fintelplan/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1943408Z  * [new ref]         b70861387e442c9da6ad631ed480ee2fb1d7a0aa -> origin/main
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1948173Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1950126Z ##[group]Determining the checkout info
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1953192Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1954417Z [command]/usr/bin/git sparse-checkout disable
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.1994722Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2018465Z ##[group]Checking out the ref
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2020900Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2257073Z Switched to a new branch 'main'
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2261308Z branch 'main' set up to track 'origin/main'.
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2304422Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2338672Z [command]/usr/bin/git log -1 --format=%H
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2360194Z b70861387e442c9da6ad631ed480ee2fb1d7a0aa
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2704292Z ##[group]Run actions/setup-python@v6
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2706073Z with:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2707469Z   python-version: 3.11
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2709520Z   check-latest: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2720981Z   token: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2722870Z   update-environment: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2724753Z   allow-prereleases: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2727222Z   freethreaded: false
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.2728551Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.3878296Z ##[group]Installed versions
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.3957168Z Successfully set up CPython (3.11.16)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.3959775Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4174008Z ##[group]Run pip install --upgrade pip
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4176092Z ^[[36;1mpip install --upgrade pip^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4177896Z ^[[36;1mpip install \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4179358Z ^[[36;1m  supabase \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4180894Z ^[[36;1m  python-dotenv \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4182480Z ^[[36;1m  requests \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4184162Z ^[[36;1m  python-docx==1.1.2 \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4185799Z ^[[36;1m  openai \^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4187208Z ^[[36;1m  groq^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4234438Z shell: /usr/bin/bash -e {0}
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4236120Z env:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4237714Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4239941Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4242036Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4244058Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4245812Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4247512Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+regular-report	UNKNOWN STEP	2026-09-10T07:14:43.4248956Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.0075701Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (26.2.1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.5707268Z Collecting supabase
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.6480013Z   Downloading supabase-2.31.0-py3-none-any.whl.metadata (4.7 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.6804242Z Collecting python-dotenv
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.6914723Z   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.7358863Z Collecting requests
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.7471377Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.7799242Z Collecting python-docx==1.1.2
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.7905618Z   Downloading python_docx-1.1.2-py3-none-any.whl.metadata (2.0 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.8677335Z Collecting openai
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.8783202Z   Downloading openai-3.11.0-py3-none-any.whl.metadata (41 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.9195691Z Collecting groq
+regular-report	UNKNOWN STEP	2026-09-10T07:14:44.9303546Z   Downloading groq-1.7.0-py3-none-any.whl.metadata (16 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.1408512Z Collecting lxml>=3.1.0 (from python-docx==1.1.2)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.1517152Z   Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.1921868Z Collecting typing-extensions>=4.9.0 (from python-docx==1.1.2)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.2027519Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.2284699Z Collecting realtime==2.31.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.2406228Z   Downloading realtime-2.31.0-py3-none-any.whl.metadata (7.0 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.2690661Z Collecting supabase-functions==2.31.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.2796380Z   Downloading supabase_functions-2.31.0-py3-none-any.whl.metadata (2.4 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3097551Z Collecting storage3==2.31.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3201043Z   Downloading storage3-2.31.0-py3-none-any.whl.metadata (2.2 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3448925Z Collecting supabase-auth==2.31.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3554120Z   Downloading supabase_auth-2.31.0-py3-none-any.whl.metadata (6.4 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3807592Z Collecting postgrest==2.31.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.3911165Z   Downloading postgrest-2.31.0-py3-none-any.whl.metadata (3.4 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.4177497Z Collecting httpx<0.29,>=0.26 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.4282966Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.6456909Z Collecting yarl>=1.22.0 (from supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.6568294Z   Downloading yarl-1.24.5-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (103 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.6953616Z Collecting deprecation>=2.1.0 (from postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.7058333Z   Downloading deprecation-2.1.0-py2.py3-none-any.whl.metadata (4.6 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.7985041Z Collecting pydantic<3.0,>=1.9 (from postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.8095056Z   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9043396Z Collecting websockets<16,>=11 (from realtime==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9150121Z   Downloading websockets-15.0.1-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9435506Z Collecting pyjwt>=2.12.0 (from pyjwt[crypto]>=2.12.0->supabase-auth==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9540039Z   Downloading pyjwt-2.13.0-py3-none-any.whl.metadata (3.4 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9811827Z Collecting strenum>=0.4.15 (from supabase-functions==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:45.9916803Z   Downloading StrEnum-0.4.15-py3-none-any.whl.metadata (5.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.0190682Z Collecting anyio (from httpx<0.29,>=0.26->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.0307371Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.0576008Z Collecting certifi (from httpx<0.29,>=0.26->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.0679230Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.0930645Z Collecting httpcore==1.* (from httpx<0.29,>=0.26->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.1034418Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.1344283Z Collecting idna (from httpx<0.29,>=0.26->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.1447722Z   Downloading idna-3.19-py3-none-any.whl.metadata (9.2 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.1690426Z Collecting h11>=0.16 (from httpcore==1.*->httpx<0.29,>=0.26->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.1793271Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2055850Z Collecting h2<5,>=3 (from httpx[http2]<0.29,>=0.26->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2159208Z   Downloading h2-4.4.1-py3-none-any.whl.metadata (3.8 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2526806Z Collecting hyperframe<7,>=6.1 (from h2<5,>=3->httpx[http2]<0.29,>=0.26->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2630667Z   Downloading hyperframe-6.1.0-py3-none-any.whl.metadata (4.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2858041Z Collecting hpack<5,>=4.2 (from h2<5,>=3->httpx[http2]<0.29,>=0.26->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.2960505Z   Downloading hpack-4.2.0-py3-none-any.whl.metadata (3.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.3199894Z Collecting annotated-types>=0.6.0 (from pydantic<3.0,>=1.9->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.3302293Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.8321160Z Collecting pydantic-core==2.46.5 (from pydantic<3.0,>=1.9->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.8429849Z   Downloading pydantic_core-2.46.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.8660435Z Collecting typing-inspection>=0.4.2 (from pydantic<3.0,>=1.9->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.8767467Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.9863067Z Collecting charset_normalizer<4,>=2 (from requests)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:46.9970271Z   Downloading charset_normalizer-3.5.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (45 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.0291460Z Collecting urllib3<3,>=1.26 (from requests)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.0396150Z   Downloading urllib3-2.7.0-py3-none-any.whl.metadata (6.9 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.0838771Z Collecting httpx2<3,>=2.7.0 (from openai)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.0942133Z   Downloading httpx2-2.12.0-py3-none-any.whl.metadata (9.5 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.1885839Z Collecting jiter<1,>=0.16.0 (from openai)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.1990949Z   Downloading jiter-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.2 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.2239712Z Collecting sniffio (from openai)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.2344681Z   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.2602245Z Collecting httpcore2==2.12.0 (from httpx2<3,>=2.7.0->openai)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.2707392Z   Downloading httpcore2-2.12.0-py3-none-any.whl.metadata (25 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.2949600Z Collecting truststore>=0.10 (from httpx2<3,>=2.7.0->openai)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.3053190Z   Downloading truststore-0.10.4-py3-none-any.whl.metadata (4.4 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.3313927Z Collecting distro<2,>=1.7.0 (from groq)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.3417549Z   Downloading distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.3691569Z Collecting packaging (from deprecation>=2.1.0->postgrest==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.3793458Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.5160316Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.12.0->supabase-auth==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.5265690Z   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.6111569Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.12.0->supabase-auth==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.6223632Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.6512387Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.12.0->supabase-auth==2.31.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.6616698Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.8573878Z Collecting multidict>=4.0 (from yarl>=1.22.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.8680291Z   Downloading multidict-6.8.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.9329077Z Collecting propcache>=0.2.1 (from yarl>=1.22.0->supabase)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.9437994Z   Downloading propcache-0.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (16 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.9604817Z Downloading python_docx-1.1.2-py3-none-any.whl (244 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.9834200Z Downloading supabase-2.31.0-py3-none-any.whl (16 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:47.9968217Z Downloading postgrest-2.31.0-py3-none-any.whl (23 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.0102504Z Downloading realtime-2.31.0-py3-none-any.whl (22 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.0237474Z Downloading storage3-2.31.0-py3-none-any.whl (28 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.0516509Z Downloading supabase_auth-2.31.0-py3-none-any.whl (48 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.0647782Z Downloading supabase_functions-2.31.0-py3-none-any.whl (8.8 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.0909240Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.1583550Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.1849558Z Downloading h2-4.4.1-py3-none-any.whl (62 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.1980812Z Downloading hpack-4.2.0-py3-none-any.whl (34 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.2108923Z Downloading hyperframe-6.1.0-py3-none-any.whl (13 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.2232885Z Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.2524455Z Downloading pydantic_core-2.46.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.3323899Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 25.1 MB/s  0:00:00
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.3432432Z Downloading websockets-15.0.1-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (182 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.3593301Z Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.3719852Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.3859713Z Downloading charset_normalizer-3.5.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (262 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.4050229Z Downloading idna-3.19-py3-none-any.whl (68 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.4193676Z Downloading urllib3-2.7.0-py3-none-any.whl (131 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.5154524Z Downloading openai-3.11.0-py3-none-any.whl (1.7 MB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.5754557Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 28.0 MB/s  0:00:00
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.5860499Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6021898Z Downloading httpx2-2.12.0-py3-none-any.whl (95 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6164439Z Downloading httpcore2-2.12.0-py3-none-any.whl (83 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6309519Z Downloading jiter-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (347 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6540127Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6684743Z Downloading groq-1.7.0-py3-none-any.whl (143 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6839895Z Downloading distro-1.9.0-py3-none-any.whl (20 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.6970302Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.7099119Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.7247793Z Downloading deprecation-2.1.0-py2.py3-none-any.whl (11 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.7396381Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.7529054Z Downloading lxml-6.1.3-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.9879270Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 21.7 MB/s  0:00:00
+regular-report	UNKNOWN STEP	2026-09-10T07:14:48.9992975Z Downloading pyjwt-2.13.0-py3-none-any.whl (31 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.0160625Z Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.3485867Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 14.3 MB/s  0:00:00
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.3597804Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.3873217Z Downloading StrEnum-0.4.15-py3-none-any.whl (8.9 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4009730Z Downloading truststore-0.10.4-py3-none-any.whl (18 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4156484Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4284975Z Downloading yarl-1.24.5-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (111 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4461581Z Downloading multidict-6.8.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (272 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4723743Z Downloading propcache-0.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (58 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.4880043Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.5074465Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.5206682Z Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:49.6760457Z Installing collected packages: strenum, websockets, urllib3, typing-extensions, truststore, sniffio, python-dotenv, pyjwt, pycparser, propcache, packaging, multidict, lxml, jiter, idna, hyperframe, hpack, h11, distro, charset_normalizer, certifi, annotated-types, yarl, typing-inspection, requests, python-docx, pydantic-core, httpcore2, httpcore, h2, deprecation, cffi, anyio, pydantic, httpx2, httpx, cryptography, realtime, openai, groq, supabase-functions, supabase-auth, storage3, postgrest, supabase
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.2823625Z 
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.2842992Z Successfully installed annotated-types-0.8.0 anyio-4.15.1 certifi-2026.7.22 cffi-2.1.1 charset_normalizer-3.5.1 cryptography-50.0.1 deprecation-2.1.0 distro-1.9.0 groq-1.7.0 h11-0.16.0 h2-4.4.1 hpack-4.2.0 httpcore-1.0.9 httpcore2-2.12.0 httpx-0.28.1 httpx2-2.12.0 hyperframe-6.1.0 idna-3.19 jiter-0.16.0 lxml-6.1.3 multidict-6.8.0 openai-3.11.0 packaging-26.3 postgrest-2.31.0 propcache-0.5.2 pycparser-3.0 pydantic-2.13.5 pydantic-core-2.46.5 pyjwt-2.13.0 python-docx-1.1.2 python-dotenv-1.2.3 realtime-2.31.0 requests-2.34.2 sniffio-1.3.1 storage3-2.31.0 strenum-0.4.15 supabase-2.31.0 supabase-auth-2.31.0 supabase-functions-2.31.0 truststore-0.10.4 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.7.0 websockets-15.0.1 yarl-1.24.5
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4029379Z ##[group]Run pip install cerebras-cloud-sdk
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4029899Z ^[[36;1mpip install cerebras-cloud-sdk^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4052081Z shell: /usr/bin/bash -e {0}
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4052467Z env:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4053110Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4053597Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4054082Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4054534Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4055011Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4055442Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.4055858Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.7418811Z Collecting cerebras-cloud-sdk
+regular-report	UNKNOWN STEP	2026-09-10T07:14:52.8266923Z   Downloading cerebras_cloud_sdk-1.91.0-py3-none-any.whl.metadata (20 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1083887Z Requirement already satisfied: anyio<5,>=3.5.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from cerebras-cloud-sdk) (4.15.1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1087451Z Requirement already satisfied: distro<2,>=1.7.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from cerebras-cloud-sdk) (1.9.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1095244Z Requirement already satisfied: httpx<1,>=0.23.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (0.28.1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1101346Z Requirement already satisfied: pydantic<3,>=1.9.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from cerebras-cloud-sdk) (2.13.5)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1104346Z Requirement already satisfied: sniffio in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from cerebras-cloud-sdk) (1.3.1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1109598Z Requirement already satisfied: typing-extensions<5,>=4.14 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from cerebras-cloud-sdk) (4.16.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1120661Z Requirement already satisfied: idna>=2.8 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from anyio<5,>=3.5.0->cerebras-cloud-sdk) (3.19)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1136900Z Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from httpx<1,>=0.23.0->httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (2026.7.22)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1140302Z Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from httpx<1,>=0.23.0->httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (1.0.9)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1158879Z Requirement already satisfied: h11>=0.16 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (0.16.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1171564Z Requirement already satisfied: h2<5,>=3 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (4.4.1)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1181451Z Requirement already satisfied: hyperframe<7,>=6.1 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (6.1.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1185702Z Requirement already satisfied: hpack<5,>=4.2 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<1,>=0.23.0->cerebras-cloud-sdk) (4.2.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1212806Z Requirement already satisfied: annotated-types>=0.6.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from pydantic<3,>=1.9.0->cerebras-cloud-sdk) (0.8.0)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1215467Z Requirement already satisfied: pydantic-core==2.46.5 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from pydantic<3,>=1.9.0->cerebras-cloud-sdk) (2.46.5)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1221177Z Requirement already satisfied: typing-inspection>=0.4.2 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from pydantic<3,>=1.9.0->cerebras-cloud-sdk) (0.4.4)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1428534Z Downloading cerebras_cloud_sdk-1.91.0-py3-none-any.whl (106 kB)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.1984065Z Installing collected packages: cerebras-cloud-sdk
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.2521135Z Successfully installed cerebras-cloud-sdk-1.91.0
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3130226Z ##[group]Run DRY_RUN_FLAG=""
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3130620Z ^[[36;1mDRY_RUN_FLAG=""^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3130926Z ^[[36;1mif [ "" = "true" ]; then^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3131287Z ^[[36;1m  DRY_RUN_FLAG="--dry-run"^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3131651Z ^[[36;1mfi^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3132008Z ^[[36;1mpython code/lens_regular_report.py $DRY_RUN_FLAG^[[0m
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3153324Z shell: /usr/bin/bash -e {0}
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3153664Z env:
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3154035Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3154526Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3155052Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3155487Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3155928Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3156346Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3157089Z   SUPABASE_URL: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3158389Z   SUPABASE_SERVICE_KEY: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3158792Z   TELEGRAM_BOT_TOKEN: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3159117Z   TELEGRAM_CHAT_ID: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3159509Z   MISTRAL_API_KEY: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3159897Z   CEREBRAS_API_KEY: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3160300Z   GROQ_API_KEY: ***
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3160593Z   GITHUB_ACTIONS: true
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3160870Z ##[endgroup]
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3546361Z 07:14:53 [REGULAR] INFO === REGULAR REPORT START | 20260910 | dry_run=False ===
+regular-report	UNKNOWN STEP	2026-09-10T07:14:53.3547040Z 07:14:53 [REGULAR] INFO PREFLIGHT OK
+regular-report	UNKNOWN STEP	2026-09-10T07:14:55.7396307Z 07:14:55 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_reports?select=domain_focus%2Csummary%2Cfood_for_thought%2Cquality_score%2Ccycle%2Cgenerated_at&generated_at=gte.2026-09-09T07%3A14%3A54.070402%2B00%3A00&order=generated_at.desc&limit=20 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:55.7413016Z 07:14:55 [REGULAR] INFO S1: 11 lens reports in last 24h
+regular-report	UNKNOWN STEP	2026-09-10T07:14:56.1317849Z 07:14:56 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_system3_reports?select=position%2Creport_type%2Csummary%2Cfirst_domino%2Cpatterns_found%2Cstructural_trends%2Csignals_to_watch%2Cquality_score%2Cgenerated_at&position=eq.S3-A&order=generated_at.desc&limit=1 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:56.8100887Z 07:14:56 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_system3_reports?select=position%2Creport_type%2Csummary%2Cfirst_domino%2Cpatterns_found%2Cstructural_trends%2Csignals_to_watch%2Cquality_score%2Cgenerated_at&position=eq.S3-B&order=generated_at.desc&limit=1 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:57.0757013Z 07:14:57 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_system3_reports?select=position%2Creport_type%2Csummary%2Cfirst_domino%2Cpatterns_found%2Cstructural_trends%2Csignals_to_watch%2Cquality_score%2Cgenerated_at&position=eq.S3-C&order=generated_at.desc&limit=1 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:57.3788596Z 07:14:57 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_system3_reports?select=position%2Creport_type%2Csummary%2Cfirst_domino%2Cpatterns_found%2Cstructural_trends%2Csignals_to_watch%2Cquality_score%2Cgenerated_at&position=eq.S3-D&order=generated_at.desc&limit=1 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:57.6999893Z 07:14:57 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_system3_reports?select=position%2Creport_type%2Csummary%2Cfirst_domino%2Cpatterns_found%2Cstructural_trends%2Csignals_to_watch%2Cquality_score%2Cgenerated_at&position=eq.S3-E&order=generated_at.desc&limit=1 "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:57.7001846Z 07:14:57 [REGULAR] INFO S3: positions with data = ['S3-A', 'S3-B', 'S3-C', 'S3-D', 'S3-E']
+regular-report	UNKNOWN STEP	2026-09-10T07:14:58.4379598Z 07:14:58 [REGULAR] INFO HTTP Request: GET ***/rest/v1/lens_article_refs?select=ref_id%2Ctitle%2Csource_name%2Cdomain%2Ccollected_date&collected_date=gte.2026-09-07&collected_date=lte.2026-09-10&order=collected_date.desc%2Cref_id.asc "HTTP/2 200 OK"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:58.6971406Z 07:14:58 [REGULAR] INFO References: 1000 articles in 36h window
+regular-report	UNKNOWN STEP	2026-09-10T07:14:58.6973919Z 07:14:58 [REGULAR] INFO Prompt built: 63126 chars (~15781 tokens estimated)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:59.1305952Z 07:14:59 [REGULAR] INFO LLM: using mistral (mistral-small-latest)
+regular-report	UNKNOWN STEP	2026-09-10T07:14:59.1306837Z 07:14:59 [REGULAR] INFO Calling mistral/mistral-small-latest attempt 1/3...
+regular-report	UNKNOWN STEP	2026-09-10T07:14:59.6712157Z 07:14:59 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:14:59.6715267Z 07:14:59 [REGULAR] INFO Retrying request in 0.404190 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:00.2866012Z 07:15:00 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:00.2867808Z 07:15:00 [REGULAR] INFO Retrying request in 0.876599 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:01.3589732Z 07:15:01 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:01.3596956Z 07:15:01 [REGULAR] WARNING Attempt 1 failed (mistral): Error code: 429 - {'object': 'error', 'message': 'Rate limit exceeded', 'type': 'rate_limited', 'param': None, 'code': '1300', 'raw_status_code': 429}
+regular-report	UNKNOWN STEP	2026-09-10T07:15:01.3597943Z 07:15:01 [REGULAR] INFO Retrying in 10s...
+regular-report	UNKNOWN STEP	2026-09-10T07:15:11.3601513Z 07:15:11 [REGULAR] INFO Calling mistral/mistral-small-latest attempt 2/3...
+regular-report	UNKNOWN STEP	2026-09-10T07:15:11.6087126Z 07:15:11 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:11.6088563Z 07:15:11 [REGULAR] INFO Retrying request in 0.466067 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:12.3369941Z 07:15:12 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:12.3371667Z 07:15:12 [REGULAR] INFO Retrying request in 0.897397 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:13.4463108Z 07:15:13 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:13.4466752Z 07:15:13 [REGULAR] WARNING Attempt 2 failed (mistral): Error code: 429 - {'object': 'error', 'message': 'Rate limit exceeded', 'type': 'rate_limited', 'param': None, 'code': '1300', 'raw_status_code': 429}
+regular-report	UNKNOWN STEP	2026-09-10T07:15:13.4467818Z 07:15:13 [REGULAR] INFO Retrying in 20s...
+regular-report	UNKNOWN STEP	2026-09-10T07:15:33.4470726Z 07:15:33 [REGULAR] INFO Calling mistral/mistral-small-latest attempt 3/3...
+regular-report	UNKNOWN STEP	2026-09-10T07:15:33.8283872Z 07:15:33 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:33.8284841Z 07:15:33 [REGULAR] INFO Retrying request in 0.430059 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:34.4509076Z 07:15:34 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:34.4511943Z 07:15:34 [REGULAR] INFO Retrying request in 0.762710 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.4351652Z 07:15:35 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.4356198Z 07:15:35 [REGULAR] WARNING Attempt 3 failed (mistral): Error code: 429 - {'object': 'error', 'message': 'Rate limit exceeded', 'type': 'rate_limited', 'param': None, 'code': '1300', 'raw_status_code': 429}
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.4357040Z 07:15:35 [REGULAR] ERROR All 3 attempts failed for mistral
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.4357626Z 07:15:35 [REGULAR] INFO Falling back to cerebras
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.4365243Z 07:15:35 [REGULAR] INFO LLM: using mistral (mistral-small-latest)
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.6694082Z 07:15:35 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:35.6695957Z 07:15:35 [REGULAR] INFO Retrying request in 0.403308 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:36.2843155Z 07:15:36 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:36.2844703Z 07:15:36 [REGULAR] INFO Retrying request in 0.833219 seconds
+regular-report	UNKNOWN STEP	2026-09-10T07:15:37.3419313Z 07:15:37 [REGULAR] INFO HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:37.3422948Z 07:15:37 [REGULAR] ERROR Fallback also failed: Error code: 429 - {'object': 'error', 'message': 'Rate limit exceeded', 'type': 'rate_limited', 'param': None, 'code': '1300', 'raw_status_code': 429}
+regular-report	UNKNOWN STEP	2026-09-10T07:15:37.3423914Z 07:15:37 [REGULAR] ERROR LLM call failed: All providers exhausted
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.0160379Z {
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.0161249Z   "status": "FAILED",
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.0161955Z   "reason": "LLM call failed: All providers exhausted"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.0162393Z }
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.1931400Z ##[error]Process completed with exit code 1.
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2069106Z Post job cleanup.
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2837619Z [command]/usr/bin/git version
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2881825Z git version 2.55.0
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2918878Z Temporarily overriding HOME='/home/runner/work/_temp/13a02fe7-ff30-4e09-b21b-c65bc5454d85' before making global git config changes
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2920166Z Adding repository directory to the temporary git global config as a safe directory
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2925120Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/project-lens/project-lens
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2958780Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.2989184Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3181296Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3208481Z http.https://github.com/.extraheader
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3218347Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3246205Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3440600Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3483389Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+regular-report	UNKNOWN STEP	2026-09-10T07:15:38.3832405Z Cleaning up orphan processes
