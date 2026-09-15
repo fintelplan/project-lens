@@ -39,7 +39,11 @@ log = logging.getLogger("S3-F")
 SUPABASE_URL  = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY  = os.environ.get("SUPABASE_SERVICE_KEY")
 MISTRAL_KEY   = os.environ.get("MISTRAL_API_KEY")
-MODEL         = "mistral-small-latest"
+MODEL         = "ministral-8b-2512"   # CC-71, was mistral-small-latest.
+# The whole mistral-small* class has 429d on a healthy key since
+# 2026-09-04; this position has NO fallback leg at all, so the model
+# string is the only thing that can revive it. ministral-8b-2512 was
+# probed 5/5 on S2-E and carries response_format from CC-63.
 MAX_TOKENS    = 3000
 TEMPERATURE   = 0.3
 

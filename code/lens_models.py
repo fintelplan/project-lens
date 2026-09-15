@@ -143,7 +143,7 @@ ROLES = {
                 " context -- probe the 200-article prompt on flash-lite",
     },
     "s2c_emotion": {
-        "provider": "mistral", "model": MISTRAL_SMALL,
+        "provider": "mistral", "model": MINISTRAL_8B,
         "key_env": "MISTRAL_API_KEY", "max_out": 1600,
         "fb_provider": None, "fb_model": None, "fb_key_env": None,
         "note": "",
@@ -269,7 +269,7 @@ ROLES = {
         "note": "",
     },
     "s3f_countercheck": {
-        "provider": "mistral", "model": MISTRAL_SMALL,
+        "provider": "mistral", "model": MINISTRAL_8B,
         "key_env": "MISTRAL_API_KEY", "max_out": 1600,
         "fb_provider": None, "fb_model": None, "fb_key_env": None,
         "note": "",

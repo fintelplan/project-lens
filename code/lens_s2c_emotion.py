@@ -26,7 +26,11 @@ logging.basicConfig(
 log = logging.getLogger("s2c")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-MODEL            = "mistral-small-latest"
+MODEL            = "ministral-8b-2512"   # CC-71, was mistral-small-latest.
+# The whole mistral-small* class has 429d on a healthy key since
+# 2026-09-04; this position has NO fallback leg at all, so the model
+# string is the only thing that can revive it. ministral-8b-2512 was
+# probed 5/5 on S2-E and carries response_format from CC-63.
 MAX_TOKENS       = 1500
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 2
