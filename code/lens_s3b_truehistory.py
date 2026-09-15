@@ -1,7 +1,7 @@
 """
 lens_s3b_truehistory.py — System 3 Position B: True History Researcher
 Project Lens | LENS-010
-Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context), fallback mistral-small-latest
+Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context), fallback ministral-8b-2512
 NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
 Reads: lens_reports (last 30 days) + True History database (built-in)
 Output: lens_system3_reports (position=S3-B, report_type=TYPE_B)
@@ -33,7 +33,10 @@ MODEL        = "gemini-2.0-flash"
 # fallback("s3b_history") says mistral-small-2603; the wire says
 # -latest. Rows record what RAN, so they record this. Reconciling the two
 # is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
-MISTRAL_FALLBACK_MODEL = "mistral-small-latest"
+MISTRAL_FALLBACK_MODEL = "ministral-8b-2512"   # CC-70, was
+# mistral-small-latest, which returned 429 code 1300 twice on wave
+# 34936864688 and failed the position. Hardcoded, so CC-64 could not
+# reach it; the registry s3b_history row already says ministral-8b-2512.
 LOOKBACK_DAYS = 30
 MAX_REPORTS   = 28
 

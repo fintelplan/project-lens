@@ -1,7 +1,7 @@
 """
 lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
-Model: gemini-2.0-flash (Google — GEMINI_S2B_API_KEY), fallback mistral-small-latest
+Model: gemini-2.0-flash (Google — GEMINI_S2B_API_KEY), fallback ministral-8b-2512
 NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
 Context: 1,000,000 tokens — holds ALL reports simultaneously
 Guard: GeminiRPMGuard (15 RPM free tier) + AFC disabled
@@ -36,7 +36,10 @@ MODEL            = "gemini-2.0-flash"
 # is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
 from lens_text_utils import visible_text, extractor_name
 
-MISTRAL_FALLBACK_MODEL = "mistral-small-latest"
+MISTRAL_FALLBACK_MODEL = "ministral-8b-2512"   # CC-70, was
+# mistral-small-latest. Hardcoded here, not read from lens_models, so
+# CC-64 could not reach it. The registry s2b_coordination row already
+# says ministral-8b-2512; this makes the wire agree with it.
 MAX_TOKENS       = 2000
 TEMPERATURE      = 0.2
 MAX_RETRIES      = 3
@@ -276,8 +279,16 @@ def call_coordination_analyzer(client, reports: list,
                 log.warning(f"Gemini server error attempt {attempt} — sleeping 20s")
                 time.sleep(20)
             elif "404" in err:
-                log.error(f"Model not found: {MODEL} — check model name")
-                return None
+                # CC-70: was return None, which left the function and skipped
+                # the Mistral fallback block below entirely. gemini-2.0-flash
+                # was decommissioned 2026-06-01 and has returned 404 on every
+                # wave since; this docstring already claimed "in practice the
+                # Mistral fallback does the work" and it never once ran.
+                # Observed on 34936864688: 404 at 06:35:04.005, position
+                # abandoned at 06:35:04.009. Break, do not return -- retrying
+                # a missing model is pointless but falling back is not.
+                log.error(f"Model not found: {MODEL} — check model name; falling back")
+                break
             else:
                 log.error(f"Unexpected error attempt {attempt}: {e}")
                 if attempt < MAX_RETRIES:
