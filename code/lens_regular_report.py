@@ -40,7 +40,17 @@ log = logging.getLogger("REGULAR")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 LOOKBACK_HOURS       = 24
-MAX_TOKENS           = 4096
+MAX_TOKENS           = 8192   # CC-67. Measured 2026-09-15 on
+# ministral-8b with this position real prompt: at 4096, 5 of 5 trials
+# returned finish_reason=length with completion_tokens 4096 exactly,
+# and 3 of 5 never reached PART 3. At 8192, 4 of 5 returned stop, with
+# completions spread 3,686 to 8,192 on byte-identical input -- a 2.2x
+# spread, so one trial in five still hits the ceiling. Whether more
+# than 8192 is ever needed is NOT established: a 16384 re-test lost 3
+# of 5 trials to ReadTimeout and its 2 survivors were the low end of
+# the range, so the top of the distribution has never been observed.
+# _log_completion logs finish_reason on every call, so the 1-in-5 is
+# loud, not silent. Ceiling is 262,144 CTX; 8192 is not near it.
 TEMPERATURE          = 0.3
 TELEGRAM_CAPTION_CAP = 950
 MAX_REFS             = 400
