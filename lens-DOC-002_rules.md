@@ -1211,3 +1211,109 @@ UNKNOWN and unknowable from the record.
 swapping the model would have produced a green workflow delivering a report
 missing half its content, which is the target's absolute rule breached on
 purpose.
+
+## LR-176 — POST-PROCESSING DOES NOT REDUCE GENERATION
+**Rule:** When a model is producing output you do not want, the fix is in the
+REQUEST, not in what you do with the reply. Stripping, trimming or discarding
+a section after the call recovers zero tokens — they were already spent, and
+if the cap was hit they were spent on the part you were going to keep.
+**Cost:** LENS-041, item 2.2. The Regular Report's PART 4 asked the model to
+copy back a 400-entry reference pool that was already in its prompt. Claude
+leaned "strip PART 4 in `validate_citations` first, then raise the cap", and
+withdrew it one turn later: of five trials, only one ever reached PART 4, so
+the strip would have touched 1/5 and saved nothing on any of them. The fix
+that worked was telling the model not to write it (CC-66) and building it in
+code from `stats["valid_ids"]`.
+**Test:** if the proposed fix runs AFTER `resp.choices[0].message.content`,
+it cannot be a budget fix.
+
+## LR-177 — A CENSORED MEASUREMENT CANNOT CALIBRATE A CAP
+**Rule:** A trial that hit `finish_reason=length` tells you the model wanted
+AT LEAST the cap. It does not tell you how much more. Never set a ceiling
+from a run in which the ceiling was reached — you are reading your own
+constraint back as data.
+**Cost:** LENS-041, item 2.1. At `max_tokens=8192`, four of five trials
+returned `stop` and one returned `length` at exactly 8,192. The honest
+statement is "8192 is enough four times in five"; the tempting one,
+"the maximum is about 8,192", is the cap talking. A 16384 re-test to find
+the real top lost three of five trials to `ReadTimeout` and its two
+survivors were the LOW end (28%, 27%), so the top of the distribution has
+still never been observed and CC-67's comment says so in the file.
+**Test:** before quoting a maximum, check whether any trial in the sample
+was truncated. If one was, you have a lower bound, not a maximum.
+
+## LR-178 — MOVING INPUT INVALIDATES A CROSS-RUN COMPARISON
+**Rule:** Two probe runs are comparable only if the fixture is identical.
+A fixture rebuilt live from the database is NOT identical between runs.
+**Cost:** LENS-041. The 8192 run built its prompt at 13:39 (17 S1 reports,
+68,604 chars); the 16384 run built its at 13:52 (10 S1 reports, 63,305
+chars). Thirteen minutes, a 5,299-char swing, and the two runs were being
+read against each other. Across the session the same prompt measured
+64,968 / 63,964 / 68,604 / 63,305 / 64,109 chars.
+**Test:** print `prompt_chars` for both runs before comparing them. If they
+differ, say so in the finding or re-run both back to back.
+
+## LR-179 — DERIVE A TEST FIXTURE FROM THE POSITION, NOT FROM A CONSTANT
+**Rule:** A test that asserts on a wire model must resolve it from the
+POSITION under test, through the same path production uses. Importing a
+registry constant instead of a literal removes the literal without removing
+the assumption — it is one level too shallow.
+**Cost:** LENS-041, CC-72. `test_T25` asserted `("cerebras","qwen-3-235b")`
+and went red on 2026-07-27 after a migration. The fix then was to import
+`lm.*` constants. On 2026-09-15 the SAME test went red again, on
+`("mistral", MISTRAL_MODEL)`, because `MISTRAL_MODEL = lm.MISTRAL_SMALL` is
+a name in the registry and not the model S2-C is wired to. Same test, same
+failure, second time, with a comment above it describing the first. The
+working pattern was already in the same file: `positions_on()` reads
+`qg.POSITION_CONSUMPTION`, which is built from `ROLES`.
+**Test:** if a migration would break the test without breaking production,
+the fixture is hardcoded.
+
+## LR-180 — RUN EVERY CI GATE LOCALLY BEFORE EVERY PUSH
+**Rule:** Whatever CI runs, run it locally first. Not a subset. Not the
+steps that are convenient.
+**Cost:** LENS-041. Lens CI runs exactly three steps — `py_compile`, the
+registry self-test, and `python tests/test_lens_quota_guard.py`. This was
+already written down on 2026-08-02. Fifteen pushes ran the first two every
+time and the third never, and the sixteenth turned main red. The full gate
+takes about two seconds. The knowledge was in memory; the habit was not.
+**Test:** `grep -E "run:" .github/workflows/lens-ci.yml` and run each line.
+
+## LR-181 — `json_object` GUARANTEES VALID JSON, NOT COMPLETE JSON
+**Rule:** `response_format: {"type":"json_object"}` removes fence and prose
+contamination. It does not remove truncation. A capped response under JSON
+mode is still cut mid-string and still fails `json.loads`.
+**Cost:** LENS-041. CC-63 put the constraint on eight legs, measured 4/6 to
+5/5 on S2-E. On wave `35063596665`, S3-B — carrying the constraint —
+returned `Unterminated string starting at: line 113 column 32 (char 10537)`
+against a hardcoded `max_tokens: 2500`. Attempt 2 succeeded at 10,135
+chars. LR-175's family: a cap wearing an HTTP 200.
+**Test:** a JSON leg needs BOTH the constraint and a `finish_reason` log.
+The constraint without the log is half an instrument.
+
+## LR-182 — PROVIDERS SAY WHETHER TO RETRY; WE NEVER LISTEN
+**Rule:** Read the response headers before retrying. A provider that has
+already decided the request is unretryable will say so, and retrying anyway
+burns wall-clock inside a wave for a guaranteed failure.
+**Cost:** LENS-041. Cerebras returns `x-should-retry: false` on its 402.
+Every Cerebras call site retries two or three times with 10-20s sleeps. On
+wave `35063596665` S2-E spent eight pre-failed retries on four lenses.
+This is R11's third instance: `response_format` offered and never asked
+for, `/v1/models` `deprecation` published and never read, `x-should-retry`
+sent and never parsed.
+**Test:** for each provider, log the full header set on one failure and
+check what it was already telling you.
+
+## LR-183 — `grep -c` COUNTS COMMENTS, SUBSTRINGS, AND YOUR OWN NEW TEXT
+**Rule:** A count from `grep -c` is a count of LINES CONTAINING a substring,
+not of live call sites. Comments count. Longer identifiers count. Text you
+added in the same patch counts. Never report it as a code census without
+narrowing the pattern or reading the hits.
+**Cost:** LENS-041, four times in one session. `_log_completion` predicted
+at 4 sites, actual 3. `valid_ids` predicted 2, reported 6 — `invalid_ids`
+matched as a substring. `mistral-small-latest` predicted at 11, then 2,
+then 3; actual 16, then 5, then 4, because every CC comment saying "was
+mistral-small-latest" is a hit. The fix each time was to grep for the
+assignment or call form, or to print the hits and read them.
+**Test:** quote the exact hits, or count the pattern that only code can
+match.
