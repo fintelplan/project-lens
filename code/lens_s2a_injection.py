@@ -156,7 +156,12 @@ def get_mistral():
         base_url="https://api.mistral.ai/v1",
     )
 
-MISTRAL_MODEL = "mistral-small-latest"
+MISTRAL_MODEL = "ministral-8b-2512"   # CC-73, was mistral-small-latest.
+# Used at ONE site (the mistral_client fallback leg); the Groq primary
+# goes through the same create() with model=None and is untouched. The
+# registry s2a_injection row has said ministral-8b-2512 since CC-64;
+# this is the wire catching up. S2-A passes on Groq today, so this is
+# insurance, not a cure.
 
 
 def fetch_latest_reports(sb: Client, cycle: Optional[str] = None) -> list[dict]:
