@@ -687,17 +687,17 @@ def t053():
     assert "max_repairs" in result.skip_reason
 
 def t054():
-    "Healing: quality below floor → retry once"
+    "Healing: quality below floor -> kept and flagged, not re-rolled (CC-80)"
     calls = [0]
     def mock_single(lid, stagger_s=0):
         calls[0] += 1
-        q = 3.0 if calls[0] <= 2 else 7.0
-        return make_lens_result(lid, quality=q)
+        return make_lens_result(lid, quality=3.0)
     with patch("lens_orchestrator.run_single_lens", side_effect=mock_single), \
          patch("lens_orchestrator.time.sleep"), \
          patch("lens_orchestrator.QUALITY_FLOOR", 4.0):
         result = run_lens_with_healing(1)
-    assert calls[0] >= 2, "Should retry at least once on low quality"
+    assert calls[0] == 1, "CC-80: a low-quality canary reading must not be re-rolled"
+    assert result.status == "complete" and result.low_quality is True
 
 def t055():
     "Healing: 429_rpd → skip immediately (no retry)"
@@ -1188,7 +1188,7 @@ def t093():
     assert result.get("run_abandoned")==True
 
 def t094():
-    "LR-040T-14: Quality <4.0 on Lens 1 → healing fires, at least 2 calls made"
+    "LR-040T-14 (CC-80): Quality <4.0 on Lens 1 -> one call, kept, flagged"
     calls=[0]
     def mock_single(lid, stagger_s=0):
         calls[0]+=1; return make_lens_result(lid,quality=3.5)
@@ -1196,9 +1196,8 @@ def t094():
          patch("lens_orchestrator.time.sleep"), \
          patch("lens_orchestrator.QUALITY_FLOOR",4.0):
         result=run_lens_with_healing(1)
-    assert calls[0]>=2, \
-        f"Quality healing must retry at least once (got {calls[0]} calls)"
-    assert result.status=="skipped", "After exhausting quality repairs, lens is skipped"
+    assert calls[0]==1, f"CC-80: no re-roll on low quality (got {calls[0]} calls)"
+    assert result.status=="complete" and result.low_quality is True
 
 def t095():
     "LR-040T-15: Lens 3 runtime 66s → Lens 4 stagger >= 100s"
@@ -1345,7 +1344,7 @@ TESTS = [
     (51, 5, "Healing: 429_queue → waits 120s",            t051),
     (52, 5, "Healing: unknown → escalate no retry LR-050",t052),
     (53, 5, "Healing: max 2 repairs then skip",           t053),
-    (54, 5, "Healing: quality < floor → retry",           t054),
+    (54, 5, "Healing: quality < floor → kept (CC-80)",           t054),
     (55, 5, "Healing: 429_rpd → skip no retry",           t055),
     (56, 5, "Healing: provider_down → skip",              t056),
     (57, 6, "Checkpoint: save writes statuses",           t057),
@@ -1385,7 +1384,7 @@ TESTS = [
     (91,  0, "LR-040T-11: Supabase fail → local backup", t091),
     (92,  0, "LR-040T-12: Stale checkpoint cleared",     t092),
     (93,  0, "LR-040T-13: Zero articles blocked",        t093),
-    (94,  0, "LR-040T-14: Quality <4.0 retry once",      t094),
+    (94, 0, "LR-040T-14: low quality kept, no re-roll", t094),
     (95,  0, "LR-040T-15: Lens 3 66s → stagger >=100",  t095),
     (96,  0, "LR-040T-16: job_count=4 hard stops",       t096),
     (97,  0, "LR-040T-17: DRY_RUN no lenses fire",       t097),

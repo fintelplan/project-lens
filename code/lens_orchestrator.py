@@ -353,6 +353,7 @@ class LensResult:
     quality:float=0.0; runtime_s:float=0.0
     report_id:str=""; error:str=""; error_type:str=""
     repair_attempts:int=0; fallback_used:bool=False; skip_reason:str=""
+    low_quality:bool=False
 
 def _parse_quality(out, lens_id=None):
     # CC-24: the child ignores --single-lens and runs ALL FOUR lenses per
@@ -380,6 +381,11 @@ def _classify_error(out):
     import re as _re
     if _re.search(r"error code: 402|payment_required|payment required", o):
         return "402_payment",out[-200:]
+    # CC-80: a Groq tokens-per-day 429 is not a per-minute wait. The bucket
+    # refills at ~2.3 tokens/s and is shared with Collection (LENS-034), so a
+    # 60s+90s retry only drains it further. Fail loudly, no retry.
+    if "429" in o and "tokens per day" in o:
+        return "429_tpd",out[-200:]
     if "404" in o and ("model" in o or "not found" in o): return "404_model_not_found",out[-200:]
     if "429" in o and "queue" in o:                       return "429_queue",out[-200:]
     if "429" in o and ("rpd" in o or "daily" in o):       return "429_rpd",out[-200:]
@@ -450,14 +456,21 @@ def apply_playbook(lens_id:int, etype:str, attempt:int) -> dict:
 
 def run_lens_with_healing(lens_id:int, stagger_s:int=0) -> LensResult:
     result=run_single_lens(lens_id, stagger_s=stagger_s)
+    # CC-80 (LENS-042) -- CANARY GAS-MASK TEST, ARM 3. A canary reading below
+    # the quality floor is KEPT and flagged, never re-rolled. Re-running a lens
+    # until its score clears the floor manufactures the reading; it also wrote
+    # duplicate rows (Foundation x2, 2026-09-17) and spent the Groq quota Lens 1
+    # shares with Collection (ARM 2). The score is not stable enough to gate on:
+    # the same input scored 3.25 in the wave and 6.45 on a probe that day.
     if result.status=="complete" and result.quality<QUALITY_FLOOR:
-        log.warning(f"[LENS {lens_id}] Quality {result.quality:.1f} below floor — healing")
-        result.error_type="quality_low"; result.status="failed"
+        result.low_quality=True
+        log.warning(f"[LENS {lens_id}] LOW QUALITY {result.quality:.1f} < floor "
+                    f"{QUALITY_FLOOR} -- kept, not re-rolled (CC-80)")
     if result.status=="complete": return result
 
     for attempt in range(1, MAX_REPAIRS+1):
         log.warning(f"[LENS {lens_id}] Repair {attempt}/{MAX_REPAIRS} — etype={result.error_type}")
-        if result.error_type in ("unknown","marker_absent","402_payment"):
+        if result.error_type in ("unknown","marker_absent","402_payment","429_tpd"):
             log.error(f"[LENS {lens_id}] Unknown error — escalating immediately (LR-050)")
             result.status="failed"; result.skip_reason="unknown_error_escalated"; return result
 
@@ -477,7 +490,10 @@ def run_lens_with_healing(lens_id:int, stagger_s:int=0) -> LensResult:
             log.info(f"[LENS {lens_id}] Repair {attempt} succeeded — quality={retry.quality:.1f}")
             return retry
         if retry.status=="complete":
-            retry.error_type="quality_low"; retry.status="failed"
+            retry.low_quality=True  # CC-80: kept, not re-rolled
+            log.warning(f"[LENS {lens_id}] LOW QUALITY {retry.quality:.1f} after repair "
+                        f"{attempt} -- kept (CC-80)")
+            return retry
         result=retry
 
     log.error(f"[LENS {lens_id}] Max repairs exhausted — skipping")
@@ -631,7 +647,7 @@ def generate_summary(run_id:str, results:dict, pf:PreflightResult,
         if not isinstance(r,LensResult): continue
         if r.status=="complete":
             fb=" [FALLBACK]" if r.fallback_used else ""
-            lines.append(f"  Lens {lid}: ✅ COMPLETE{fb} | quality={r.quality:.1f}/10 | {r.runtime_s:.1f}s")
+            lines.append(f"  Lens {lid}: ✅ COMPLETE{fb}{' [LOW QUALITY < floor, kept]' if r.low_quality else ''} | quality={r.quality:.1f}/10 | {r.runtime_s:.1f}s")
         elif r.status in ("skipped","skipped_already_complete"):
             lines.append(f"  Lens {lid}: ⏭  SKIPPED — {r.skip_reason}")
         else:
