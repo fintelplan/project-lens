@@ -149,17 +149,23 @@ def main():
         print(f"  {'✅' if ok else '❌'} {pos}")
 
     # Step report — fires after S3 completes
-    failed = [k for k, v in results.items() if not v]
+    # CC-77: the strategic report is a deliverable, not a side effect. Its
+    # result used to be discarded, so AI_FAILED since 2026-09-04 never reached
+    # this list; and it only ran if the Telegram step above it did not raise.
     try:
         from lens_telegram import send_s3_intelligence
         send_s3_intelligence(run_id=RUN_ID)
-        try:
-            from lens_s3_step_report import run_s3_report
-            run_s3_report()
-        except Exception as _s3r:
-            print(f"[S3-ORC] S3 step report failed (non-fatal): {_s3r}")
     except Exception as _te:
         print(f"[S3-ORC] Telegram step report failed (non-fatal): {_te}")
+    try:
+        from lens_s3_step_report import run_s3_report
+        _rpt = run_s3_report() or {}
+    except Exception as _s3r:
+        print(f"[S3-ORC] S3 step report raised: {_s3r}")
+        _rpt = {"status": "EXCEPTION"}
+    results["S3-RPT"] = _rpt.get("status") == "COMPLETE"
+    print(f"[S3-ORC] S3 strategic report: {_rpt.get('status')}")
+    failed = [k for k, v in results.items() if not v]
 
     if failed:
         print(f"\n[S3-ORC] {len(failed)} failed: {failed}")

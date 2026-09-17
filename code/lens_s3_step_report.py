@@ -1,7 +1,7 @@
 """
 lens_s3_step_report.py — S3 Strategic Pattern Intelligence Report
 Project Lens | LENS-023
-Model: cerebras qwen-3-235b (free, fast)
+Model: CC-77 -- ministral-8b-2512 primary, cohere command-r-plus fallback
 Purpose: Full quality docx of long-term patterns, historical parallels,
          structural changes, and strategic first domino analysis.
 Output: YYYYMMDD_S3_Strategic_Intelligence_DC{time}.docx → Telegram
@@ -15,9 +15,20 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S3-RPT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s3_report")
 
-MODEL       = "gpt-oss-120b"
+# CC-77 (LENS-042): Cerebras withdrew its free tier (~2026-08-17) and the
+# small-class Mistral fallback 429s, so this report has not reached Telegram
+# since 2026-09-04. Legs probed on the production prompt (6,974 chars):
+#   ministral-8b 3/3 stop, out 2450-3943 of 8000, 21-33s
+#   cohere command-r-plus 3/3 COMPLETE, out 1934-2151 of 4000, 198-235s
+# Cohere is the FALLBACK so the canary's Lens 3 keeps its 1,000/month budget.
+# (provider, model, key_env, max_tokens, timeout_s)
+LEGS = [
+    ("mistral", "ministral-8b-2512", "MISTRAL_API_KEY", 8000, 120),
+    ("cohere", "command-r-plus-08-2024", "COHERE_API_KEY", 4000, 300),
+]
+MODEL       = LEGS[0][1]
 TEMPERATURE = 0.3
-MAX_TOKENS  = 4500
+MAX_TOKENS  = LEGS[0][3]
 TELEGRAM_CAPTION_CAP = 950
 
 
@@ -182,63 +193,75 @@ Write in formal strategic intelligence briefing style. Use PART A, PART B format
     return prompt
 
 
-# ── AI call (Cerebras) ────────────────────────────────────────────────────────
+# ── AI call (CC-77: ministral -> cohere) ────────────────────────────────────────────────────────
 
-def call_cerebras(prompt: str) -> Optional[str]:
-    api_key = os.environ.get("CEREBRAS_API_KEY", "")
-    if not api_key:
-        log.error("CEREBRAS_API_KEY not set"); return None
-    for attempt in range(1, 4):
-        try:
-            log.info(f"S3 report calling Cerebras (attempt {attempt})")
-            r = requests.post(
-                "https://api.cerebras.ai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
-                      "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
-                timeout=120)
-            if r.status_code == 200:
-                text = r.json()["choices"][0]["message"]["content"].strip()
-                log.info(f"S3 report: {len(text)} chars generated")
-                return text
-            log.warning(f"Cerebras {r.status_code} attempt {attempt}: {r.text[:200]}")
-            time.sleep(20 * attempt)
-        except Exception as e:
-            log.error(f"Cerebras call failed: {e}"); time.sleep(15)
-    log.warning("Cerebras exhausted - falling back to Mistral-small")
-    return call_mistral_fallback(prompt)
+_NO_RETRY = {400, 401, 402, 403, 404, 422}
 
 
-def call_mistral_fallback(prompt: str):
-    import time as _t
-    api_key = os.environ.get("MISTRAL_API_KEY", "")
-    if not api_key:
-        log.error("MISTRAL_API_KEY not set - no fallback available"); return None
-    for attempt in range(1, 3):
-        try:
-            log.info(f"S3 report calling Mistral fallback (attempt {attempt})")
-            r = requests.post(
-                "https://api.mistral.ai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={"model": "mistral-small-latest",
-                      "messages": [{"role": "user", "content": prompt}],
-                      "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
-                timeout=120)
-            if r.status_code == 200:
-                text = r.json()["choices"][0]["message"]["content"].strip()
-                log.info(f"S3 report (Mistral fallback): {len(text)} chars generated")
-                return text
-            log.warning(f"Mistral fallback {r.status_code} attempt {attempt}: {r.text[:200]}")
-            _t.sleep(20 * attempt)
-        except Exception as e:
-            log.error(f"Mistral fallback failed attempt {attempt}: {e}"); _t.sleep(15)
-    return None
+def _post_leg(provider, model, key, max_tokens, timeout, prompt):
+    """One HTTP call. Returns (status, text, finish, usage, retryable, err)."""
+    url = ("https://api.cohere.com/v2/chat" if provider == "cohere"
+           else "https://api.mistral.ai/v1/chat/completions")
+    r = requests.post(url, timeout=timeout,
+        headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+        json={"model": model, "max_tokens": max_tokens, "temperature": TEMPERATURE,
+              "messages": [{"role": "user", "content": prompt}]})
+    if r.status_code != 200:
+        hdr = (r.headers.get("x-should-retry") or "").lower()
+        retryable = r.status_code not in _NO_RETRY and hdr != "false"
+        return r.status_code, "", None, {}, retryable, r.text[:200]
+    b = r.json()
+    if provider == "cohere":
+        parts = (b.get("message") or {}).get("content") or []
+        u = (b.get("usage") or {}).get("tokens") or {}
+        return (200, "".join(p.get("text", "") for p in parts), b.get("finish_reason"),
+                {"in": u.get("input_tokens"), "out": u.get("output_tokens")}, True, None)
+    ch = (b.get("choices") or [{}])[0]
+    u = b.get("usage") or {}
+    return (200, (ch.get("message") or {}).get("content") or "", ch.get("finish_reason"),
+            {"in": u.get("prompt_tokens"), "out": u.get("completion_tokens")}, True, None)
 
+
+def generate_report(prompt: str):
+    """Walk LEGS in order. Returns (text, provider, model) or (None, None, None).
+    A truncated answer is never sent (D-027): it moves on to the next leg."""
+    for n, (prov, model, key_env, mt, tmo) in enumerate(LEGS):
+        tag = "primary" if n == 0 else "FALLBACK"
+        key = os.environ.get(key_env, "")
+        if not key:
+            log.error(f"S3 report {tag} {prov}/{model}: {key_env} not set -- leg skipped")
+            continue
+        for attempt in range(1, 3):
+            log.info(f"S3 report {tag} calling {prov}/{model} (attempt {attempt}, "
+                     f"prompt {len(prompt)} chars, max_tokens {mt}, timeout {tmo}s)")
+            try:
+                st, text, fin, use, retry, err = _post_leg(prov, model, key, mt, tmo, prompt)
+            except Exception as e:
+                st, text, fin, use, retry, err = 0, "", None, {}, True, repr(e)[:200]
+            if st != 200:
+                log.warning(f"S3 report {tag} {prov}/{model} attempt {attempt}: "
+                            f"HTTP {st} retryable={retry} {err}")
+                if retry and attempt < 2:
+                    time.sleep(20)
+                    continue
+                break
+            log.info(f"S3 report {tag} usage: {prov}/{model} in={use.get('in')} "
+                     f"out={use.get('out')} max_tokens={mt} finish_reason={fin}")
+            if str(fin).lower() in ("length", "max_tokens"):
+                log.error(f"S3 report {tag} {prov}/{model}: finish_reason={fin} -- "
+                          f"truncated at {mt}, not sent")
+                break
+            if not (text or "").strip():
+                log.error(f"S3 report {tag} {prov}/{model}: empty text")
+                break
+            return text, prov, model
+    return None, None, None
 
 
 # ── Docx renderer ─────────────────────────────────────────────────────────────
 
-def render_docx(report_text: str, date_str: str, s3a: dict, s3d: dict) -> str:
+def render_docx(report_text: str, date_str: str, s3a: dict, s3d: dict,
+                engine: str = "unknown") -> str:
     try:
         from docx import Document
         from docx.shared import Pt, RGBColor, Inches
@@ -261,7 +284,7 @@ def render_docx(report_text: str, date_str: str, s3a: dict, s3d: dict) -> str:
 
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    sr = sub.add_run(f"{date_str}  |  System 3  |  Long-Horizon Analysis  |  Cerebras")
+    sr = sub.add_run(f"{date_str}  |  System 3  |  Long-Horizon Analysis  |  {engine}")
     sr.font.size = Pt(10); sr.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     q3a = s3a.get("quality_score", 0) if s3a else 0
@@ -278,12 +301,16 @@ def render_docx(report_text: str, date_str: str, s3a: dict, s3d: dict) -> str:
         line = line.strip()
         if not line:
             doc.add_paragraph(); continue
-        if line.startswith("PART ") and "—" in line:
-            doc.add_heading(line, level=1)
-        elif line.isupper() and len(line) < 80 and ":" not in line:
-            doc.add_heading(line, level=2)
+        # CC-77: the model writes "## PART A ..." or "### **PART A ...**".
+        # Strip the markdown first -- the CC-69 idiom in lens_regular_report.py.
+        text_only = line.lstrip("#").strip().strip("*").strip()
+        if text_only.startswith("PART ") and "\u2014" in text_only:
+            doc.add_heading(text_only, level=1)
+        elif text_only and (line.startswith("#") or text_only.isupper()) \
+                and len(text_only) < 80 and ":" not in text_only:
+            doc.add_heading(text_only, level=2)
         else:
-            p = doc.add_paragraph(line)
+            p = doc.add_paragraph(line.replace("**", ""))
             p.paragraph_format.space_after = Pt(6)
 
     time_str = datetime.now(timezone.utc).strftime("%H%M")
@@ -345,12 +372,14 @@ def run_s3_report() -> dict:
         return {"status": "NO_DATA"}
 
     prompt = build_s3_prompt(data)
-    report_text = call_cerebras(prompt)
+    report_text, used_prov, used_model = generate_report(prompt)
     if not report_text:
+        log.error("S3 report: every leg failed -- nothing sent")
         return {"status": "AI_FAILED"}
 
     try:
-        docx_path = render_docx(report_text, date_str, data["s3a"] or {}, data["s3d"] or {})
+        docx_path = render_docx(report_text, date_str, data["s3a"] or {}, data["s3d"] or {},
+                                f"{used_prov}/{used_model}")
     except Exception as e:
         log.error(f"Docx render failed: {e}")
         return {"status": "DOCX_FAILED", "error": str(e)}
