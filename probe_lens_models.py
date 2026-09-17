@@ -856,6 +856,8 @@ def resolve_candidate(role_key: str, which: str) -> Candidate:
 
 def require_key(key_env: str) -> str:
     """Fetch the key. Never returns it to a log, never prints it."""
+    from lens_models import canary_air_guard  # CC-81: gas-mask arm 4
+    canary_air_guard(key_env, "probe_lens_models")
     value = os.environ.get(key_env)
     if not value:
         raise ProbeError(

@@ -466,6 +466,35 @@ def fit_max_tokens(prompt_chars, cap, provider, model):
     return max(768, min(cap, usable - prompt_chars // CHARS_PER_TOKEN))
 
 
+# -- CC-81 (LENS-042): the canary's air --------------------------------------
+# Gas-mask test ARM 4. The four S1 lenses breathe these keys; a probe or test
+# that spends them competes with the canary (GROQ_API_KEY is also Collection's).
+CANARY_LENS_ROLES = ("lens1", "lens2", "lens3", "lens4")
+CANARY_AIR_MIN_REASON = 12
+
+
+def canary_air_keys():
+    """Key env names the S1 lenses use, derived from ROLES (never a copy)."""
+    return sorted({ROLES[r]["key_env"] for r in CANARY_LENS_ROLES})
+
+
+def canary_air_guard(key_env, purpose):
+    """Refuse to use a canary key unless LENS_ALLOW_CANARY_AIR holds a written
+    reason (not a bare 1/true). Returns the reason, or None for other keys."""
+    import os
+    if key_env not in canary_air_keys():
+        return None
+    reason = os.environ.get("LENS_ALLOW_CANARY_AIR", "").strip()
+    if len(reason) < CANARY_AIR_MIN_REASON:
+        raise RuntimeError(
+            f"{purpose} wants {key_env}, which a System 1 lens breathes "
+            f"(CANARY GAS-MASK TEST, ARM 4). Set LENS_ALLOW_CANARY_AIR to a "
+            f"written reason of at least {CANARY_AIR_MIN_REASON} characters "
+            f"to proceed, e.g. LENS_ALLOW_CANARY_AIR=\"LENS-043 lens4 cap probe x3\".")
+    log.warning("[CANARY AIR] %s is spending %s -- reason: %s", purpose, key_env, reason)
+    return reason
+
+
 if __name__ == "__main__":
     # Self-test: every fallback pair is registered, no China-lineage models.
     banned = ("qwen", "deepseek", "kimi", "minimax", "moonshot", "glm", "yi-")
@@ -479,5 +508,6 @@ if __name__ == "__main__":
             assert not any(b in low for b in banned), (
                 f"China-lineage model in registry: {rk} -> {mod}")
         assert s["max_out"] >= 768, (rk, s["max_out"])
+    assert canary_air_keys() and all(isinstance(k, str) and k for k in canary_air_keys())
     print(f"lens_models self-test OK: {len(ROLES)} roles, "
           f"{len(_KNOWN_WIRE)} wire pairs, {len(PROVIDER_LIMITS)} limit rows")

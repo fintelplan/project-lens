@@ -6,6 +6,30 @@
 
 ---
 
+## 0. The Canary -- gas-mask test (before EVERY action, not only S1 edits)
+
+System 1 is the unprotected canary: four lenses, four model families, no
+injection filter. Its disagreement with System 2 IS the detection signal.
+Anything that protects, starves, fakes or re-rolls it breaks the instrument.
+Before any change OR any command, ask all four:
+
+1. FILTERING -- does this narrow, clean or pre-screen what a lens reads?
+2. AIR SUPPLY -- could this stop a lens or Collection from running, or spend
+   the quota they breathe? (GROQ_API_KEY is shared by Lens 1 and Collection's
+   entity extraction; Groq's daily bucket is chronically saturated.)
+3. MANUFACTURING -- does this push an instrument to produce output: retry until
+   a score clears, fill an empty reading, fall back onto another lens's model?
+4. THE TOOL ITSELF -- does the test, probe or script I am about to run use a
+   canary key (`lens_models.canary_air_keys()`) or write with the canary's
+   voice (Telegram "What the canary sees", the `lens_reports` table)?
+
+A "yes" is a stop: say it plainly, then ask James. Probes refuse canary keys
+unless LENS_ALLOW_CANARY_AIR holds a written reason. Earned at LENS-042, when an
+agent re-rolled Lens 1 until its score cleared, spent its Groq quota on probes,
+and posted test output to the live channel -- all without noticing.
+
+---
+
 ## 1. Identity & Operator
 
 - Operator: **James Maverick** ("Bro Alpha"). Address him as "my buddy."
