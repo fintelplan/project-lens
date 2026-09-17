@@ -29,6 +29,19 @@ Usage:
 
 LENS-008 | 2026-04-14 | planfintel@gmail.com
 """
+# -- CC-78 (LENS-042): this harness must never reach production. ----------
+# It used to load the real .env through lens_orchestrator, so every run sent
+# "WHAT THE CANARY SEES" to the live Telegram chat -- eight runs on 2026-09-17,
+# each repeating one lens's rows as if they were four -- and talked to the
+# live Supabase project. These are set BEFORE lens_orchestrator is imported:
+# it reads SUPABASE_URL at import, and load_dotenv() never overrides a
+# variable that already exists.
+import os as _cc78_os
+_cc78_os.environ["TELEGRAM_BOT_TOKEN"] = ""
+_cc78_os.environ["TELEGRAM_CHAT_ID"] = ""
+_cc78_os.environ["SUPABASE_URL"] = "http://127.0.0.1:9"
+_cc78_os.environ["SUPABASE_SERVICE_KEY"] = "harness-isolated"
+# ---------------------------------------------------------------------------
 
 import sys
 import time
