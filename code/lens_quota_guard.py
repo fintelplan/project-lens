@@ -86,7 +86,7 @@ PROVIDER_LIMITS: dict[tuple[str, str], dict[str, int]] = REGISTRY_LIMITS
 POSITION_ROLES: dict[str, tuple[str, int]] = {
     "S1-L1":  ("lens1",             4_000),
     "S1-L2":  ("lens2",                 1),
-    "S1-L3":  ("lens3",             5_000),
+    "S1-L3":  ("lens3",             1),  # CC-76: cohere is an RPD pair -> requests
     "S1-L4":  ("lens4",             5_000),
     "S2-A":   ("s2a_injection",     5_000),
     "S2-B":   ("s2b_coordination",      1),

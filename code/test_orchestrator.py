@@ -262,7 +262,8 @@ def t020():
          patch("lens_orchestrator.GITHUB_ACTIONS", True), \
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
@@ -285,7 +286,8 @@ def t022():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=19), \
          patch("lens_orchestrator.check_gemini", return_value=(False,"RPD exhausted")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     assert pf.lens_verdicts.get(2) == "SKIP", "Lens 2 must skip when Gemini RPD exhausted"
@@ -293,14 +295,15 @@ def t022():
     assert pf.lens_verdicts.get(3) == "GO"
 
 def t023():
-    "Pre-flight: Cerebras down → Lens 3+4 SKIP"
+    "Pre-flight: Lens 3/4 providers down (CC-76) → Lens 3+4 SKIP"
     with patch("lens_orchestrator.get_runs_today", return_value=[]), \
          patch("lens_orchestrator.get_last_run", return_value=None), \
          patch("lens_orchestrator.GITHUB_ACTIONS", True), \
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(False,"DOWN")), \
+         patch("lens_orchestrator.check_cohere", return_value=(False,"DOWN")), \
+         patch("lens_orchestrator.check_mistral", return_value=(False,"DOWN")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="WARN"):
         pf = run_preflight()
     assert pf.lens_verdicts.get(3) == "SKIP"
@@ -316,7 +319,8 @@ def t024():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     assert pf.lens_verdicts.get(3) == "GO"
@@ -332,7 +336,8 @@ def t025():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     assert pf.lens_verdicts.get(2) == "SKIP"
@@ -348,7 +353,8 @@ def t026():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     assert pf.dry_run == True, "DRY_RUN flag must be set"
@@ -369,7 +375,8 @@ def t028():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     # 20 + 30 + 6 = 56
@@ -383,7 +390,8 @@ def t029():
          patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
          patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
         pf = run_preflight()
     assert pf.approved
@@ -400,7 +408,8 @@ def t030():
              patch("lens_orchestrator.check_groq", return_value=(True,"OK")), \
              patch("lens_orchestrator.get_gemini_calls_today", return_value=0), \
              patch("lens_orchestrator.check_gemini", return_value=(True,"OK")), \
-             patch("lens_orchestrator.check_cerebras", return_value=(True,"OK")), \
+             patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+             patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
              patch("lens_orchestrator.get_ai5_verdict", return_value="GO"):
             pf = run_preflight()
     assert not pf.approved
@@ -1111,7 +1120,8 @@ def t089():
          patch("lens_orchestrator.check_groq",return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today",return_value=0), \
          patch("lens_orchestrator.check_gemini",return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras",return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict",return_value="STOP"):
         pf=run_preflight()
     assert not pf.approved
@@ -1186,7 +1196,8 @@ def t095():
          patch("lens_orchestrator.check_groq",return_value=(True,"OK")), \
          patch("lens_orchestrator.get_gemini_calls_today",return_value=0), \
          patch("lens_orchestrator.check_gemini",return_value=(True,"OK")), \
-         patch("lens_orchestrator.check_cerebras",return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_cohere", return_value=(True,"OK")), \
+         patch("lens_orchestrator.check_mistral", return_value=(True,"OK")), \
          patch("lens_orchestrator.get_ai5_verdict",return_value="GO"):
         pf=run_preflight()
     assert pf.lens4_stagger>=100, \
@@ -1290,7 +1301,7 @@ TESTS = [
     (20, 2, "Pre-flight: LENS_FORCE bypasses budget",     t020),
     (21, 2, "Pre-flight: manual no LENS_FORCE blocked",   t021),
     (22, 2, "Pre-flight: Gemini RPD → Lens 2 SKIP",       t022),
-    (23, 2, "Pre-flight: Cerebras down → L3+4 SKIP",      t023),
+    (23, 2, "Pre-flight: Lens 3/4 providers down (CC-76) → L3+4 SKIP",      t023),
     (24, 2, "Pre-flight: LENS_ONLY=3",                    t024),
     (25, 2, "Pre-flight: LENS_SKIP=2",                    t025),
     (26, 2, "Pre-flight: DRY_RUN → approved=False",       t026),

@@ -169,6 +169,21 @@ def check_gemini(calls):
     if rem<=0: return False,f"RPD exhausted ({calls}/{GEMINI_RPD_LIMIT} used)"
     return True,f"OK ({calls}/{GEMINI_RPD_LIMIT} RPD used, {rem} remaining)"
 
+def check_cohere():
+    # CC-76: key presence only. A Cohere trial key counts EVERY call against
+    # 1,000/month across endpoints, so a GET health probe would spend budget.
+    # A false GO is still loud: the child exits 1 and the lens shows FAILED.
+    return (True,"key set") if os.getenv("COHERE_API_KEY","") else (False,"COHERE_API_KEY not set")
+
+def check_mistral():
+    key=os.getenv("MISTRAL_API_KEY","")
+    if not key: return False,"MISTRAL_API_KEY not set"
+    try:
+        r=requests.get("https://api.mistral.ai/v1/models",
+            headers={"Authorization":f"Bearer {key}"},timeout=8)
+        return r.ok,("OK" if r.ok else f"HTTP {r.status_code}")
+    except Exception as e: return False,str(e)[:40]
+
 def check_cerebras():
     key=os.getenv("CEREBRAS_API_KEY","")
     if not key: return False,"CEREBRAS_API_KEY not set"
@@ -186,7 +201,7 @@ AI5_SYSTEM_PROMPT="You are AI 5 — Management AI for Project Lens. Analyze syst
 def build_ai5_user_msg(ctx):
     """The exact user message sent to AI 5. Pure move -- byte-identical."""
     return (f"Budget: {ctx['runs_today']}/{ctx['daily_budget']}\nTrigger: {ctx['trigger']}\n"
-            f"Groq: {ctx['groq_status']}\nGemini: {ctx['gemini_status']}\nCerebras: {ctx['cerebras_status']}\n"
+            f"Groq: {ctx['groq_status']}\nGemini: {ctx['gemini_status']}\nLens3/4: {ctx['cerebras_status']}\n"
             f"Lens3 avg: {ctx['lens3_avg']}s  Lens4 stagger: {ctx['lens4_stagger']}s\nVerdict: GO/WARN/STOP")
 
 def get_ai5_verdict(ctx):
@@ -267,10 +282,13 @@ def run_preflight(job_count=1, is_resume=False, cp_age_hours=0.0) -> PreflightRe
     groq_ok,groq_msg=check_groq()
     gcalls=get_gemini_calls_today()
     gem_ok,gem_msg=check_gemini(gcalls)
-    cer_ok,cer_msg=check_cerebras()
+    coh_ok,coh_msg=check_cohere()
+    mis_ok,mis_msg=check_mistral()
+    cer_msg=f"L3 cohere {coh_msg}; L4 mistral {mis_msg}"  # CC-76: key kept for the AI-5 ctx
     print(f"  Lens 1 Groq:       {'OK' if groq_ok else 'FAIL'}  ({groq_msg})")
     print(f"  Lens 2 Gemini:     {'OK' if gem_ok else 'WARN'} ({gem_msg})")
-    print(f"  Lens 3+4 Cerebras: {'OK' if cer_ok else 'FAIL'} ({cer_msg})")
+    print(f"  Lens 3 Cohere:     {'OK' if coh_ok else 'FAIL'} ({coh_msg})")
+    print(f"  Lens 4 Mistral:    {'OK' if mis_ok else 'FAIL'} ({mis_msg})")
 
     # Dynamic stagger
     l3avg=get_lens3_avg(); stagger=int(l3avg+CEREBRAS_SAFE_GAP+6)
@@ -288,7 +306,8 @@ def run_preflight(job_count=1, is_resume=False, cp_age_hours=0.0) -> PreflightRe
         elif skip_l and lid==skip_l:        verdicts[lid]="SKIP"
         elif lid==1 and not groq_ok:        verdicts[lid]="SKIP"
         elif lid==2 and not gem_ok:         verdicts[lid]="SKIP"
-        elif lid in (3,4) and not cer_ok:   verdicts[lid]="SKIP"
+        elif lid==3 and not coh_ok:         verdicts[lid]="SKIP"
+        elif lid==4 and not mis_ok:         verdicts[lid]="SKIP"
         else:                               verdicts[lid]="GO"
         print(f"  Lens {lid}: {verdicts[lid]}")
 

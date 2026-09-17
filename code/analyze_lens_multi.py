@@ -72,23 +72,20 @@ LENSES = [
     {
         "lens_id":    3,
         "lens_name":  "Causal Chain",
-        "model":      "gpt-oss-120b",
-        "provider":   "cerebras",
-        "api_key_env": "CEREBRAS_API_KEY",
+        "model":      "command-r-plus-08-2024",
+        "provider":   "cohere",
+        "api_key_env": "COHERE_API_KEY",
         "perspective": "First Domino — what causes what across domains?",
-        "stagger_override": 6,        # fires at 6s — Lens 4 fires at 21s (15s gap)
+        "max_tokens": 2500,  # CC-76, probed
     },
     {
         "lens_id":    4,
         "lens_name":  "Sovereignty Check",
-        "model":      "gpt-oss-120b",
-        "provider":   "cerebras",
-        "api_key_env": "CEREBRAS_API_KEY",
+        "model":      "ministral-8b-2512",
+        "provider":   "mistral",
+        "api_key_env": "MISTRAL_API_KEY",
         "perspective": "From/of/for the people — who is pretending to serve the people?",
-        "stagger_override": 21,       # 6s cerebras default + 15s gap from Lens 3
-        "fallback_provider":  "sambanova",
-        "fallback_model":     "Meta-Llama-3.3-70B-Instruct",  # SambaNova format — LR-005(A)
-        "fallback_api_key_env": "SAMBANOVA_API_KEY",
+        "max_tokens": 4000,  # CC-76, probed
     },
 ]
 
@@ -103,6 +100,8 @@ LENS_ARTICLE_BUDGETS = {
     "gemini":    55800,   # 60000 - 700 - 3500 = 55800 (~744 articles, all fine)
     "cerebras":  56800,   # 60000 - 700 - 2500 = 56800 (~757 articles, all fine)
     "sambanova": 35800,   # 40000 - 700 - 3500 = 35800 (~477 articles, all fine)
+    "cohere":    56800,   # CC-76: no TPM on a trial key; same budget as cerebras
+    "mistral":   56800,   # CC-76: TPM 625,000 (console 2026-09-14)
 }
 TOKENS_PER_ARTICLE = 220  # empirical: Groq measured 21 articles = 4605 tokens = ~219/article
 
@@ -780,6 +779,8 @@ class TPMGuard:
         "gemini":   60_000,
         "cerebras": 60_000,
         "sambanova": 40_000,
+        "cohere":   60_000,   # CC-76: requests-metered, no TPM
+        "mistral":  60_000,   # CC-76: real TPM 625,000
     }
 
     def __init__(self, provider: str, lens_id: int):
@@ -994,6 +995,57 @@ class LensProviderGuard:
             print(f"[guard-lens{self.lens_id}] {self.lens_name} — "
                   f"recovered after {self.attempts} retry attempt(s). OK.")
 
+async def _call_http_lens(lens, url, body, parse):
+    """CC-76 (LENS-042): one HTTP call for the Cohere / Mistral lenses.
+    Logs usage and finish_reason; a truncated answer is raised, not saved --
+    a prose lens that stops mid-sentence must show FAILED, never a short
+    report that looks complete (D-027)."""
+    import requests
+    api_key = os.environ.get(lens["api_key_env"])
+    if not api_key:
+        raise ValueError(f"{lens['api_key_env']} not set")
+    r = await asyncio.to_thread(
+        requests.post, url, json=body, timeout=240,
+        headers={"Authorization": "Bearer " + api_key,
+                 "Content-Type": "application/json"})
+    if r.status_code != 200:
+        raise RuntimeError(f"Error code: {r.status_code} - {r.text[:200]}")
+    text, finish, tin, tout = parse(r.json())
+    print(f"[lens-{lens['lens_id']}] usage: {lens['provider']}/{lens['model']} "
+          f"in={tin} out={tout} max_tokens={body['max_tokens']} finish_reason={finish}")
+    if str(finish).lower() in ("length", "max_tokens"):
+        raise RuntimeError(f"finish_reason={finish}: output truncated at "
+                           f"max_tokens={body['max_tokens']} -- not saved (CC-76)")
+    return text
+
+
+def _lens_body(lens, system_prompt, user_prompt):
+    return {"model": lens["model"], "temperature": 0.3,
+            "max_tokens": lens.get("max_tokens", 2500),
+            "messages": [{"role": "system", "content": system_prompt},
+                         {"role": "user", "content": user_prompt}]}
+
+
+async def call_cohere(lens, system_prompt, user_prompt):
+    def parse(b):
+        parts = (b.get("message") or {}).get("content") or []
+        u = (b.get("usage") or {}).get("tokens") or {}
+        return ("".join(p.get("text", "") for p in parts), b.get("finish_reason"),
+                u.get("input_tokens"), u.get("output_tokens"))
+    return await _call_http_lens(lens, "https://api.cohere.com/v2/chat",
+                                 _lens_body(lens, system_prompt, user_prompt), parse)
+
+
+async def call_mistral(lens, system_prompt, user_prompt):
+    def parse(b):
+        ch = (b.get("choices") or [{}])[0]
+        u = b.get("usage") or {}
+        return ((ch.get("message") or {}).get("content") or "", ch.get("finish_reason"),
+                u.get("prompt_tokens"), u.get("completion_tokens"))
+    return await _call_http_lens(lens, "https://api.mistral.ai/v1/chat/completions",
+                                 _lens_body(lens, system_prompt, user_prompt), parse)
+
+
 async def call_sambanova(lens, system_prompt, user_prompt):
     """
     SambaNova API call with LensProviderGuard retry logic.
@@ -1136,6 +1188,12 @@ async def run_lens(lens, system_prompt, articles_full: list):
         elif provider == "cerebras":
             result = await guard.call_protected(
                 full_payload, call_cerebras, lens, system_prompt, user_prompt)
+        elif provider == "cohere":
+            result = await guard.call_protected(
+                full_payload, call_cohere, lens, system_prompt, user_prompt)
+        elif provider == "mistral":
+            result = await guard.call_protected(
+                full_payload, call_mistral, lens, system_prompt, user_prompt)
         elif provider == "sambanova":
             result = await guard.call_protected(
                 full_payload, call_sambanova, lens, system_prompt, user_prompt)

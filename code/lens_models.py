@@ -85,31 +85,40 @@ ROLES = {
     # ---- 4-lens engine (analyze_lens_multi.py via lens_orchestrator.py) ----
     "lens1": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
-        "fb_key_env": "MISTRAL_API_KEY",
-        "note": "was qwen/qwen3-32b (dead 2026-07-17); call site ran NO fallback -- lens1 produced nothing Jul 17 to Aug 2, see S1-001; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
+        "key_env": "GROQ_API_KEY", "max_out": 2500,
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "CC-76 (LENS-042): canary lenses take NO cross-lens fallback --"
+                " a fallback onto another lens's model collapses epistemic"
+                " diversity (S1-001: gpt-oss counted twice); a dead provider must"
+                " show FAILED (CC-75). analyze_lens_multi.LENSES is the wire and"
+                " does not read this row; call_groq sends max_tokens=2500.",
     },
     "lens2": {
         "provider": "gemini", "model": GEMINI_25_FLASH,
         "key_env": "GEMINI_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
-        "fb_key_env": "MISTRAL_API_KEY",
-        "note": "gemini-2.5-flash dies 2026-10-16 -> one-line edit here in Oct",
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "CC-76: no fallback (see lens1). Shutdown date: 2026-10-16 was"
+                " announced, then removed from the Gemini API deprecations page"
+                " on 2026-08-03; Vertex lists 2026-10-20 (read 2026-09-17)."
+                " max_out not re-checked against call_gemini.",
     },
     "lens3": {
-        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
-        "key_env": "CEREBRAS_API_KEY", "max_out": 2400,
-        "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_API_KEY",
-        "note": "old Groq fallback was 70b-versatile (dies Aug 16)",
+        "provider": "cohere", "model": COHERE_CMD_R_PLUS,
+        "key_env": "COHERE_API_KEY", "max_out": 2500,
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "CC-76: was cerebras gpt-oss-120b, dead ~2026-08-17 (402);"
+                " no Causal Chain row after 2026-08-17 14:07. Probed 2/2 on the"
+                " production lens prompt: COMPLETE, in 7501, out 1300-1499 at"
+                " 2500, 105-147s. Cohere trial key: 1,000 calls/month.",
     },
     "lens4": {
-        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
-        "key_env": "CEREBRAS_API_KEY", "max_out": 2400,
-        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
-        "fb_key_env": "MISTRAL_API_KEY",
-        "note": "the LR-005(A) sambanova pattern ended here -- not kept: fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015.",
+        "provider": "mistral", "model": MINISTRAL_8B,
+        "key_env": "MISTRAL_API_KEY", "max_out": 4000,
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "CC-76: was cerebras gpt-oss-120b -- the SAME model as lens3"
+                " (the S1-001 structure) -- with a sambanova fallback dead since"
+                " 2026-07-28. Probed 6/6 finish=stop: out 1863-2469 (98.8% of the"
+                " old 2500 at the top), so the cap is 4000.",
     },
     # ---- orchestrator watchdog ----
     "ai5_watchdog": {
