@@ -236,16 +236,16 @@ ROLES = {
     },
     # ---- S3 family ----
     "s3a_patterns": {
-        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
-        "key_env": "CEREBRAS_API_KEY", "max_out": 5000,
-        "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_S3_API_KEY",
-        "note": "CC-12 (LENS-029): moved to Cerebras. On Groq gpt-oss-120b its"
-                " 19,263-char prompt left fit_max_tokens only 939 tokens and all 3"
-                " probe trials returned finish=length with invalid JSON, one of them"
-                " zero characters. Cerebras TPM 30,000 -> probed 3/3 stop/valid-JSON"
-                " at 26-34%%. WARNING: the groq gpt-oss-20b fallback inherits max_out"
-                " and hits the same 939-token ceiling -- it is broken and unprobed",
+        "provider": "cohere", "model": COHERE_CMD_R_PLUS,
+        "key_env": "COHERE_API_KEY", "max_out": 4000,
+        "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
+        "fb_key_env": "MISTRAL_API_KEY",
+        "note": "CC-74 (LENS-042): Cerebras free tier withdrawn ~2026-08-17"
+                " (402 payment_required, x-should-retry false); S3-A saved"
+                " nothing after 2026-08-17. Cohere probed 3/3 on the production"
+                " prompt (19,256 chars): 200, finish COMPLETE, in=4662,"
+                " out 634-932, valid schema, 27-52s. Fallback ministral-8b"
+                " first probed on this prompt at the CC-74 gate.",
     },
     "s3b_history": {
         "provider": "gemini", "model": GEMINI_25_FLASH_LITE,

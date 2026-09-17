@@ -95,7 +95,7 @@ POSITION_ROLES: dict[str, tuple[str, int]] = {
     "S2-E":   ("s2e_legitimacy",   10_000),
     "S2-GAP": ("s2gap",             3_000),
     "MA":     ("mission_analyst",   6_000),
-    "S3-A":   ("s3a_patterns",      7_000),
+    "S3-A":   ("s3a_patterns",      2),  # CC-74: cohere is an RPD pair -> REQUESTS (2 attempts), not tokens
     "S3-B":   ("s3b_history",           1),
     "S3-C":   ("s3c_drift",             1),
     "S3-D":   ("s3d_longterm",      6_000),

@@ -1,7 +1,7 @@
 """
 lens_s3a_patterns.py — System 3 Position A: Pattern Intelligence
 Project Lens | LENS-010
-Model: llama-3.3-70b-versatile (Groq — GROQ_API_KEY)
+Model: registry role s3a_patterns (lens_models.ROLES) -- CC-74: Cohere primary, ministral-8b fallback
 Reads: lens_reports + injection_reports (last 7 days)
 Output: lens_system3_reports (position=S3-A, report_type=TYPE_A)
 
@@ -15,9 +15,8 @@ Session: LENS-010
 import os, json, time, logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-from groq import Groq
-from cerebras.cloud.sdk import Cerebras
-from lens_models import assert_model_known, fit_max_tokens, wire
+import requests
+from lens_models import assert_model_known, fit_max_tokens, wire, get_role
 from supabase import create_client, Client
 
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
@@ -173,6 +172,108 @@ def build_prompt(s1: list, s2: list) -> str:
     return "\n".join(lines)
 
 
+# -- CC-74 (LENS-042): two legs, both named by the registry -----------------
+# Cerebras withdrew its free tier (~2026-08-17) and this file only ever called
+# Cerebras, so S3-A saved nothing for a month. Primary and fallback now come
+# from ROLES["s3a_patterns"]. Every attempt logs HTTP status, usage and
+# finish_reason; a response that says not to retry is not retried (R11).
+_NO_RETRY = {400, 401, 402, 403, 404, 422}
+
+
+def _parse_json_text(raw):
+    raw = (raw or "").strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    return json.loads(raw.strip())
+
+
+def _post_leg(provider, model, key, max_tokens, prompt):
+    """One HTTP call. Returns (status, text, finish, usage, retryable, err)."""
+    if provider == "cohere":
+        url = "https://api.cohere.com/v2/chat"
+    elif provider == "mistral":
+        url = "https://api.mistral.ai/v1/chat/completions"
+    else:
+        return 0, "", None, {}, False, "no HTTP leg for provider " + str(provider)
+    body = {"model": model,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                         {"role": "user", "content": prompt}],
+            "temperature": 0.4, "max_tokens": max_tokens,
+            "response_format": {"type": "json_object"}}
+    r = requests.post(url, json=body, timeout=180,
+                      headers={"Authorization": "Bearer " + key,
+                               "Content-Type": "application/json"})
+    if r.status_code != 200:
+        hdr = (r.headers.get("x-should-retry") or "").lower()
+        retryable = r.status_code not in _NO_RETRY and hdr != "false"
+        return r.status_code, "", None, {}, retryable, r.text[:200]
+    b = r.json()
+    if provider == "cohere":
+        parts = (b.get("message") or {}).get("content") or []
+        text = "".join(p.get("text", "") for p in parts)
+        finish = b.get("finish_reason")
+        u = (b.get("usage") or {}).get("tokens") or {}
+        usage = {"in": u.get("input_tokens"), "out": u.get("output_tokens")}
+    else:
+        ch = (b.get("choices") or [{}])[0]
+        text = (ch.get("message") or {}).get("content") or ""
+        finish = ch.get("finish_reason")
+        u = b.get("usage") or {}
+        usage = {"in": u.get("prompt_tokens"), "out": u.get("completion_tokens")}
+    return 200, text, finish, usage, True, None
+
+
+def _generate(prompt, prompt_chars, max_tokens):
+    """Primary then fallback. Returns (analysis or None, provider, model)."""
+    role = get_role("s3a_patterns")
+    legs = [(role["provider"], role["model"], role["key_env"], max_tokens)]
+    if role.get("fb_provider"):
+        legs.append((role["fb_provider"], role["fb_model"], role["fb_key_env"],
+                     fit_max_tokens(prompt_chars, role["max_out"],
+                                    role["fb_provider"], role["fb_model"])))
+    for n, (prov, model, key_env, mt) in enumerate(legs):
+        tag = "primary" if n == 0 else "FALLBACK"
+        key = os.environ.get(key_env, "")
+        if not key:
+            log.error(f"S3-A {tag} {prov}/{model}: {key_env} not set -- leg skipped")
+            continue
+        assert_model_known(prov, model)
+        for attempt in range(1, 3):
+            log.info(f"S3-A {tag} calling {prov}/{model} (attempt {attempt}, "
+                     f"prompt {prompt_chars} chars, max_tokens {mt})")
+            try:
+                status, text, finish, usage, retryable, err = _post_leg(
+                    prov, model, key, mt, prompt)
+            except Exception as e:
+                status, text, finish, usage, retryable, err = (
+                    0, "", None, {}, True, repr(e)[:200])
+            if status != 200:
+                log.warning(f"S3-A {tag} {prov}/{model} attempt {attempt}: "
+                            f"HTTP {status} retryable={retryable} {err}")
+                if retryable and attempt < 2:
+                    time.sleep(20)
+                    continue
+                break
+            log.info(f"S3-A {tag} usage: {prov}/{model} in={usage.get('in')} "
+                     f"out={usage.get('out')} max_tokens={mt} "
+                     f"finish_reason={finish}")
+            try:
+                analysis = _parse_json_text(text)
+            except Exception as e:
+                log.warning(f"S3-A {tag} {prov}/{model} attempt {attempt}: "
+                            f"JSON parse failed ({e}); finish_reason={finish}")
+                if attempt < 2:
+                    continue
+                break
+            vr = validate_parsed_response(analysis, "S3-A")
+            if not vr.valid:
+                log.warning(format_validation_for_log(vr))
+            return analysis, prov, model
+    return None, None, None
+
+
 def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     start = time.time()
     if not run_id:
@@ -180,10 +281,8 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     log.info(f"=== S3-A Pattern Intelligence START | run_id={run_id} ===")
 
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
-    api_key = os.environ.get(KEY_ENV, "")
-    if not api_key:
-        raise RuntimeError(KEY_ENV + " missing")
-    client = Cerebras(api_key=api_key)
+    if not os.environ.get(KEY_ENV, ""):
+        log.error(KEY_ENV + " missing -- primary leg will be skipped")
 
     if already_ran_today(sb):
         log.info("S3-A already ran in last 20h — skipping (daily cadence)")
@@ -210,34 +309,7 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     prompt_chars = len(SYSTEM_PROMPT) + len(prompt)
     max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
 
-    analysis = None
-    for attempt in range(1, 3):
-        try:
-            log.info(f"S3-A calling {PROVIDER}/{MODEL} (attempt {attempt}, "
-                     f"prompt {prompt_chars} chars, max_tokens {max_tokens})")
-            assert_model_known(PROVIDER, MODEL)
-            resp = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user",   "content": prompt},
-                ],
-                temperature=0.4, max_tokens=max_tokens)
-            raw = resp.choices[0].message.content.strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.startswith("json"): raw = raw[4:]
-            raw = raw.strip()
-            analysis = json.loads(raw)
-
-            # ── Response schema validation (I2) ──────────────────────────────
-            vr = validate_parsed_response(analysis, "S3-A")
-            if not vr.valid:
-                log.warning(format_validation_for_log(vr))
-            break
-        except Exception as e:
-            log.warning(f"Attempt {attempt} failed: {e}")
-            if attempt < 2: time.sleep(20)
+    analysis, used_provider, used_model = _generate(prompt, prompt_chars, max_tokens)
 
     if not analysis:
         log.error("S3-A failed — no analysis produced")
@@ -264,8 +336,8 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "summary":          analysis.get("summary", ""),
         "signals_to_watch": json.dumps(analysis.get("signals_to_watch", [])),
         "corrections_to_s2": json.dumps(analysis.get("corrections_to_s2", [])),
-        "model_used":       MODEL,
-        "provider":         "groq",
+        "model_used":       used_model,
+        "provider":         used_provider,
         "quality_score":    float(analysis.get("quality_score", 0.0)),
         "system_tag":       "S3-A",
         "source_reports":   json.dumps([r.get("id") for r in s1[:5]]),
