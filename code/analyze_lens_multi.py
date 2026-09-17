@@ -23,6 +23,7 @@ import re
 import json
 import time
 import asyncio
+import sys
 from datetime import datetime, timezone, timedelta
 from supabase import create_client
 from dotenv import load_dotenv
@@ -1230,6 +1231,15 @@ from lens_cycle import get_cycle  # noqa: E402
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+def _single_lens_arg():
+    """CC-75 (LENS-042): honour --single-lens N. The orchestrator has always
+    passed it and this file never read it, so every call ran all four lenses
+    and the parent labelled one lens with another lens's score."""
+    if "--single-lens" in sys.argv:
+        return int(sys.argv[sys.argv.index("--single-lens") + 1])
+    return None
+
+
 async def main():
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     cycle    = get_cycle()
@@ -1262,7 +1272,13 @@ async def main():
     ]
     article_ids = {"selected": selected_ids}
 
-    print(f"[lens] {total} articles -> 4 lenses firing in parallel...")
+    only = _single_lens_arg()
+    selected = [l for l in LENSES if only is None or l["lens_id"] == only]
+    if not selected:
+        print(f"[lens] --single-lens {only}: no such lens")
+        sys.exit(2)
+    print(f"[lens] {total} articles -> {len(selected)} lens(es) firing: "
+          f"{[l['lens_id'] for l in selected]}")
     print("=" * 60)
 
     # Fire all 4 lenses in parallel
@@ -1273,18 +1289,21 @@ async def main():
             SYSTEM_PROMPTS[lens["lens_id"]],
             balanced       # pass full article list — each lens trims itself
         )
-        for lens in LENSES
+        for lens in selected
     ]
     results = await asyncio.gather(*tasks)
 
     print("=" * 60)
-    print("[lens] All 4 lenses complete. Saving reports...")
+    print(f"[lens] {len(selected)} lens call(s) returned. Saving reports...")
+    saved = 0
+    failed = []
 
     # Save each lens report separately
     for lens_id, analysis, error in results:
         lens = LENSES[lens_id - 1]
 
         if error:
+            failed.append(lens_id)
             print(f"[save] Lens {lens_id} FAILED — {error}")
             continue
 
@@ -1294,6 +1313,7 @@ async def main():
             supabase, lens, summary, fft,
             article_ids, counts, cycle, quality["total"]
         )
+        saved += 1
         print(f"  Quality score: {quality['total']}/10 "
               f"(spec={quality['details'].get('specificity',0):.1f} "
               f"depth={quality['details'].get('signal_depth',0):.1f} "
@@ -1315,7 +1335,8 @@ async def main():
         print(fft_print)
 
     # Cross-lens agreement (LENS-005 FIX-031)
-    cross_signals = find_cross_lens_signals(results, LENSES)
+    cross_signals = (find_cross_lens_signals(results, LENSES)
+                     if len(selected) > 1 else [])
     if cross_signals:
         print(f"\n[cross-lens] HIGH CONFIDENCE signals ({len(cross_signals)} found):")
         for sig in cross_signals[:5]:
@@ -1324,8 +1345,11 @@ async def main():
         print("\n[cross-lens] No cross-lens agreement signals detected")
 
     print("\n" + "=" * 60)
-    print(f"[lens] Complete — {total} articles — 4 reports saved")
+    print(f"[lens] Complete -- {total} articles -- {saved}/{len(selected)} reports saved")
     print("=" * 60)
+    if failed:
+        print(f"LENS_FAILED lens_ids={failed}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

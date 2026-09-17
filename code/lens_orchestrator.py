@@ -346,7 +346,8 @@ def _parse_quality(out, lens_id=None):
         if m:
             return float(m.group(1))
         log.warning(f"[LENS {lens_id}] LENS_QUALITY marker absent -- "
-                    f"falling back to first-quality parse (CC-24)")
+                    f"CC-75: reported as FAILED (marker_absent)")
+        return None
     m=re.search(r"[Qq]uality score[:\s]+([0-9.]+)",out)
     return float(m.group(1)) if m else 0.0
 
@@ -357,6 +358,9 @@ def _parse_report_id(out):
 
 def _classify_error(out):
     o=out.lower()
+    import re as _re
+    if _re.search(r"error code: 402|payment_required|payment required", o):
+        return "402_payment",out[-200:]
     if "404" in o and ("model" in o or "not found" in o): return "404_model_not_found",out[-200:]
     if "429" in o and "queue" in o:                       return "429_queue",out[-200:]
     if "429" in o and ("rpd" in o or "daily" in o):       return "429_rpd",out[-200:]
@@ -379,7 +383,11 @@ def run_single_lens(lens_id:int, stagger_s:int=0) -> LensResult:
         if result.returncode!=0:
             et,em=_classify_error(out)
             return LensResult(lens_id,status="failed",runtime_s=rt,error=em,error_type=et)
-        return LensResult(lens_id,status="complete",quality=_parse_quality(out,lens_id),
+        q=_parse_quality(out,lens_id)
+        if q is None:
+            return LensResult(lens_id,status="failed",runtime_s=rt,
+                error=out[-200:],error_type="marker_absent")
+        return LensResult(lens_id,status="complete",quality=q,
             runtime_s=rt,report_id=_parse_report_id(out))
     except subprocess.TimeoutExpired:
         return LensResult(lens_id,status="failed",runtime_s=300.0,
@@ -430,7 +438,7 @@ def run_lens_with_healing(lens_id:int, stagger_s:int=0) -> LensResult:
 
     for attempt in range(1, MAX_REPAIRS+1):
         log.warning(f"[LENS {lens_id}] Repair {attempt}/{MAX_REPAIRS} — etype={result.error_type}")
-        if result.error_type=="unknown":
+        if result.error_type in ("unknown","marker_absent","402_payment"):
             log.error(f"[LENS {lens_id}] Unknown error — escalating immediately (LR-050)")
             result.status="failed"; result.skip_reason="unknown_error_escalated"; return result
 

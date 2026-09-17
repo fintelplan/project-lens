@@ -58,6 +58,7 @@ jobs:
           echo "System 1 complete — proceeding to System 2"
 
       - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)
+        if: ${{ !cancelled() }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -79,6 +80,7 @@ jobs:
           python code/lens_s2_orchestrator.py
           echo "System 2 complete"
       - name: Run System 3 Orchestrator (pattern intelligence + true history + long-term research)
+        if: ${{ !cancelled() }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
