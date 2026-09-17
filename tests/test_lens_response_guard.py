@@ -73,16 +73,32 @@ def valid_s3a():
 
 
 def valid_s2e():
-    return {
-        "analyst": "S2-E",
-        "findings": [{"actor": "X", "tier": "HIGH"}],
-    }
+    # CC-79 (LENS-042): a REAL S2-E answer -- ministral-8b in json mode, banked
+    # by the LENS-040 probe -- not a hand-written shape. The old fixture was
+    # {"analyst", "findings"}, a shape no position has produced since the
+    # S017-C schema realign (2026-04-21); this test failed from then on and
+    # nobody saw it because CI never ran this file.
+    import json, os
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs",
+                        "sessions", "LENS040", "_s40_bodies_jsonmode",
+                        "s2e_legitimacy__fallback__ministral-8b-2512__t2.txt")
+    raw = open(path, encoding="utf-8").read()
+    return json.loads(raw[raw.find("{"): raw.rfind("}") + 1])
 
 
 def valid_s2gap():
+    # CC-79: no real S2-GAP body is banked yet, so the keys follow the response
+    # template in code/lens_s2_gap.py (gap_severity / key_gap_finding at
+    # :94-95, missed_by_s1 at :72) with values the schema accepts.
+    # test_06 checks the position itself still names every required key.
     return {
-        "analyst": "S2-GAP",
-        "findings": [{"gap": "Y"}],
+        "missed_by_s1": ["pipeline sabotage reported by three outlets"],
+        "over_amplified_by_s1": [],
+        "adversary_only": [],
+        "silence_analysis": "No outlet covered the grain corridor closure.",
+        "gap_severity": "HIGH",
+        "key_gap_finding": "S1 missed the pipeline sabotage that S2-A flagged in three outlets.",
+        "quality_score": 0.7,
     }
 
 
@@ -109,6 +125,17 @@ class TestBasicValidation:
     def test_04_valid_s2e_passes(self):
         vr = validate_parsed_response(valid_s2e(), "S2-E")
         assert vr.valid is True
+
+    def test_06_required_keys_are_named_by_the_position(self):
+        # CC-79 (LR-179): a schema key the position's own prompt never names
+        # is a fixture of nothing. Derive from the position, not a constant.
+        import os
+        from lens_response_guard import SCHEMAS
+        root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "code")
+        for pos, src in (("S2-E", "lens_s2e_legitimacy.py"), ("S2-GAP", "lens_s2_gap.py")):
+            text = open(os.path.join(root, src), encoding="utf-8").read()
+            for k in SCHEMAS[pos]["required_keys"]:
+                assert '"%s"' % k in text, (pos, k, src)
 
     def test_05_valid_s2gap_passes(self):
         vr = validate_parsed_response(valid_s2gap(), "S2-GAP")

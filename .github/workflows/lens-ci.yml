@@ -44,3 +44,6 @@ jobs:
 
       - name: Quota guard + registry alignment tests
         run: python tests/test_lens_quota_guard.py
+
+      - name: Response schema validator tests (CC-79)
+        run: python tests/test_lens_response_guard.py
