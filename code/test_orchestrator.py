@@ -669,7 +669,7 @@ def t052():
          patch("lens_orchestrator.time.sleep"):
         result = run_lens_with_healing(1)
     assert calls[0] == 1, f"Unknown error must NOT retry, calls={calls[0]}"
-    assert result.skip_reason == "unknown_error_escalated"
+    assert result.skip_reason.endswith("_escalated"), result.skip_reason  # CC-82
 
 def t053():
     "Healing: max 2 repairs then skip (LR-050)"
@@ -1109,7 +1109,7 @@ def t087():
          patch("lens_orchestrator.time.sleep"):
         result=run_lens_with_healing(1)
     assert calls[0]==1
-    assert result.skip_reason=="unknown_error_escalated"
+    assert result.skip_reason.endswith("_escalated"), result.skip_reason  # CC-82
 
 def t088():
     "LR-040T-08: 2 repair attempts fail → lens skipped"

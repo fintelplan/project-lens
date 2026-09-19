@@ -271,11 +271,16 @@ ROLES = {
                 " command-a-03-2025 is the eventual upgrade",
     },
     "s3d_longterm": {
-        "provider": "cerebras", "model": CEREBRAS_GPT_OSS_120B,
-        "key_env": "CEREBRAS_API_KEY", "max_out": 2400,
-        "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_API_KEY",
-        "note": "",
+        "provider": "mistral", "model": MINISTRAL_8B,
+        "key_env": "MISTRAL_API_KEY", "max_out": 8000,
+        "fb_provider": None, "fb_model": None, "fb_key_env": None,
+        "note": "CC-82 (LENS-042): was cerebras gpt-oss-120b, dead ~2026-08-17;"
+                " the ministral fallback then truncated at 2500 (cut mid-string at"
+                " 9.2-9.9K chars, 2026-09-14 and 09-17) so S3-D has saved nothing"
+                " since 2026-09-03. No fallback: a dead leg must show FAILED."
+                " Cohere would fit the charter's reasoning depth but S3-C already"
+                " takes 394s on Mon/Thu and the wave has a wall clock -- revisit"
+                " once timeout-minutes 50 is certified.",
     },
     "s3f_countercheck": {
         "provider": "mistral", "model": MINISTRAL_8B,

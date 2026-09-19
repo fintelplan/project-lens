@@ -238,13 +238,20 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                         json={"model": MISTRAL_FALLBACK_MODEL, "response_format": {"type": "json_object"},
                               "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                            {"role": "user", "content": prompt}],
-                              "max_tokens": 2500, "temperature": 0.3},
+                              # CC-82: 2500 cut the answer mid-string at
+                              # ~10.6-11.4K chars on every wave since Sep 17.
+                              "max_tokens": 8000, "temperature": 0.3},
                         timeout=120)
                     if mr.status_code == 200:
                         raw = mr.json()["choices"][0]["message"]["content"].strip()
                         import re as _re
                         raw = _re.sub(r"```json|```", "", raw).strip()
                         analysis = json.loads(raw)
+                        _fin = ((mr.json().get("choices") or [{}])[0]).get("finish_reason")
+                        if str(_fin).lower() in ("length", "max_tokens"):
+                            log.error(f"S3-B fallback finish_reason={_fin} -- "
+                                      f"truncated, not saved (CC-82)")
+                            break
                         model_used    = MISTRAL_FALLBACK_MODEL
                         provider_used = "mistral"
                         _m_usage = mr.json().get("usage") or {}

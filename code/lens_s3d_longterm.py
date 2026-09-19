@@ -1,7 +1,8 @@
 """
 lens_s3d_longterm.py — System 3 Position D: Long-term Researcher
 Project Lens | LENS-010
-Model: gpt-oss-120b (Cerebras — CEREBRAS_API_KEY)
+Model: CC-82 -- mistral ministral-8b-2512 (Cerebras withdrew its free tier
+       ~2026-08-17; S3-D saved nothing after 2026-09-03)
 Reads: lens_reports + injection_reports (last 30 days)
 Output: lens_system3_reports (position=S3-D, report_type=TYPE_A)
 
@@ -16,7 +17,7 @@ Session: LENS-010
 import os, json, time, logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-from cerebras.cloud.sdk import Cerebras
+import requests
 from supabase import create_client, Client
 
 logging.basicConfig(level=logging.INFO,
@@ -25,8 +26,14 @@ log = logging.getLogger("S3-D")
 
 SUPABASE_URL   = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY")
-CEREBRAS_KEY   = os.environ.get("CEREBRAS_API_KEY")
-MODEL          = "gpt-oss-120b"
+MISTRAL_KEY    = os.environ.get("MISTRAL_API_KEY")
+MODEL          = "ministral-8b-2512"
+PROVIDER       = "mistral"
+# CC-82: the old fallback cap was 2500 and the answer was cut mid-string at
+# ~9.2-9.9K chars on 2026-09-14 and 2026-09-17. S3-A and the S3 report run
+# the same model at 8000 and finish at 3.4-4.1K tokens. A truncated answer
+# is now FAILED, never saved (D-027).
+MAX_TOKENS     = 8000
 LOOKBACK_DAYS  = 30
 MAX_S1_REPORTS = 30
 MAX_S2_REPORTS = 20
@@ -172,12 +179,11 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     if not should_run_today():
         log.info(f"S3-D skipping — not Monday or Thursday (today={datetime.now(timezone.utc).strftime(chr(37)+chr(65))})")
         return {"status": "SKIPPED", "run_id": run_id}
-    if not CEREBRAS_KEY:
-        log.error("CEREBRAS_API_KEY not set")
+    if not MISTRAL_KEY:
+        log.error("MISTRAL_API_KEY not set")
         return {"status": "ERROR", "run_id": run_id}
 
-    sb     = create_client(SUPABASE_URL, SUPABASE_KEY)
-    client = Cerebras(api_key=CEREBRAS_KEY)
+    sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 
     s1 = fetch_s1_reports(sb, window_days)
     s2 = fetch_s2_reports(sb, window_days)
@@ -215,59 +221,46 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     analysis = None
     for attempt in range(1, 3):
+        log.info(f"S3-D calling {PROVIDER}/{MODEL} (attempt {attempt}, "
+                 f"prompt {len(SYSTEM_PROMPT) + len(prompt)} chars, max_tokens {MAX_TOKENS})")
         try:
-            log.info(f"S3-D calling {MODEL} (attempt {attempt})")
-            resp = client.chat.completions.create(
-                model=MODEL,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user",   "content": prompt},
-                ],
-                temperature=0.3, max_tokens=2500)
-            raw = resp.choices[0].message.content.strip()
-            # Strip think tags from qwen
-            import re
-            raw = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.startswith("json"): raw = raw[4:]
-            raw = raw.strip()
+            r = requests.post(
+                "https://api.mistral.ai/v1/chat/completions", timeout=180,
+                headers={"Authorization": f"Bearer {MISTRAL_KEY}",
+                         "Content-Type": "application/json"},
+                json={"model": MODEL, "response_format": {"type": "json_object"},
+                      "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                   {"role": "user", "content": prompt}],
+                      "max_tokens": MAX_TOKENS, "temperature": 0.3})
+        except Exception as e:
+            log.warning(f"S3-D attempt {attempt}: transport {repr(e)[:160]}")
+            if attempt < 2: time.sleep(20)
+            continue
+        if r.status_code != 200:
+            retryable = r.status_code not in (400, 401, 402, 403, 404, 422) \
+                and (r.headers.get("x-should-retry") or "").lower() != "false"
+            log.warning(f"S3-D attempt {attempt}: HTTP {r.status_code} "
+                        f"retryable={retryable} {r.text[:200]}")
+            if retryable and attempt < 2: time.sleep(20)
+            continue
+        b = r.json()
+        ch = (b.get("choices") or [{}])[0]
+        u = b.get("usage") or {}
+        fin = ch.get("finish_reason")
+        log.info(f"S3-D usage: {PROVIDER}/{MODEL} in={u.get('prompt_tokens')} "
+                 f"out={u.get('completion_tokens')} max_tokens={MAX_TOKENS} "
+                 f"finish_reason={fin}")
+        if str(fin).lower() in ("length", "max_tokens"):
+            log.error(f"S3-D: finish_reason={fin} -- truncated at {MAX_TOKENS}, not saved")
+            break
+        raw = (ch.get("message") or {}).get("content") or ""
+        import re as _re
+        raw = _re.sub(r"```json|```", "", raw).strip()
+        try:
             analysis = json.loads(raw)
             break
         except Exception as e:
-            log.warning(f"Attempt {attempt} failed: {e}")
-            if attempt < 2: time.sleep(20)
-
-    if not analysis:
-        log.warning("Cerebras exhausted — falling back to Mistral-small for S3-D")
-        import requests as _req
-        mistral_key = os.environ.get("MISTRAL_API_KEY", "")
-        if mistral_key:
-            for m_attempt in range(1, 3):
-                try:
-                    log.info(f"S3-D Mistral fallback (attempt {m_attempt})")
-                    mr = _req.post(
-                        "https://api.mistral.ai/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {mistral_key}", "Content-Type": "application/json"},
-                        json={"model": "ministral-8b-2512", "response_format": {"type": "json_object"},
-                              "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                                           {"role": "user", "content": prompt}],
-                              "max_tokens": 2500, "temperature": 0.3},
-                        timeout=120)
-                    if mr.status_code == 200:
-                        raw = mr.json()["choices"][0]["message"]["content"].strip()
-                        import re as _re
-                        raw = _re.sub(r"```json|```", "", raw).strip()
-                        analysis = json.loads(raw)
-                        log.info(f"S3-D Mistral fallback OK: {len(str(raw))} chars")
-                        break
-                    log.warning(f"S3-D Mistral {mr.status_code}: {mr.text[:200]}")
-                    time.sleep(20 * m_attempt)
-                except Exception as me:
-                    log.error(f"S3-D Mistral fallback attempt {m_attempt}: {me}")
-                    time.sleep(15)
-        else:
-            log.error("MISTRAL_API_KEY not set — no S3-D fallback available")
+            log.warning(f"S3-D attempt {attempt}: JSON parse failed ({e}); finish={fin}")
 
     if not analysis:
         log.error("S3-D failed")
@@ -286,7 +279,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "signals_to_watch":  json.dumps(analysis.get("signals_to_watch", [])),
         "corrections_to_s2": json.dumps(analysis.get("corrections_to_s2", [])),
         "model_used":        MODEL,
-        "provider":          "cerebras",
+        "provider":          PROVIDER,
         "quality_score":     float(analysis.get("quality_score", 0.0)),
         "system_tag":        "S3-D",
         "source_reports":    json.dumps([r.get("id") for r in s1[:5]]),

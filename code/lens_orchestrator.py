@@ -471,8 +471,9 @@ def run_lens_with_healing(lens_id:int, stagger_s:int=0) -> LensResult:
     for attempt in range(1, MAX_REPAIRS+1):
         log.warning(f"[LENS {lens_id}] Repair {attempt}/{MAX_REPAIRS} — etype={result.error_type}")
         if result.error_type in ("unknown","marker_absent","402_payment","429_tpd"):
-            log.error(f"[LENS {lens_id}] Unknown error — escalating immediately (LR-050)")
-            result.status="failed"; result.skip_reason="unknown_error_escalated"; return result
+            log.error(f"[LENS {lens_id}] {result.error_type} -- no playbook, "
+                      f"escalating immediately without retry (LR-050, CC-80)")
+            result.status="failed"; result.skip_reason=f"{result.error_type}_escalated"; return result
 
         pb=apply_playbook(lens_id, result.error_type, attempt)
         log.info(f"[LENS {lens_id}] Playbook: {pb['reason']}")

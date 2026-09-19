@@ -23,7 +23,11 @@ jobs:
     # Set deliberately because the TPM governor contained a loop that could
     # never terminate (CC-1c fixed it) -- an unbounded job plus a guard that
     # can hang burns hours of Actions minutes before anyone notices.
-    timeout-minutes: 35
+    # CC-82 (LENS-042): the 2026-09-17 evening wave was cancelled at 35m with
+    # S3-D mid-call -- S3-C on Cohere took 394s that night. Successful waves
+    # run 27-30m, so the margin was ~5m on a Mon/Thu when S3-C and S3-D both
+    # run. GitHub allows 6h per job; 50m keeps the wave loud, not truncated.
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v5

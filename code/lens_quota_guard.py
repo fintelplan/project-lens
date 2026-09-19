@@ -98,7 +98,7 @@ POSITION_ROLES: dict[str, tuple[str, int]] = {
     "S3-A":   ("s3a_patterns",      2),  # CC-74: cohere is an RPD pair -> REQUESTS (2 attempts), not tokens
     "S3-B":   ("s3b_history",           1),
     "S3-C":   ("s3c_drift",             1),
-    "S3-D":   ("s3d_longterm",      6_000),
+    "S3-D":   ("s3d_longterm",      1),  # CC-82: mistral pair is LIMITS_UNKNOWN; tokens are meaningless here
     # S3-E: Ollama LOCAL — no quota, no guard needed (W-010, restored LENS-022)
 }
 

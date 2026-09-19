@@ -44,7 +44,10 @@ def model_for(position):
 GROQ_MODEL     = model_for("S2-A")[1]
 GEMINI_MODEL   = model_for("S2-B")[1]
 MISTRAL_MODEL  = model_for("S2-C")[1]
-CEREBRAS_MODEL = model_for("S3-D")[1]
+# CC-82 (LENS-042): the anchor was S3-D until it moved to mistral. S2-D is
+# still a Cerebras position, so the test keeps deriving the model from a
+# position instead of hardcoding it (LR-179).
+CEREBRAS_MODEL = model_for("S2-D")[1]
 
 # The Groq TPD the guard will actually apply, straight from the registry
 # (200_000 as of 2026-07-27 — double the old 70b tier, D-002). Tests that
@@ -250,7 +253,8 @@ class TestAggregation:
 
     def test_T25_multiple_providers_independent_groups(self):
         """T25: Multiple providers each get own group."""
-        g = qg.aggregate_positions(["S2-A", "S2-B", "S2-C", "S3-D"])
+        # CC-82: S3-D -> S2-D, the provider set is what is asserted below.
+        g = qg.aggregate_positions(["S2-A", "S2-B", "S2-C", "S2-D"])
         assert len(g) == 4  # groq, gemini, mistral, cerebras
         assert ("groq", GROQ_MODEL) in g
         assert ("gemini", GEMINI_MODEL) in g
