@@ -30,6 +30,24 @@ and posted test output to the live channel -- all without noticing.
 
 ---
 
+## 0a. Charters and origins -- read before changing a position
+
+`docs/LENS_FOUNDATIONS_LENS042.md` holds, in one grep-able file: the four
+philosophy documents (PHI-001..PHI-004), the architecture logic from DOC-006,
+the engineering principles from DOC-007, and a charter for every position and
+workflow -- why it exists, what it reads, what it must produce, and where the
+code has drifted from that. Read the charter row for anything you are about to
+change. If the change moves a position away from its charter, stop and ask
+James. The originals are named at the top of that file; cite them, not it.
+
+## 0b. AI engines and AI brains -- origin (James, LENS-042)
+
+Use only engines (providers, hosts) and brains (models) from a Freedom from
+Fear environment. **China-related: never, no exception** -- including a model
+fine-tuned on a China-origin base. Any other origin that is not clearly
+Freedom-from-Fear is decided by James, case by case: stop and ask. The registry
+self-test refuses known China-lineage model families by name.
+
 ## 1. Identity & Operator
 
 - Operator: **James Maverick** ("Bro Alpha"). Address him as "my buddy."
