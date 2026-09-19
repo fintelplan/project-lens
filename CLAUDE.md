@@ -48,6 +48,48 @@ fine-tuned on a China-origin base. Any other origin that is not clearly
 Freedom-from-Fear is decided by James, case by case: stop and ask. The registry
 self-test refuses known China-lineage model families by name.
 
+## 0c. How work is delivered -- one runnable file, never a paste block
+
+Pasting a long block into the VS Code terminal is slow (ConPTY echoes it a
+character at a time) and gives no sign whether it is running or hung. From
+LENS-042 on, any block longer than a few lines is delivered as a **downloadable
+`.sh` file**. James drops it in `C:\school\lens` and runs:
+
+```bash
+cd /c/school/lens
+bash _s42_<name>.sh 2>&1 | tee _s42_<name>.log
+rm -f _s42_<name>.sh
+```
+
+He then uploads the `.log`, so the evidence is bytes from the run rather than
+text copied out of a screen (BEV).
+
+**The block contract -- every delivered script obeys all of it:**
+
+1. **One file, one purpose.** Patch + gates + commit for one change, or a
+   read-only diagnosis. Never mix the two.
+2. **Fail closed.** `OK=1` at the top; every gate sets `OK=0` on failure; the
+   commit is inside `if [ "$OK" = "1" ]`. On failure it prints why and commits
+   nothing.
+3. **Patch before gates, gates before commit.** Gates run against the patched
+   bytes, never the pre-patch tree (LR-180).
+4. **Patch in Python, binary mode.** `rb`/`wb`, assert the anchor matches
+   exactly once, assert the file's line endings are not mixed, and write the
+   file's own ending back (LR-078, LR-101).
+5. **Assert on wiring, not on words.** An assertion that bans a word will fire
+   on the comment the same commit just wrote. Assert on the code string.
+6. **Idempotent where it can be.** A re-run after a mid-way failure must not
+   double-apply; check for the change before making it.
+7. **Canary gas-mask, arm 4 (see section 0).** No provider call unless the
+   change requires one; no canary key at all unless
+   `LENS_ALLOW_CANARY_AIR` carries a written reason; never Telegram, never a
+   write to `lens_reports` or `lens_system3_reports` from a script.
+8. **Predictions before the run.** The agent states in chat what the output
+   should be, so the log either confirms or corrects it -- a run that cannot
+   be wrong teaches nothing.
+9. **Delete the script after the run, keep the log.** Probe bodies and logs are
+   banked at the close as evidence; scripts are not.
+
 ## 1. Identity & Operator
 
 - Operator: **James Maverick** ("Bro Alpha"). Address him as "my buddy."
