@@ -50,3 +50,6 @@ jobs:
 
       - name: S2-F provenance tests (CC-85)
         run: python tests/test_s2f_provenance.py
+
+      - name: S2-F clarity write tests (CC-88)
+        run: python tests/test_s2f_clarity_writes.py
