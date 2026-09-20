@@ -47,3 +47,6 @@ jobs:
 
       - name: Response schema validator tests (CC-79)
         run: python tests/test_lens_response_guard.py
+
+      - name: S2-F provenance tests (CC-85)
+        run: python tests/test_s2f_provenance.py
