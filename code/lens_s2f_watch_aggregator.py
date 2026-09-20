@@ -20,7 +20,7 @@ import logging
 from datetime import datetime, timezone
 from collections import Counter
 from typing import Optional
-from lens_s2f_helpers import get_state_office_entity_id
+from lens_s2f_helpers import get_state_office_entity_id, lens_filter_from_argv
 
 logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
     level=logging.INFO,
@@ -28,6 +28,8 @@ logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("s2f_watch")
+
+LAST_WRITE_FAILURES = 0   # CC-89: a rejected write must not exit green (CC-87 pattern)
 
 # ── Thresholds (operator-tunable via env) ──────────────────────────────────
 WATCH_WINDOW_DAYS   = int(os.environ.get("WATCH_WINDOW_DAYS",   "10"))
@@ -62,8 +64,12 @@ def run_watch_aggregator(
     Returns:
         List of finding dicts (written or not depending on dry_run)
     """
+    global LAST_WRITE_FAILURES          # CC-89
+    LAST_WRITE_FAILURES = 0
+
     client = _get_supabase_client()
     if not client:
+        LAST_WRITE_FAILURES = 1         # CC-89: a run that could not connect is not green
         log.error("No Supabase client — cannot run Watch aggregator")
         return []
 
@@ -167,15 +173,17 @@ def run_watch_aggregator(
 
     # ── Write to DB ──
     if not dry_run and findings:
-        _write_findings(client, findings)
+        _, LAST_WRITE_FAILURES = _write_findings(client, findings)   # CC-89
 
     return findings
 
 
-def _write_findings(client, findings: list[dict]):
+def _write_findings(client, findings: list[dict]) -> tuple[int, int]:
     """Write Watch findings to lens_drift_findings — skip if already wrote today."""
     from datetime import timedelta
     today = datetime.now(timezone.utc).date().isoformat()
+    written = 0                         # CC-89
+    failed = 0                          # CC-89
     for f in findings:
         try:
             # Dedup check: skip if same voice×lens Watch finding already exists today
@@ -201,17 +209,32 @@ def _write_findings(client, findings: list[dict]):
             }
             client.table("lens_drift_findings").insert(row).execute()
             log.info(f"Finding written: {f['voice_name']} × {f['state_actor_lens']}")
+            written += 1                # CC-89
         except Exception as e:
-            log.error(f"Finding write failed: {str(e)[:200]}")
+            failed += 1                 # CC-89
+            log.error(f"Watch write failed (entity lookup or insert): {str(e)[:200]}")
+
+    if failed:
+        log.error(f"Watch writes: {written} ok, {failed} REJECTED by the database")
+    else:
+        log.info(f"Watch writes: {written} ok")
+    return written, failed
 
 
 if __name__ == "__main__":
     import sys
     from dotenv import load_dotenv
     load_dotenv()
-    lens_filter = sys.argv[1] if len(sys.argv) > 1 else None
+    lens_filter = lens_filter_from_argv(sys.argv)   # CC-89
     dry = "--dry" in sys.argv
     findings = run_watch_aggregator(state_actor_lens=lens_filter, dry_run=dry)
     print(f"\nWatch aggregator complete: {len(findings)} findings")
     for f in findings:
         print(f"  {f['voice_name']} × {f['state_actor_lens']}: {f['finding_phrasing'][:120]}...")
+
+
+# CC-89: a run whose findings were REJECTED by the database must not exit green.
+if __name__ == "__main__":
+    if LAST_WRITE_FAILURES:
+        print(f"Watch: {LAST_WRITE_FAILURES} write(s) REJECTED, or no database connection")
+        sys.exit(1)

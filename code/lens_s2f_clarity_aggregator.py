@@ -251,7 +251,8 @@ if __name__ == "__main__":
     # CC-88: sys.argv[1] took "--dry" as a lens name, so every dry run
     # queried state_actor_lens=--dry and returned nothing. A dry run that
     # cannot find anything is not a dry run, it is a blank page.
-    lens_filter = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
+    from lens_s2f_helpers import lens_filter_from_argv   # CC-89: one copy, three call sites
+    lens_filter = lens_filter_from_argv(sys.argv)
     dry = "--dry" in sys.argv
     findings = run_clarity_aggregator(state_actor_lens=lens_filter, dry_run=dry)
     print(f"\nClarity aggregator: {len(findings)} findings")

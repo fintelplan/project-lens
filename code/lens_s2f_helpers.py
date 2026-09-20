@@ -35,3 +35,15 @@ def get_state_office_entity_id(client, lens: str):
     except Exception as e:
         log.warning(f"State office lookup failed for {lens}: {str(e)[:200]}")
     return None
+
+
+def lens_filter_from_argv(argv):
+    """CC-89: the first non-flag argument is the lens name.
+
+    CC-88 fixed this in the Clarity aggregator only. The same expression had
+    been written out by hand three times, so the Watch and Verification
+    copies went on reading "--dry" as a lens name and querying
+    state_actor_lens=--dry. The copies were the bug. One implementation,
+    three call sites.
+    """
+    return next((a for a in argv[1:] if not a.startswith("--")), None)

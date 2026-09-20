@@ -23,7 +23,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from collections import Counter
 from typing import Optional
-from lens_s2f_helpers import get_state_office_entity_id
+from lens_s2f_helpers import get_state_office_entity_id, lens_filter_from_argv
 
 logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
     level=logging.INFO,
@@ -31,6 +31,8 @@ logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("s2f_verification")
+
+LAST_WRITE_FAILURES = 0   # CC-89: a rejected write must not exit green (CC-87 pattern)
 
 VERIFICATION_WINDOW_DAYS  = int(os.environ.get("VERIFICATION_WINDOW_DAYS", "45"))
 VERIFICATION_MIN_ARTICLES = int(os.environ.get("VERIFICATION_MIN_ARTICLES", "15"))
@@ -59,8 +61,15 @@ def run_verification_aggregator(
 
     Returns Verification findings ready for Direction B delivery.
     """
+    global LAST_WRITE_FAILURES          # CC-89
+    LAST_WRITE_FAILURES = 0
+
     client = _get_supabase_client()
     if not client:
+        # CC-89: this returned [] with no log at all, so a missing Supabase
+        # config made Verification silently produce nothing and exit green.
+        log.error("No Supabase client -- cannot run Verification aggregator")
+        LAST_WRITE_FAILURES = 1
         return []
 
     # ── Get voices with MEDIUM Clarity findings ──
@@ -202,12 +211,14 @@ def run_verification_aggregator(
     log.info(f"Verification aggregator: {len(findings)} HIGH-confidence findings")
 
     if not dry_run and findings:
-        _write_findings(client, findings)
+        _, LAST_WRITE_FAILURES = _write_findings(client, findings)   # CC-89
 
     return findings
 
 
-def _write_findings(client, findings: list[dict]):
+def _write_findings(client, findings: list[dict]) -> tuple[int, int]:
+    written = 0                         # CC-89
+    failed = 0                          # CC-89
     for f in findings:
         try:
             row = {
@@ -234,17 +245,32 @@ def _write_findings(client, findings: list[dict]):
                 continue
             client.table("lens_drift_findings").insert(row).execute()
             log.info(f"Verification finding written: {f['voice_name']} × {f['state_actor_lens']}")
+            written += 1                # CC-89
         except Exception as e:
-            log.error(f"Verification write failed: {str(e)[:200]}")
+            failed += 1                 # CC-89
+            log.error(f"Verification write failed (entity lookup or insert): {str(e)[:200]}")
+
+    if failed:
+        log.error(f"Verification writes: {written} ok, {failed} REJECTED by the database")
+    else:
+        log.info(f"Verification writes: {written} ok")
+    return written, failed
 
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    lens_filter = sys.argv[1] if len(sys.argv) > 1 else None
+    lens_filter = lens_filter_from_argv(sys.argv)   # CC-89
     dry = "--dry" in sys.argv
     findings = run_verification_aggregator(state_actor_lens=lens_filter, dry_run=dry)
     print(f"\nVerification aggregator: {len(findings)} HIGH-confidence findings")
     for f in findings:
         print(f"  ✅ {f['voice_name']} × {f['state_actor_lens']}: {len(f['persistent_ops'])} persistent ops")
         print(f"     Ready for Direction B: {f['ready_for_direction_b']}")
+
+
+# CC-89: a run whose findings were REJECTED by the database must not exit green.
+if __name__ == "__main__":
+    if LAST_WRITE_FAILURES:
+        print(f"Verification: {LAST_WRITE_FAILURES} write(s) REJECTED, or no database connection")
+        sys.exit(1)
