@@ -456,6 +456,26 @@ class DetectionResult:
                 if op.get("detection_stage") == "post_suspect"]
 
 
+_SECRET_NAME_HINTS = ("KEY", "TOKEN", "SECRET", "PASSWORD", "ACCOUNT_ID")
+
+
+def _redact(text: str) -> str:
+    """CC-92: never let a provider's error text carry a credential into a log.
+
+    Built from the actual environment values, not from a pattern, so it does
+    not depend on guessing what a secret looks like. An allowlist of what to
+    KEEP is not possible here because the text is free-form, so this removes
+    every known secret value instead, and the caller truncates.
+    """
+    if not text:
+        return text
+    import os as _os
+    for _name, _value in _os.environ.items():
+        if len(_value) >= 12 and any(h in _name.upper() for h in _SECRET_NAME_HINTS):
+            text = text.replace(_value, "***")
+    return text
+
+
 def detect_operations_in_article(
     article_title: str,
     article_body: str,
@@ -560,12 +580,18 @@ def detect_operations_in_article(
         raw = resp.choices[0].message.content.strip()
         _tpm_guard.log_usage(estimated_tokens)
     except Exception as e:
+        # CC-92: this text was captured and never printed. The provider names
+        # its own reason here -- Cloudflare returns a numbered error code when
+        # the daily neuron allocation is gone, and a different shape when it is
+        # a rate limit. Without this line a failed wave cannot say which it was.
+        detail = _redact(str(e))[:400]
+        log.error(f"{provider}/{model_name} call failed: {detail}")
         return DetectionResult(
             status="LLM_FAILED",
             state_actor_lens=state_actor_lens,
             stage_filter=stage_filter,
             catalog_version=catalog["catalog_version"],
-            error=f"{provider} call: {str(e)[:200]}",
+            error=f"{provider} call: {detail[:200]}",
             provider=provider,      # CC-85: name who failed
             model=model_name,       # CC-85
         )

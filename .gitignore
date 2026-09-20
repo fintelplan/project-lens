@@ -9,3 +9,4 @@ lens-FIX-*.py
 lens-TEST-*.py
 code/.lens_stagger
 # *.docx removed — session docs must be tracked
+_s4*

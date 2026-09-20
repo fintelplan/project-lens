@@ -56,3 +56,6 @@ jobs:
 
       - name: S2-F watch + verification write tests (CC-89)
         run: python tests/test_s2f_aggregator_writes.py
+
+      - name: S2-F error redaction tests (CC-92)
+        run: python tests/test_s2f_error_redaction.py
