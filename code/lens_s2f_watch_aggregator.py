@@ -22,6 +22,11 @@ from collections import Counter
 from typing import Optional
 from lens_s2f_helpers import get_state_office_entity_id
 
+logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
+    level=logging.INFO,
+    format="%(asctime)s [S2F-WATCH] %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+)
 log = logging.getLogger("s2f_watch")
 
 # ── Thresholds (operator-tunable via env) ──────────────────────────────────

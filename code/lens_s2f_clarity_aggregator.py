@@ -23,12 +23,19 @@ from collections import Counter
 from typing import Optional
 from lens_s2f_helpers import get_state_office_entity_id
 
+logging.basicConfig(   # CC-87: this module logged to nowhere -- no handler
+    level=logging.INFO,
+    format="%(asctime)s [S2F-CLARITY] %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+)
 log = logging.getLogger("s2f_clarity")
 
 CLARITY_WINDOW_DAYS   = int(os.environ.get("CLARITY_WINDOW_DAYS",   "21"))
 CLARITY_MIN_ARTICLES  = int(os.environ.get("CLARITY_MIN_ARTICLES",  "6"))
 CLARITY_MIN_OPS       = int(os.environ.get("CLARITY_MIN_OPS",       "3"))
 CLARITY_COHERENCE_MIN = float(os.environ.get("CLARITY_COHERENCE_MIN", "0.5"))
+
+LAST_WRITE_FAILURES = 0   # CC-87: read by __main__ so a rejected write is not green
 
 
 def _get_supabase_client():
@@ -81,6 +88,9 @@ def run_clarity_aggregator(
 
     Returns list of Clarity findings.
     """
+    global LAST_WRITE_FAILURES          # CC-87
+    LAST_WRITE_FAILURES = 0
+
     client = _get_supabase_client()
     if not client:
         return []
@@ -194,12 +204,15 @@ def run_clarity_aggregator(
     log.info(f"Clarity aggregator: {len(findings)} findings generated")
 
     if not dry_run and findings:
-        _write_findings(client, findings)
+        _, LAST_WRITE_FAILURES = _write_findings(client, findings)
 
     return findings
 
 
-def _write_findings(client, findings: list[dict]):
+def _write_findings(client, findings: list[dict]) -> tuple:
+    """CC-87: returns (written, failed). A rejected write must not vanish."""
+    written = 0
+    failed = 0
     for f in findings:
         try:
             row = {
@@ -207,7 +220,7 @@ def _write_findings(client, findings: list[dict]):
                 "state_actor_lens":        f["state_actor_lens"],
                 "window_start":            (datetime.now(timezone.utc) - timedelta(days=21)).date().isoformat(),
                 "window_end":              datetime.now(timezone.utc).date().isoformat(),
-                "sample_size":             max(f["article_count"], 1),
+                "sample_size":             f["article_count"],   # CC-87: a dissolution's evidence IS the absence of articles
                 "framing_mean":            f.get("operation_counts", {}),
                 "outlet_baseline":         {},
                 "deviance_sigma":          f.get("coherence_score", 0.0),
@@ -219,9 +232,16 @@ def _write_findings(client, findings: list[dict]):
                 "reviewed_by_operator":    False,
             }
             client.table("lens_drift_findings").insert(row).execute()
+            written += 1
             log.info(f"Clarity finding written: {f['voice_name']} × {f['state_actor_lens']}")
         except Exception as e:
+            failed += 1
             log.error(f"Clarity write failed: {str(e)[:200]}")
+    if failed:
+        log.error(f"Clarity writes: {written} ok, {failed} REJECTED by the database")
+    else:
+        log.info(f"Clarity writes: {written} ok")
+    return written, failed
 
 
 if __name__ == "__main__":
@@ -234,3 +254,10 @@ if __name__ == "__main__":
     print(f"\nClarity aggregator: {len(findings)} findings")
     for f in findings:
         print(f"  [{f['outcome']}] {f['voice_name']} × {f['state_actor_lens']}: conf={f['finding_confidence']}")
+
+
+# CC-87: a run whose findings were REJECTED by the database must not exit green.
+if __name__ == "__main__":
+    if LAST_WRITE_FAILURES:
+        print(f"Clarity: {LAST_WRITE_FAILURES} findings were REJECTED by the database")
+        sys.exit(1)
