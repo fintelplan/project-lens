@@ -434,6 +434,9 @@ class DetectionResult:
     not_applicable: bool = False
     food_for_thought: str = ""
     error: Optional[str] = None
+    provider: str = ""            # CC-85: the leg that actually produced this result
+    model: str = ""               # CC-85: the model string actually called
+    ensemble_mode: bool = False   # CC-85: True only when BOTH legs returned OK
 
     def operation_count(self) -> int:
         if not self.operations_detected:
@@ -563,6 +566,8 @@ def detect_operations_in_article(
             stage_filter=stage_filter,
             catalog_version=catalog["catalog_version"],
             error=f"{provider} call: {str(e)[:200]}",
+            provider=provider,      # CC-85: name who failed
+            model=model_name,       # CC-85
         )
 
     # ── Strip code fences ──
@@ -619,6 +624,8 @@ def detect_operations_in_article(
         confidence=float(parsed.get("confidence", 0.0) or 0.0),
         not_applicable=bool(parsed.get("not_applicable", False)),
         food_for_thought=str(parsed.get("food_for_thought", ""))[:200],
+        provider=provider,          # CC-85: name who answered
+        model=model_name,           # CC-85
     )
 
 
@@ -674,7 +681,8 @@ def detect_operations_ensemble(
 
     os.environ["S2F_PROVIDER"] = "cerebras"
     os.environ["CEREBRAS_MODEL"] = "gpt-oss-120b"
-    log.info("[ENSEMBLE] Running primary: qwen-3-235b on Cerebras")
+    # CC-85: this line said qwen-3-235b for months while the wire said gpt-oss-120b.
+    log.info(f"[ENSEMBLE] Running primary: cerebras/{os.environ.get('CEREBRAS_MODEL', '?')}")
     result_primary = detect_operations_in_article(**args)
     log.info(f"[ENSEMBLE] Primary result: {result_primary.status} "
              f"({result_primary.operation_count()} ops)")
@@ -686,7 +694,7 @@ def detect_operations_ensemble(
     # ── Secondary: gpt-oss-120b on Cloudflare ──
     os.environ["S2F_PROVIDER"] = "cloudflare"
     os.environ["CLOUDFLARE_MODEL"] = "@cf/openai/gpt-oss-120b"
-    log.info("[ENSEMBLE] Running secondary: gpt-oss-120b on Cloudflare")
+    log.info(f"[ENSEMBLE] Running secondary: cloudflare/{os.environ.get('CLOUDFLARE_MODEL', '?')}")  # CC-85
     result_secondary = detect_operations_in_article(**args)
     log.info(f"[ENSEMBLE] Secondary result: {result_secondary.status} "
              f"({result_secondary.operation_count()} ops)")
@@ -737,6 +745,10 @@ def detect_operations_ensemble(
     merged.operations_detected = merged_ops
     merged.confidence = merged_confidence
     merged.rubric_version = "v2-operations-ensemble"
+    # CC-85: only this branch is a real ensemble -- both legs returned OK.
+    merged.provider = f"{result_primary.provider}+{result_secondary.provider}"
+    merged.model = f"{result_primary.model}+{result_secondary.model}"
+    merged.ensemble_mode = True
     # food_for_thought: prefer primary's question (qwen-3 tends to be sharper here)
     if not merged.food_for_thought and result_secondary.food_for_thought:
         merged.food_for_thought = result_secondary.food_for_thought

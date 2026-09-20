@@ -43,7 +43,7 @@ def write_detection_result(
     raw_article_id: str,
     voice_name: str,
     voice_type: str,
-    provider: str = "cerebras",
+    provider: str = "unknown",      # CC-85: a dead provider was the default
     ensemble_mode: bool = False,
 ) -> Optional[str]:
     """Persist one DetectionResult to lens_operation_detections.
@@ -121,7 +121,7 @@ def write_batch(
     raw_article_id: str,
     voice_name: str,
     voice_type: str,
-    provider: str = "cerebras",
+    provider: str = "unknown",      # CC-85
     ensemble_mode: bool = False,
 ) -> list[str]:
     """Write multiple DetectionResults for one article × voice.

@@ -63,6 +63,15 @@ def already_scored(client, article_id: str, lens: str, stage: str) -> bool:
         return False
 
 
+def scoring_exit_code(scored: int, failed: int) -> int:
+    """CC-85: a run that wrote NOTHING while work failed is not a green run.
+
+    scored=0 failed=24 exited 0 for months and showed a green tick.
+    A partially failed run (scored>0) still exits 0 -- see LENS-043 order.
+    """
+    return 1 if (scored == 0 and failed > 0) else 0
+
+
 def main():
     # ── Config ──
     lenses = os.environ.get("S2F_LENSES", "xi_office,trump_office,khamenei_office").split(",")
@@ -137,8 +146,8 @@ def main():
                     raw_article_id=article_id,
                     voice_name=voice_name,
                     voice_type=voice_type,
-                    provider="ensemble",
-                    ensemble_mode=True,
+                    provider=result.provider or "unknown",   # CC-85: the leg that answered
+                    ensemble_mode=result.ensemble_mode,      # CC-85: both legs, or nothing
                 )
 
                 if uid:
@@ -152,6 +161,11 @@ def main():
                 failed += 1
 
     log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed}")
+
+    code = scoring_exit_code(scored, failed)
+    if code:
+        log.error(f"S2-F wrote ZERO rows with {failed} failures -- exiting {code}")
+    sys.exit(code)
 
 
 if __name__ == "__main__":
