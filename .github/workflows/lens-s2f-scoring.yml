@@ -54,6 +54,7 @@ jobs:
           S2F_MAX_ARTICLES:         "8"
 
       - name: Stage 1 — Watch aggregator
+        if: ${{ !cancelled() }}   # CC-91: Stage 1 failing must not skip this
         run: python code/lens_s2f_watch_aggregator.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
@@ -61,6 +62,7 @@ jobs:
           GITHUB_ACTIONS:           "true"
 
       - name: Stage 2 — Clarity aggregator
+        if: ${{ !cancelled() }}   # CC-91: Stage 1 failing must not skip this
         run: python code/lens_s2f_clarity_aggregator.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
@@ -68,6 +70,7 @@ jobs:
           GITHUB_ACTIONS:           "true"
 
       - name: Stage 3 — Verification aggregator
+        if: ${{ !cancelled() }}   # CC-91: Stage 1 failing must not skip this
         run: python code/lens_s2f_verification_aggregator.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
@@ -83,6 +86,7 @@ jobs:
           # and 429s class-wide, so wiring it as written would fail at once.
 
       - name: Direction B — Deliver HIGH findings to operator
+        if: ${{ !cancelled() }}   # CC-91: Stage 1 failing must not skip this
         run: python code/lens_s2f_direction_b.py
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
