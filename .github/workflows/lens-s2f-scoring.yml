@@ -3,7 +3,8 @@ name: Lens S2-F Scoring Pipeline
 # LENS-020 | PHI-004 cognitive sovereignty cadence
 #
 # Runs AFTER collection (offset 30min from lens-collect.yml)
-# Schedule: 13:30, 17:30, 21:30, 04:30 UTC
+# Schedule: 13:30 and 01:30 UTC -- TWO crons, not four. The four-entry list
+# written here was never true; the cron block below is the only schedule.
 #
 # Stage 1 (Watch)        — scores new articles, detects emerging patterns
 # Stage 2 (Clarity)      — checks if Watch patterns persisted (daily)
@@ -72,9 +73,14 @@ jobs:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
           GITHUB_ACTIONS:           "true"
-          S2F_PROVIDER:             "mistral"
-          MISTRAL_API_KEY:          ${{ secrets.MISTRAL_API_KEY }}
-          MISTRAL_MODEL:            "mistral-small-latest"
+          # CC-90: S2F_PROVIDER, MISTRAL_API_KEY and MISTRAL_MODEL were read by
+          # nothing. lens_s2f_verification_aggregator.py imports only supabase
+          # and dotenv and calls no model; the run contacted no Mistral host.
+          # MISTRAL_API_KEY is Lens 4's key -- canary air handed to a step that
+          # never breathed it. Verification is arithmetic over rows by charter
+          # (see its docstring and PHI-004); it does not want an LLM. Deleted
+          # rather than wired. mistral-small-latest is also an alias (D-015)
+          # and 429s class-wide, so wiring it as written would fail at once.
 
       - name: Direction B — Deliver HIGH findings to operator
         run: python code/lens_s2f_direction_b.py
