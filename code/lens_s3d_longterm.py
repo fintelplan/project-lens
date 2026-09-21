@@ -41,7 +41,8 @@ REQUEST_TIMEOUT_S = 240   # 16000 tokens at the slowest throughput probed (~70 t
 LOOKBACK_DAYS  = 30
 MAX_S1_REPORTS = 30
 MAX_S2_REPORTS = 20
-WINDOW_FETCH_CAP = 1000   # CC-93: fetch the whole window, then sample it
+PAGE = 1000        # CC-94: PostgREST returns at most 1000 rows per request here
+MAX_PAGES = 20     # 20,000 rows; a 90-day injection_reports window is ~3,000 today
 
 
 def even_sample(rows: list, k: int) -> list:
@@ -68,6 +69,41 @@ def even_sample(rows: list, k: int) -> list:
 def window_span(rows: list, field: str) -> str:
     dates = [str(r.get(field) or "")[:10] for r in rows if r.get(field)]
     return f", spanning {dates[0]} to {dates[-1]}" if dates else ""
+
+
+def sample_window(sb, table: str, cols: str, ts_field: str, cutoff: str, k: int):
+    """CC-94 (LENS-044): sample the WHOLE window, however many rows it holds.
+
+    Pass 1 pages through (id, timestamp) only -- light -- so the sample sees
+    every row. Pass 2 fetches the full columns for the k chosen ids only.
+    CC-93's single fetch stopped at the 1000-row cap: on 2026-09-21
+    injection_reports held more than 1000 rows in 30 days and the S2 sample
+    ended at 2026-09-19; a 90-day window would have ended a third of the way.
+    Returns (rows oldest-first, total rows seen in the window).
+    """
+    keys, page = [], 0
+    while True:
+        r = sb.table(table).select(f"id,{ts_field}") \
+            .gte(ts_field, cutoff).order(ts_field, desc=False) \
+            .range(page * PAGE, page * PAGE + PAGE - 1).execute()
+        batch = r.data or []
+        keys.extend(batch)
+        page += 1
+        if len(batch) < PAGE:
+            break
+        if page >= MAX_PAGES:
+            log.warning(f"{table}: window exceeds {MAX_PAGES * PAGE} rows -- "
+                        f"the sample covers only the oldest {len(keys)}")
+            break
+    chosen = even_sample(keys, k)
+    if not chosen:
+        return [], len(keys)
+    ids = [c["id"] for c in chosen]
+    r = sb.table(table).select(cols).in_("id", ids).execute()
+    rows = sorted(r.data or [], key=lambda x: str(x.get(ts_field) or ""))
+    if len(rows) != len(ids):
+        log.warning(f"{table}: asked for {len(ids)} sampled rows, got {len(rows)}")
+    return rows, len(keys)
 
 SYSTEM_PROMPT = """You are S3-D: Long-term Researcher for Project Lens.
 
@@ -180,30 +216,22 @@ def get_window_days() -> int:
 def fetch_s1_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).isoformat()
     limit  = MAX_S1_REPORTS if lookback_days <= 30 else MAX_S1_REPORTS * 3
-    r = sb.table("lens_reports") \
-        .select("id,domain_focus,summary,cycle,generated_at") \
-        .gte("generated_at", cutoff).order("generated_at", desc=False) \
-        .limit(WINDOW_FETCH_CAP).execute()
-    rows = even_sample(r.data or [], limit)   # CC-93
-    log.info(f"S1 window={lookback_days}d: {len(r.data or [])} reports in window, "
+    rows, total = sample_window(sb, "lens_reports",
+                                "id,domain_focus,summary,cycle,generated_at",
+                                "generated_at", cutoff, limit)   # CC-94
+    log.info(f"S1 window={lookback_days}d: {total} reports in window, "
              f"{len(rows)} sampled evenly{window_span(rows, 'generated_at')}")
-    if len(r.data or []) >= WINDOW_FETCH_CAP:
-        log.warning(f"S1 window hit the {WINDOW_FETCH_CAP}-row fetch cap -- the sample is not the full window")
     return rows
 
 
 def fetch_s2_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).isoformat()
     limit  = MAX_S2_REPORTS if lookback_days <= 30 else MAX_S2_REPORTS * 3
-    r = sb.table("injection_reports") \
-        .select("analyst,injection_type,evidence,confidence_score,created_at") \
-        .gte("created_at", cutoff).order("created_at", desc=False) \
-        .limit(WINDOW_FETCH_CAP).execute()
-    rows = even_sample(r.data or [], limit)   # CC-93
-    log.info(f"S2 window={lookback_days}d: {len(r.data or [])} reports in window, "
+    rows, total = sample_window(sb, "injection_reports",
+                                "id,analyst,injection_type,evidence,confidence_score,created_at",
+                                "created_at", cutoff, limit)   # CC-94
+    log.info(f"S2 window={lookback_days}d: {total} reports in window, "
              f"{len(rows)} sampled evenly{window_span(rows, 'created_at')}")
-    if len(r.data or []) >= WINDOW_FETCH_CAP:
-        log.warning(f"S2 window hit the {WINDOW_FETCH_CAP}-row fetch cap -- the sample is not the full window")
     return rows
 
 
