@@ -8,7 +8,7 @@ writes DetectionResult to lens_operation_detections.
 
 Env vars:
     SUPABASE_URL, SUPABASE_KEY
-    CEREBRAS_API_KEY, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+    CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID   (CC-95: CEREBRAS_API_KEY is no longer read)
     S2F_LENSES          comma-separated lenses (default: xi_office,trump_office,khamenei_office)
     S2F_LOOKBACK_HOURS  hours to look back for new articles (default: 3)
     S2F_MAX_ARTICLES    max articles per run (default: 20, cost control)

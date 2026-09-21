@@ -292,7 +292,21 @@ class TPMGuard:
             time.sleep(wait)
 
 
-_tpm_guard = TPMGuard(tpm_limit=6000)
+# CC-95 (LENS-044): one guard PER PROVIDER. A single module-level guard let
+# Cloudflare's successful tokens throttle the call to Cerebras that came next
+# (48 waits, 480s of a 17-minute run on 2026-09-20, all labelled "-cerebras").
+# Cerebras never logged usage -- it never succeeded -- so Cloudflare's own
+# accounting is unchanged by the split. The 6000 figure is a SPACING device,
+# not a published limit: Cloudflare publishes no TPM for this model (LR-108,
+# said here so it is never read as "somebody checked").
+_tpm_guards: dict = {}
+
+
+def _guard_for(provider: str) -> "TPMGuard":
+    g = _tpm_guards.get(provider)
+    if g is None:
+        g = _tpm_guards[provider] = TPMGuard(tpm_limit=6000)
+    return g
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -564,7 +578,7 @@ def detect_operations_in_article(
 
     # ── Call LLM ──
     estimated_tokens = 3000  # bigger prompt for ops detection
-    _tpm_guard.wait_if_needed(estimated_tokens, label=f"S2F-{state_actor_lens}-{provider}")
+    _guard_for(provider).wait_if_needed(estimated_tokens, label=f"S2F-{state_actor_lens}-{provider}")
 
     try:
         resp = client.chat.completions.create(
@@ -578,7 +592,7 @@ def detect_operations_in_article(
             timeout=REQUEST_TIMEOUT_SEC,
         )
         raw = resp.choices[0].message.content.strip()
-        _tpm_guard.log_usage(estimated_tokens)
+        _guard_for(provider).log_usage(estimated_tokens)
     except Exception as e:
         # CC-92: this text was captured and never printed. The provider names
         # its own reason here -- Cloudflare returns a numbered error code when
@@ -670,6 +684,18 @@ def detect_operations_in_article(
 
 import copy
 
+# CC-95 (LENS-044): the legs S2-F actually calls. Cerebras answered 402
+# payment_required on every call from about 2026-08-17 (48 of 48 on the
+# 2026-09-20 and 09-21 waves, the reason logged by CC-92) and is removed.
+# James ruled this at LENS-044 ahead of choosing a second leg: the order's
+# definition of done removes the Cerebras call in both branches, and the
+# structural profile it stood for has been absent for a month either way.
+# A second leg is one line here.
+ENSEMBLE_LEGS = [
+    ("cloudflare", "CLOUDFLARE_MODEL", "@cf/openai/gpt-oss-120b"),
+]
+
+
 def detect_operations_ensemble(
     article_title: str,
     article_body: str,
@@ -679,18 +705,21 @@ def detect_operations_ensemble(
     state_actor_lens: str,
     stage_filter: str = "early_warning",
     inter_model_sleep: float = 2.0,
+    legs=None,
 ) -> DetectionResult:
-    """Run dual-provider ensemble detection and return union of operations.
+    """Run each live leg and return the union of their operations.
 
-    Calls qwen-3-235b (Cerebras) then gpt-oss-120b (Cloudflare) sequentially.
-    Returns a merged DetectionResult with union of detected operations.
-    If one provider fails, returns the other's result (graceful degradation).
-    If both fail, returns the first failure result.
-
-    Args:
-        inter_model_sleep: seconds to sleep between model calls (default 2s)
-                           prevents TPM quota collision on shared Cerebras guard.
+    CC-95: legs come from ENSEMBLE_LEGS, or from `legs` (tests pass two to
+    keep the merge honest). With one leg this is single-provider detection
+    and says so. A result is an ensemble ONLY when two or more legs returned
+    OK (CC-85). If every leg fails, the first failure is returned.
+    inter_model_sleep is slept between legs, never after the last.
+    Every environment key a leg touches is restored afterwards -- the old
+    code restored S2F_PROVIDER and CEREBRAS_MODEL but left CLOUDFLARE_MODEL.
     """
+    legs = list(ENSEMBLE_LEGS if legs is None else legs)
+    if not legs:
+        raise ValueError("detect_operations_ensemble: no legs to call")
     args = dict(
         article_title=article_title,
         article_body=article_body,
@@ -701,84 +730,55 @@ def detect_operations_ensemble(
         stage_filter=stage_filter,
     )
 
-    # ── Primary: qwen-3-235b on Cerebras ──
-    original_provider = os.environ.get("S2F_PROVIDER", "")
-    original_model = os.environ.get("CEREBRAS_MODEL", "")
+    touched = {"S2F_PROVIDER"} | {env for _, env, _ in legs}
+    saved = {k: os.environ.get(k) for k in touched}
+    results = []
+    try:
+        for i, (provider, model_env, model) in enumerate(legs, 1):
+            if i > 1:
+                time.sleep(inter_model_sleep)
+            os.environ["S2F_PROVIDER"] = provider
+            os.environ[model_env] = model
+            log.info(f"[ENSEMBLE] Running leg {i}/{len(legs)}: {provider}/{model}")
+            r = detect_operations_in_article(**args)
+            log.info(f"[ENSEMBLE] Leg {i} result: {r.status} ({r.operation_count()} ops)")
+            results.append(r)
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
-    os.environ["S2F_PROVIDER"] = "cerebras"
-    os.environ["CEREBRAS_MODEL"] = "gpt-oss-120b"
-    # CC-85: this line said qwen-3-235b for months while the wire said gpt-oss-120b.
-    log.info(f"[ENSEMBLE] Running primary: cerebras/{os.environ.get('CEREBRAS_MODEL', '?')}")
-    result_primary = detect_operations_in_article(**args)
-    log.info(f"[ENSEMBLE] Primary result: {result_primary.status} "
-             f"({result_primary.operation_count()} ops)")
+    ok = [r for r in results if r.status == "OK"]
+    if not ok:
+        if len(legs) > 1:
+            log.warning("[ENSEMBLE] Every leg failed -- returning the first failure")
+        return results[0]
+    if len(ok) == 1:
+        if len(legs) > 1:
+            log.warning(f"[ENSEMBLE] Only {ok[0].provider} answered -- single-leg result")
+        return ok[0]
 
-    # ── Sleep between models ──
-    log.info(f"[ENSEMBLE] Sleeping {inter_model_sleep}s between models")
-    time.sleep(inter_model_sleep)
+    base = ok[0]
+    seen = {op["id"] for op in (base.operations_detected or [])}
+    merged_ops = list(base.operations_detected or [])
+    for other in ok[1:]:
+        for op in (other.operations_detected or []):
+            if op["id"] not in seen:
+                seen.add(op["id"])
+                merged_ops.append(op)
+    log.info(f"[ENSEMBLE] Merged {len(ok)} legs = {len(merged_ops)} ops")
 
-    # ── Secondary: gpt-oss-120b on Cloudflare ──
-    os.environ["S2F_PROVIDER"] = "cloudflare"
-    os.environ["CLOUDFLARE_MODEL"] = "@cf/openai/gpt-oss-120b"
-    log.info(f"[ENSEMBLE] Running secondary: cloudflare/{os.environ.get('CLOUDFLARE_MODEL', '?')}")  # CC-85
-    result_secondary = detect_operations_in_article(**args)
-    log.info(f"[ENSEMBLE] Secondary result: {result_secondary.status} "
-             f"({result_secondary.operation_count()} ops)")
-
-    # ── Restore original env ──
-    if original_provider:
-        os.environ["S2F_PROVIDER"] = original_provider
-    else:
-        os.environ.pop("S2F_PROVIDER", None)
-    if original_model:
-        os.environ["CEREBRAS_MODEL"] = original_model
-    else:
-        os.environ.pop("CEREBRAS_MODEL", None)
-
-    # ── Graceful degradation ──
-    primary_ok = result_primary.status == "OK"
-    secondary_ok = result_secondary.status == "OK"
-
-    if not primary_ok and not secondary_ok:
-        log.warning("[ENSEMBLE] Both providers failed — returning primary failure")
-        return result_primary
-
-    if not primary_ok:
-        log.warning("[ENSEMBLE] Primary failed — returning secondary only")
-        return result_secondary
-
-    if not secondary_ok:
-        log.warning("[ENSEMBLE] Secondary failed — returning primary only")
-        return result_primary
-
-    # ── Merge: union of operations ──
-    # Use primary as base. Add secondary ops not already detected by primary.
-    primary_op_ids = {op["id"] for op in (result_primary.operations_detected or [])}
-    secondary_unique = [
-        op for op in (result_secondary.operations_detected or [])
-        if op["id"] not in primary_op_ids
-    ]
-
-    merged_ops = list(result_primary.operations_detected or []) + secondary_unique
-    merged_confidence = max(result_primary.confidence, result_secondary.confidence)
-
-    log.info(
-        f"[ENSEMBLE] Merged: {len(result_primary.operations_detected or [])} primary "
-        f"+ {len(secondary_unique)} secondary-unique = {len(merged_ops)} total ops"
-    )
-
-    merged = copy.copy(result_primary)
+    merged = copy.copy(base)
     merged.operations_detected = merged_ops
-    merged.confidence = merged_confidence
+    merged.confidence = max(r.confidence for r in ok)
     merged.rubric_version = "v2-operations-ensemble"
-    # CC-85: only this branch is a real ensemble -- both legs returned OK.
-    merged.provider = f"{result_primary.provider}+{result_secondary.provider}"
-    merged.model = f"{result_primary.model}+{result_secondary.model}"
+    merged.provider = "+".join(r.provider for r in ok)     # CC-85
+    merged.model = "+".join(r.model for r in ok)
     merged.ensemble_mode = True
-    # food_for_thought: prefer primary's question (qwen-3 tends to be sharper here)
-    if not merged.food_for_thought and result_secondary.food_for_thought:
-        merged.food_for_thought = result_secondary.food_for_thought
-
+    if not merged.food_for_thought:
+        merged.food_for_thought = next((r.food_for_thought for r in ok if r.food_for_thought), "")
     return merged
 
 if __name__ == "__main__":

@@ -35,7 +35,6 @@ jobs:
           pip install \
             supabase \
             python-dotenv \
-            cerebras-cloud-sdk \
             openai \
             groq \
             requests
@@ -45,7 +44,7 @@ jobs:
         env:
           SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:             ${{ secrets.SUPABASE_SERVICE_KEY }}
-          CEREBRAS_API_KEY:         ${{ secrets.CEREBRAS_API_KEY }}
+          # CC-95: CEREBRAS_API_KEY removed -- the leg is gone (402 since ~2026-08-17)
           CLOUDFLARE_API_TOKEN:     ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID:    ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GITHUB_ACTIONS:           "true"
