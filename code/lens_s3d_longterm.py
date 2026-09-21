@@ -27,16 +27,47 @@ log = logging.getLogger("S3-D")
 SUPABASE_URL   = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY   = os.environ.get("SUPABASE_SERVICE_KEY")
 MISTRAL_KEY    = os.environ.get("MISTRAL_API_KEY")
-MODEL          = "ministral-8b-2512"
-PROVIDER       = "mistral"
+from lens_models import wire, assert_model_known   # CC-93: the registry is the source (LR-105)
+PROVIDER, MODEL, _KEY_ENV, MAX_TOKENS = wire("s3d_longterm")
 # CC-82: the old fallback cap was 2500 and the answer was cut mid-string at
 # ~9.2-9.9K chars on 2026-09-14 and 2026-09-17. S3-A and the S3 report run
 # the same model at 8000 and finish at 3.4-4.1K tokens. A truncated answer
 # is now FAILED, never saved (D-027).
-MAX_TOKENS     = 8000
+# CC-93 (LENS-044): 8000 cut the answer on 2026-09-21 at key 13 of 14; the
+# same prompt then finished at 6,571 tokens. Two runs of one prompt at
+# temperature 0.3 differed by more than 1,800 tokens, so the registry now
+# holds 16000 -- the long run near 53%, under D-017's 60%.
+REQUEST_TIMEOUT_S = 240   # 16000 tokens at the slowest throughput probed (~70 tok/s) is ~229s
 LOOKBACK_DAYS  = 30
 MAX_S1_REPORTS = 30
 MAX_S2_REPORTS = 20
+WINDOW_FETCH_CAP = 1000   # CC-93: fetch the whole window, then sample it
+
+
+def even_sample(rows: list, k: int) -> list:
+    """CC-93 (LENS-044): k rows spread evenly across the window, oldest first.
+
+    The query used to be `order asc` + `limit k` -- the OLDEST k rows. On
+    2026-09-21 that meant S3-D, the 30-day researcher, read 2026-08-22 to
+    2026-09-02 and never saw the last nineteen days, and its own ACH check
+    then called the '30-day acceleration' a possible reporting artifact.
+    Newest-k would only move the blind spot to the other end. The charter
+    asks what accumulates ACROSS the window, so the sample spans it.
+    """
+    n = len(rows)
+    if k <= 0 or n == 0:
+        return []
+    if n <= k:
+        return list(rows)
+    if k == 1:
+        return [rows[-1]]
+    idx = sorted({round(i * (n - 1) / (k - 1)) for i in range(k)})
+    return [rows[i] for i in idx]
+
+
+def window_span(rows: list, field: str) -> str:
+    dates = [str(r.get(field) or "")[:10] for r in rows if r.get(field)]
+    return f", spanning {dates[0]} to {dates[-1]}" if dates else ""
 
 SYSTEM_PROMPT = """You are S3-D: Long-term Researcher for Project Lens.
 
@@ -152,9 +183,13 @@ def fetch_s1_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
     r = sb.table("lens_reports") \
         .select("id,domain_focus,summary,cycle,generated_at") \
         .gte("generated_at", cutoff).order("generated_at", desc=False) \
-        .limit(limit).execute()
-    log.info(f"Fetched {len(r.data or [])} S1 reports (window={lookback_days}d)")
-    return r.data or []
+        .limit(WINDOW_FETCH_CAP).execute()
+    rows = even_sample(r.data or [], limit)   # CC-93
+    log.info(f"S1 window={lookback_days}d: {len(r.data or [])} reports in window, "
+             f"{len(rows)} sampled evenly{window_span(rows, 'generated_at')}")
+    if len(r.data or []) >= WINDOW_FETCH_CAP:
+        log.warning(f"S1 window hit the {WINDOW_FETCH_CAP}-row fetch cap -- the sample is not the full window")
+    return rows
 
 
 def fetch_s2_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
@@ -163,9 +198,13 @@ def fetch_s2_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
     r = sb.table("injection_reports") \
         .select("analyst,injection_type,evidence,confidence_score,created_at") \
         .gte("created_at", cutoff).order("created_at", desc=False) \
-        .limit(limit).execute()
-    log.info(f"Fetched {len(r.data or [])} S2 reports (window={lookback_days}d)")
-    return r.data or []
+        .limit(WINDOW_FETCH_CAP).execute()
+    rows = even_sample(r.data or [], limit)   # CC-93
+    log.info(f"S2 window={lookback_days}d: {len(r.data or [])} reports in window, "
+             f"{len(rows)} sampled evenly{window_span(rows, 'created_at')}")
+    if len(r.data or []) >= WINDOW_FETCH_CAP:
+        log.warning(f"S2 window hit the {WINDOW_FETCH_CAP}-row fetch cap -- the sample is not the full window")
+    return rows
 
 
 def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
@@ -187,17 +226,20 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
 
     s1 = fetch_s1_reports(sb, window_days)
     s2 = fetch_s2_reports(sb, window_days)
-    log.info(f"Fetched {len(s1)} S1 reports + {len(s2)} S2 reports (last {LOOKBACK_DAYS} days)")
+    log.info(f"Fetched {len(s1)} S1 reports + {len(s2)} S2 reports (last {window_days} days)")
 
     if not s1:
         log.warning("No S1 reports found")
         return {"status": "NO_REPORTS", "run_id": run_id}
 
     lines = [
-        f"=== S1 LENS REPORTS — last {LOOKBACK_DAYS} days ({len(s1)} reports) ===",
+        f"=== S1 LENS REPORTS — last {window_days} days ({len(s1)} reports sampled evenly{window_span(s1, 'generated_at')}) ===",
         "Hold ALL of these simultaneously. Find what accumulates across the full window.\n",
         "─" * 60,
     ]
+    if window_days != LOOKBACK_DAYS:   # CC-93: the system prompt says 30 days
+        lines.insert(1, f"WINDOW FOR THIS RUN: {window_days} days. Where your "
+                        f"instructions say 30 days, read {window_days} days.")
     for r in s1:
         lines += [
             f"\nDate: {r.get('generated_at','')[:10]} | Domain: {r.get('domain_focus')} | Cycle: {r.get('cycle')}",
@@ -206,7 +248,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         ]
     if s2:
         lines += [
-            f"\n=== S2 INJECTION REPORTS — last {LOOKBACK_DAYS} days ({len(s2)} reports) ===",
+            f"\n=== S2 INJECTION REPORTS — last {window_days} days ({len(s2)} reports sampled evenly{window_span(s2, 'created_at')}) ===",
             "Look for EVOLUTION in injection patterns over time.\n",
         ]
         for r in s2:
@@ -214,7 +256,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                 f"Date: {r.get('created_at','')[:10]} | Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | Score: {r.get('confidence_score')}",
                 f"Evidence: {str(r.get('evidence') or '')[:200]}",
             ]
-    lines.append("\nFind 30-day structural patterns. Output JSON only.")
+    lines.append(f"\nFind {window_days}-day structural patterns. Output JSON only.")
     prompt = "\n".join(lines)
 
     log.info(f"Prompt: {len(prompt)} chars | Model: {MODEL}")
@@ -224,8 +266,9 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.info(f"S3-D calling {PROVIDER}/{MODEL} (attempt {attempt}, "
                  f"prompt {len(SYSTEM_PROMPT) + len(prompt)} chars, max_tokens {MAX_TOKENS})")
         try:
+            assert_model_known(PROVIDER, MODEL)   # CC-93 (LR-105)
             r = requests.post(
-                "https://api.mistral.ai/v1/chat/completions", timeout=180,
+                "https://api.mistral.ai/v1/chat/completions", timeout=REQUEST_TIMEOUT_S,
                 headers={"Authorization": f"Bearer {MISTRAL_KEY}",
                          "Content-Type": "application/json"},
                 json={"model": MODEL, "response_format": {"type": "json_object"},
@@ -272,7 +315,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "generated_at":      datetime.now(timezone.utc).isoformat(),
         "position":          "S3-D",
         "report_type":       "TYPE_A",
-        "time_horizon":      "30_DAY",
+        "time_horizon":      f"{window_days}_DAY",   # CC-93: was hardcoded 30_DAY
         "patterns_found":    json.dumps(analysis.get("patterns_found", [])),
         "structural_trends": json.dumps(analysis.get("structural_trends", {})),
         "summary":           analysis.get("summary", ""),

@@ -34,7 +34,8 @@ jobs:
           pip install --upgrade pip
           pip install \
             supabase \
-            python-dotenv
+            python-dotenv \
+            requests
 
       - name: Compile every module (LR-092)
         run: python -m py_compile code/*.py
@@ -59,3 +60,6 @@ jobs:
 
       - name: S2-F error redaction tests (CC-92)
         run: python tests/test_s2f_error_redaction.py
+
+      - name: S3-D window and label tests (CC-93)
+        run: python tests/test_s3d_window.py

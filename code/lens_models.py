@@ -272,7 +272,7 @@ ROLES = {
     },
     "s3d_longterm": {
         "provider": "mistral", "model": MINISTRAL_8B,
-        "key_env": "MISTRAL_API_KEY", "max_out": 8000,
+        "key_env": "MISTRAL_API_KEY", "max_out": 16000,   # CC-93: 8000 cut 2026-09-21; probed 6,571 stop / >8,000 length
         "fb_provider": None, "fb_model": None, "fb_key_env": None,
         "note": "CC-82 (LENS-042): was cerebras gpt-oss-120b, dead ~2026-08-17;"
                 " the ministral fallback then truncated at 2500 (cut mid-string at"
