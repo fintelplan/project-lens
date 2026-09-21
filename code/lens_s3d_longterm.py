@@ -66,6 +66,90 @@ def even_sample(rows: list, k: int) -> list:
     return [rows[i] for i in idx]
 
 
+def _parse_ts(v):
+    s = str(v or "").strip().replace(" ", "T", 1)
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(s)
+    except ValueError:
+        return None
+
+
+def even_sample_by_time(rows: list, k: int, ts_field: str) -> list:
+    """CC-96 (LENS-044): up to k rows spread evenly in TIME, oldest first.
+
+    CC-93's even_sample spread the sample by ROW COUNT. On 2026-09-21 the
+    90-day S1 window held 1,803 rows, 1,564 of them before 2026-08-22: the
+    child process ignored --single-lens until CC-75 and wrote every lens four
+    times a wave. By row count, ~78 of 90 samples came from June-August and
+    the newest 30 days got ~12. A pipeline bug's density was being read as
+    the world's.
+
+    The window is cut into k equal stretches of time; each contributes the
+    row nearest its midpoint. A stretch with NO rows lends its place to the
+    nearest real row not already chosen, so the sample stays at k. Nothing is
+    invented: no sampled row is dated inside a gap, and the model still sees
+    the gap. (Without this, seven empty days in the last thirty cut the
+    Monday sample from 30 to 23 -- found by the live dry run, 2026-09-21.)
+    Rows must arrive oldest-first.
+    """
+    n = len(rows)
+    if k <= 0 or n == 0:
+        return []
+    if n <= k:
+        return list(rows)
+    ts = [_parse_ts(r.get(ts_field)) for r in rows]
+    if any(x is None for x in ts):
+        log.warning(f"even_sample_by_time: unparseable {ts_field} -- falling back to row-count sampling")
+        return even_sample(rows, k)
+    span = (ts[-1] - ts[0]).total_seconds()
+    if span <= 0:
+        return even_sample(rows, k)
+    width = span / k
+    best = {}
+    for i, x in enumerate(ts):
+        off = (x - ts[0]).total_seconds()
+        b = min(k - 1, int(off / width))
+        d = abs(off - (b + 0.5) * width)
+        if b not in best or d < best[b][0]:
+            best[b] = (d, i)
+    chosen = {best[b][1] for b in best}
+    if len(chosen) < k:
+        import bisect
+        offs = [(x - ts[0]).total_seconds() for x in ts]
+        for b in range(k):
+            if b in best or len(chosen) >= k:
+                continue
+            mid = (b + 0.5) * width
+            j = bisect.bisect_left(offs, mid)
+            lo, hi = j - 1, j
+            while lo >= 0 or hi < n:
+                cands = []
+                if lo >= 0:
+                    cands.append((abs(offs[lo] - mid), lo))
+                if hi < n:
+                    cands.append((abs(offs[hi] - mid), hi))
+                _, c = min(cands)
+                if c not in chosen:
+                    chosen.add(c)
+                    break
+                if c == lo:
+                    lo -= 1
+                else:
+                    hi += 1
+    return [rows[i] for i in sorted(chosen)]
+
+
+def newest_third(rows: list, ts_field: str) -> int:
+    """How many sampled rows fall in the newest third of the span they cover."""
+    ts = [x for x in (_parse_ts(r.get(ts_field)) for r in rows) if x is not None]
+    if len(ts) < 2:
+        return len(ts)
+    cut = ts[0] + (ts[-1] - ts[0]) * 2 / 3
+    return sum(1 for x in ts if x >= cut)
+
+
 def window_span(rows: list, field: str) -> str:
     dates = [str(r.get(field) or "")[:10] for r in rows if r.get(field)]
     return f", spanning {dates[0]} to {dates[-1]}" if dates else ""
@@ -95,7 +179,7 @@ def sample_window(sb, table: str, cols: str, ts_field: str, cutoff: str, k: int)
             log.warning(f"{table}: window exceeds {MAX_PAGES * PAGE} rows -- "
                         f"the sample covers only the oldest {len(keys)}")
             break
-    chosen = even_sample(keys, k)
+    chosen = even_sample_by_time(keys, k, ts_field)   # CC-96
     if not chosen:
         return [], len(keys)
     ids = [c["id"] for c in chosen]
@@ -220,7 +304,7 @@ def fetch_s1_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
                                 "id,domain_focus,summary,cycle,generated_at",
                                 "generated_at", cutoff, limit)   # CC-94
     log.info(f"S1 window={lookback_days}d: {total} reports in window, "
-             f"{len(rows)} sampled evenly{window_span(rows, 'generated_at')}")
+             f"{len(rows)} sampled evenly in time ({newest_third(rows, 'generated_at')} in the newest third){window_span(rows, 'generated_at')}")
     return rows
 
 
@@ -231,7 +315,7 @@ def fetch_s2_reports(sb: Client, lookback_days: int = LOOKBACK_DAYS) -> list:
                                 "id,analyst,injection_type,evidence,confidence_score,created_at",
                                 "created_at", cutoff, limit)   # CC-94
     log.info(f"S2 window={lookback_days}d: {total} reports in window, "
-             f"{len(rows)} sampled evenly{window_span(rows, 'created_at')}")
+             f"{len(rows)} sampled evenly in time ({newest_third(rows, 'created_at')} in the newest third){window_span(rows, 'created_at')}")
     return rows
 
 
