@@ -755,6 +755,13 @@ def fixture_s3d_longterm() -> Fixture:
             captured["json"] = kw.get("json")
         return _Resp()
 
+    # LENS-044: a probe-only window override. Thursday's 90-day prompt had
+    # never been probed; production's get_window_days() is untouched outside
+    # this capture and restored in the finally below.
+    override = os.environ.get("S3D_PROBE_WINDOW_DAYS", "").strip()
+    window = int(override) if override else S3D.get_window_days()
+    real_window = S3D.get_window_days
+    S3D.get_window_days = lambda: window
     real_requests = S3D.requests
     real_should = S3D.should_run_today
     S3D.requests = types.SimpleNamespace(post=_capture)
@@ -762,6 +769,7 @@ def fixture_s3d_longterm() -> Fixture:
     try:
         res = S3D.run_s3d(cycle="probe-capture", run_id="probe-capture")
     finally:
+        S3D.get_window_days = real_window
         S3D.requests = real_requests
         S3D.should_run_today = real_should
 
@@ -786,7 +794,8 @@ def fixture_s3d_longterm() -> Fixture:
         temperature=float(body.get("temperature", 0.3)),
         origin="live-capture:lens_s3d_longterm.run_s3d (requests.post intercepted)",
         detail={
-            "window_days": S3D.get_window_days(),
+            "window_days": window,
+            "window_override": bool(override),
             "production_max_tokens": body.get("max_tokens"),
             "production_json_mode": "response_format" in body,
             "production_model": body.get("model"),
@@ -1020,7 +1029,10 @@ def call_openai_compatible(endpoint: str, api_key: str, model: str,
                  "Content-Type": "application/json"},
         json=_payload(model, messages, max_tokens, fixture.temperature,
                       json_mode),
-        timeout=180,
+        # LENS-044: was 180 -- shorter than the S3-D production timeout (240),
+        # so a call production would finish showed here as a transport error.
+        # An instrument must not be stricter than the thing it measures.
+        timeout=300,
     )
     out = {"http_status": r.status_code, "content": "", "finish_reason": None,
            "usage": {}, "error_text": None}
