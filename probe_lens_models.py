@@ -719,6 +719,82 @@ def fixture_ai5_watchdog() -> Fixture:
     )
 
 
+def fixture_s3d_longterm() -> Fixture:
+    """S3-D (LENS-044). run_s3d() builds its prompt INLINE -- there is no
+    production function to call, and mirroring that loop here would be the
+    dual-source disease the LENS-028 ruling named for measuring instruments.
+
+    So run_s3d() itself is executed, with the `requests` name INSIDE
+    lens_s3d_longterm replaced by a capture that answers
+    finish_reason=length. run_s3d() then logs the truncation, returns
+    ANALYSIS_FAILED and never reaches its insert into lens_system3_reports.
+    The request body it tried to send IS the fixture: system prompt, user
+    prompt and temperature, byte for byte what production sends.
+
+    The global `requests` module is never touched (this harness uses it),
+    and the request headers -- which carry the key -- are never read.
+    """
+    import types
+    import lens_s3d_longterm as S3D
+
+    captured = {}
+
+    class _Resp:
+        status_code = 200
+        headers = {}
+        text = ""
+
+        def json(self):
+            return {"choices": [{"finish_reason": "length",
+                                 "message": {"content": ""}}],
+                    "usage": {"prompt_tokens": 0, "completion_tokens": 0}}
+
+    def _capture(url, **kw):
+        if "json" not in captured:
+            captured["url"] = url
+            captured["json"] = kw.get("json")
+        return _Resp()
+
+    real_requests = S3D.requests
+    real_should = S3D.should_run_today
+    S3D.requests = types.SimpleNamespace(post=_capture)
+    S3D.should_run_today = lambda: True
+    try:
+        res = S3D.run_s3d(cycle="probe-capture", run_id="probe-capture")
+    finally:
+        S3D.requests = real_requests
+        S3D.should_run_today = real_should
+
+    status = (res or {}).get("status")
+    if status != "ANALYSIS_FAILED":
+        raise ProbeError(
+            f"S3-D capture did not end where it must: status={status!r}. "
+            f"Expected ANALYSIS_FAILED (the fake answered finish_reason=length). "
+            f"Refusing to build a fixture from a run that may have gone further."
+        )
+    body = captured.get("json") or {}
+    msgs = body.get("messages") or []
+    system = next((m.get("content", "") for m in msgs if m.get("role") == "system"), "")
+    user = next((m.get("content", "") for m in msgs if m.get("role") == "user"), "")
+    if not user:
+        raise ProbeError("S3-D capture produced no user prompt -- nothing to measure.")
+
+    return Fixture(
+        system=system,
+        user=user,
+        requires_json=True,
+        temperature=float(body.get("temperature", 0.3)),
+        origin="live-capture:lens_s3d_longterm.run_s3d (requests.post intercepted)",
+        detail={
+            "window_days": S3D.get_window_days(),
+            "production_max_tokens": body.get("max_tokens"),
+            "production_json_mode": "response_format" in body,
+            "production_model": body.get("model"),
+            "note": "run with --json-mode: production sends response_format json_object",
+        },
+    )
+
+
 FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "s2d_adversary": fixture_s2d_adversary,
     "lens1": fixture_lens1,
@@ -731,6 +807,7 @@ FIXTURE_BUILDERS: dict[str, Callable[[], Fixture]] = {
     "regular_report": fixture_regular_report,
     "entity_extract": fixture_entity_extract,
     "ai5_watchdog": fixture_ai5_watchdog,
+    "s3d_longterm": fixture_s3d_longterm,   # LENS-044
 }
 
 
