@@ -86,3 +86,6 @@ jobs:
 
       - name: Groq and Cohere refusals are recorded (CC-104)
         run: python tests/test_provider_refusal_sites.py
+
+      - name: Provider health message (CC-105)
+        run: python tests/test_provider_health.py
