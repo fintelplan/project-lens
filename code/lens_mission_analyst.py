@@ -590,6 +590,11 @@ def _call_fallback_leg(user_message: str, max_tokens: int) -> Optional[dict]:
             timeout=180)
         if resp.status_code != 200:
             log.error(f"MA fallback HTTP {resp.status_code}: {resp.text[:200]}")
+            try:   # CC-107 (item 11): the fallback leg refused
+                from lens_provider_refusal import record_refusal
+                record_refusal(FB_PROVIDER, FB_MODEL, status=resp.status_code, text=resp.text)
+            except Exception:
+                pass
             return None
         body  = resp.json()
         usage = body.get("usage") or {}
@@ -632,6 +637,7 @@ def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[
     # CC-1c: pace on the real request size, not a flat 3000 guess.
     _tpm.wait_if_needed(prompt_chars // 3 + max_tokens, label="MA")
 
+    _last_err = None   # CC-107
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             log.info(f"Mission Analyst calling {PROVIDER}/{MODEL} "
@@ -688,6 +694,7 @@ def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_SLEEP)
         except Exception as e:
+            _last_err = e
             err = str(e)
             if "429" in err:
                 wait = _retry_after_seconds(e) or 20
@@ -700,6 +707,12 @@ def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_SLEEP)
 
+    if _last_err is not None:
+        try:   # CC-107 (item 11): the primary leg is given up
+            from lens_provider_refusal import record_refusal
+            record_refusal(PROVIDER, MODEL, exc=_last_err)
+        except Exception:
+            pass
     log.error(f"Mission Analyst failed after {MAX_RETRIES} attempts")
     return _call_fallback_leg(user_message, max_tokens)
 

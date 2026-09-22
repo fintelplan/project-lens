@@ -92,3 +92,6 @@ jobs:
 
       - name: A gone model is not retried (CC-106)
         run: python tests/test_gone_model_no_retry.py
+
+      - name: S2 positions and MA record refusals (CC-107)
+        run: python tests/test_provider_refusal_s2.py

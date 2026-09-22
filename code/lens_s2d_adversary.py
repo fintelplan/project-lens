@@ -374,6 +374,7 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
     prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
     max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
 
+    _last_err = None   # CC-107
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             guard.wait_if_needed(prompt_chars // 3 + max_tokens, label="S2-D")
@@ -448,6 +449,7 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_SLEEP)
         except Exception as e:
+            _last_err = e
             err = str(e)
             if "429" in err:
                 # CC-1c: honour the provider's own retry-after. A flat 20s is a
@@ -470,6 +472,12 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_SLEEP)
 
+    if _last_err is not None:
+        try:   # CC-107 (item 11): the primary leg is given up
+            from lens_provider_refusal import record_refusal
+            record_refusal(PROVIDER, MODEL, exc=_last_err)
+        except Exception:
+            pass
     log.error(f"S2-D failed after {MAX_RETRIES} attempts")
     return _call_fallback_leg(user_message, prompt_chars)
 
@@ -519,6 +527,11 @@ def _call_fallback_leg(user_message: str, prompt_chars: int) -> Optional[dict]:
             timeout=180)
         if resp.status_code != 200:
             log.error(f"S2-D fallback HTTP {resp.status_code}: {resp.text[:200]}")
+            try:   # CC-107 (item 11): the fallback leg refused
+                from lens_provider_refusal import record_refusal
+                record_refusal(FB_PROVIDER, FB_MODEL, status=resp.status_code, text=resp.text)
+            except Exception:
+                pass
             return None
         body  = resp.json()
         usage = body.get("usage") or {}

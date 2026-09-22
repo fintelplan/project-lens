@@ -219,6 +219,11 @@ def call_groq(client: Groq, prompt: str) -> Optional[dict]:
             if attempt < 3:
                 time.sleep(15)
             else:
+                try:   # CC-107 (item 11): the last attempt failed
+                    from lens_provider_refusal import record_refusal
+                    record_refusal(PROVIDER, MODEL, exc=e)
+                except Exception:
+                    pass
                 return None
     return None
 

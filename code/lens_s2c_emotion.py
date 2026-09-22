@@ -183,6 +183,8 @@ def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Option
         f"Return JSON only."
     )
 
+    _last_err = None   # CC-107
+    _last_http = None  # CC-107: the real status, before it is re-raised as text
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             guard.wait_if_needed(1500, label="S2-C")
@@ -200,6 +202,7 @@ def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Option
                 timeout=120)
 
             if resp.status_code != 200:
+                _last_http = (resp.status_code, resp.text)
                 raise Exception(f"Mistral {resp.status_code}: {resp.text[:200]}")
 
             raw = resp.json()["choices"][0]["message"]["content"].strip()
@@ -225,6 +228,7 @@ def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Option
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_SLEEP)
         except Exception as e:
+            _last_err = e
             err = str(e)
             if "429" in err:
                 log.warning(f"Rate limit (429) attempt {attempt} — sleeping 20s")
@@ -237,6 +241,12 @@ def call_emotion_decoder(client: str, report: dict, guard: "TPMGuard") -> Option
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_SLEEP)
 
+    if _last_http is not None or _last_err is not None:
+        try:   # CC-107 (item 11): S2-C has no fallback leg; this is its only voice
+            from lens_provider_refusal import record_refusal
+            record_refusal("mistral", MODEL, status=_last_http[0] if _last_http else None, text=_last_http[1] if _last_http else str(_last_err))
+        except Exception:
+            pass
     log.error(f"S2-C failed after {MAX_RETRIES} attempts for {lens_name}")
     return None
 
