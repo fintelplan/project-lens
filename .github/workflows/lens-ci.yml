@@ -101,3 +101,6 @@ jobs:
 
       - name: S3-F and Regular Report record refusals (CC-109)
         run: python tests/test_provider_refusal_s3.py
+
+      - name: S3-D records refusals, nothing else changed (CC-110)
+        run: python tests/test_s3d_refusal.py

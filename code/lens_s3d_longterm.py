@@ -232,6 +232,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     log.info(f"Prompt: {len(prompt)} chars | Model: {MODEL}")
 
     analysis = None
+    _last = None   # CC-110 (item 11): (status, text) of the last refusal
     for attempt in range(1, 3):
         log.info(f"S3-D calling {PROVIDER}/{MODEL} (attempt {attempt}, "
                  f"prompt {len(SYSTEM_PROMPT) + len(prompt)} chars, max_tokens {MAX_TOKENS})")
@@ -247,6 +248,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                       "max_tokens": MAX_TOKENS, "temperature": 0.3})
         except Exception as e:
             log.warning(f"S3-D attempt {attempt}: transport {repr(e)[:160]}")
+            _last = (None, str(e))   # CC-110
             if attempt < 2: time.sleep(20)
             continue
         if r.status_code != 200:
@@ -254,6 +256,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                 and (r.headers.get("x-should-retry") or "").lower() != "false"
             log.warning(f"S3-D attempt {attempt}: HTTP {r.status_code} "
                         f"retryable={retryable} {r.text[:200]}")
+            _last = (r.status_code, r.text)   # CC-110
             if retryable and attempt < 2: time.sleep(20)
             continue
         b = r.json()
@@ -275,6 +278,12 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         except Exception as e:
             log.warning(f"S3-D attempt {attempt}: JSON parse failed ({e}); finish={fin}")
 
+    if not analysis and _last is not None:
+        try:   # CC-110 (item 11): the provider's own refusal, one line
+            from lens_provider_refusal import record_refusal
+            record_refusal(PROVIDER, MODEL, status=_last[0], text=_last[1])
+        except Exception:
+            pass
     if not analysis:
         log.error("S3-D failed")
         return {"status": "ANALYSIS_FAILED", "run_id": run_id}
