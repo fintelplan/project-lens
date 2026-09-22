@@ -95,3 +95,6 @@ jobs:
 
       - name: S2 positions and MA record refusals (CC-107)
         run: python tests/test_provider_refusal_s2.py
+
+      - name: S3-C window tests (CC-108)
+        run: python tests/test_s3c_window.py

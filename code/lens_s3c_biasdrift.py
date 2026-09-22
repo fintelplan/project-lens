@@ -16,6 +16,7 @@ import os, json, time, logging
 from datetime import datetime, timezone, timedelta, date
 from typing import Optional
 from supabase import create_client, Client
+from lens_window_sample import sample_window, newest_third, window_span   # CC-108
 
 logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S3-C] %(levelname)s %(message)s", datefmt="%H:%M:%S")
@@ -133,17 +134,28 @@ def already_ran_this_week(sb: Client) -> bool:
 
 
 def fetch_reports(sb: Client) -> tuple[list, list]:
+    """CC-108 (LENS-045): the whole 30-day window, evenly in time -- not its oldest rows.
+
+    `order asc` + `limit 40` read the OLDEST 40 rows of each table: at ~8 S1
+    reports a day, the first five days; at ~39 S2 findings a day (1,169 in 30
+    days, LENS-044), the first day. S3-C asks what DRIFTED across 30 days and
+    was shown the first days only, under a 30-day label -- the defect CC-93/94/96
+    fixed in S3-D and CC-99 in S3-A. Same sampler, same k: the prompt does not grow.
+    `id` is now selected, so source_reports stops being a list of empty strings.
+    """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)).isoformat()
-    s1 = sb.table("lens_reports") \
-        .select("domain_focus,summary,cycle,generated_at,quality_score") \
-        .gte("generated_at", cutoff) \
-        .order("generated_at", desc=False) \
-        .limit(MAX_REPORTS).execute().data or []
-    s2 = sb.table("injection_reports") \
-        .select("analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at") \
-        .gte("created_at", cutoff) \
-        .order("created_at", desc=False) \
-        .limit(MAX_REPORTS).execute().data or []
+    s1, t1 = sample_window(sb, "lens_reports",
+                           "id,domain_focus,summary,cycle,generated_at,quality_score",
+                           "generated_at", cutoff, MAX_REPORTS)
+    s2, t2 = sample_window(sb, "injection_reports",
+                           "id,analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at",
+                           "created_at", cutoff, MAX_REPORTS)
+    log.info(f"S1 window={LOOKBACK_DAYS}d: {t1} reports in window, {len(s1)} sampled evenly "
+             f"in time ({newest_third(s1, 'generated_at')} in the newest third)"
+             f"{window_span(s1, 'generated_at')}")
+    log.info(f"S2 window={LOOKBACK_DAYS}d: {t2} reports in window, {len(s2)} sampled evenly "
+             f"in time ({newest_third(s2, 'created_at')} in the newest third)"
+             f"{window_span(s2, 'created_at')}")
     return s1, s2
 
 
@@ -210,6 +222,7 @@ def run_s3c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     analysis = None
     client = cohere.Client(api_key=COHERE_KEY)
 
+    _last_err = None   # CC-108
     for attempt in range(1, 3):
         try:
             log.info(f"S3-C calling {MODEL} (attempt {attempt})")
@@ -230,10 +243,17 @@ def run_s3c(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             log.info(f"S3-C response parsed: {len(raw)} chars")
             break
         except Exception as e:
+            _last_err = e
             log.warning(f"Attempt {attempt} failed: {e}")
             if attempt < 2:
                 time.sleep(20)
 
+    if not analysis and _last_err is not None:
+        try:   # CC-108 (item 11): Cohere's own refusal, one line
+            from lens_provider_refusal import record_refusal
+            record_refusal("cohere", MODEL, exc=_last_err)
+        except Exception:
+            pass
     if not analysis:
         log.error("S3-C failed — no analysis produced")
         return {"status": "ANALYSIS_FAILED", "run_id": run_id}
