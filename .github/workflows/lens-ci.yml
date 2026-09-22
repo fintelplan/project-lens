@@ -104,3 +104,6 @@ jobs:
 
       - name: S3-D records refusals, nothing else changed (CC-110)
         run: python tests/test_s3d_refusal.py
+
+      - name: Compendium guard is loud (CC-111)
+        run: python tests/test_compendium_refusal.py

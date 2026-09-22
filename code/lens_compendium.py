@@ -543,6 +543,15 @@ def synthesize_intro(sections_text: str) -> str:
         return resp.choices[0].message.content.strip()
     except Exception as e:
         log.warning(f"Groq intro synthesis failed: {e}")
+        # CC-111 (item 11): the zero-failure guard (CC-23) keeps the Compendium
+        # shipping; it no longer keeps the refusal a secret. The intro below is
+        # a canned sentence, and the provider health message will say why.
+        log.warning("Compendium intro is the CANNED sentence, not a synthesis")
+        try:
+            from lens_provider_refusal import record_refusal
+            record_refusal(_PROVIDER, _MODEL, exc=e)
+        except Exception:
+            pass
         return "Project Lens Intelligence Compendium — full daily intelligence package."
 
 
