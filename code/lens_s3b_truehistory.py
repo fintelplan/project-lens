@@ -222,6 +222,13 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         except Exception as e:
             _last_err = e
             log.warning(f"Attempt {attempt} failed: {e}")
+            try:   # CC-106: a model that is gone does not return in 30s or 60s
+                from lens_provider_refusal import _status_of, classify
+                if classify(_status_of(e, str(e)), str(e)) == "model_gone":
+                    log.warning(f"S3-B primary {MODEL} is gone -- not retrying, falling back now")
+                    break
+            except Exception:
+                pass
             if attempt < 3: time.sleep(30 * attempt)
 
     if not analysis and _last_err is not None:

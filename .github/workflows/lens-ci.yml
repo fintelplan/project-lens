@@ -89,3 +89,6 @@ jobs:
 
       - name: Provider health message (CC-105)
         run: python tests/test_provider_health.py
+
+      - name: A gone model is not retried (CC-106)
+        run: python tests/test_gone_model_no_retry.py

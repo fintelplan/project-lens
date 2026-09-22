@@ -301,7 +301,7 @@ def call_coordination_analyzer(client, reports: list,
             record_refusal("google", MODEL, exc=_last_err)
         except Exception:
             pass
-    log.error(f"S2-B failed after {MAX_RETRIES} attempts")
+    log.error(f"S2-B failed after {attempt} of {MAX_RETRIES} attempts")   # CC-106: it said 3 after breaking on 1
     log.warning(f"S2-B Gemini exhausted -- falling back to Mistral ({MISTRAL_FALLBACK_MODEL})")   # CC-101: the label said Mistral-small
     import requests as _req
     mistral_key = os.environ.get("MISTRAL_API_KEY", "")
