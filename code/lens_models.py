@@ -507,7 +507,7 @@ if __name__ == "__main__":
     # a registry row carries a model id, not a country. Anything outside a
     # Freedom-from-Fear origin that is not on this list is James's call.
     banned = ("qwen", "deepseek", "kimi", "minimax", "moonshot", "glm", "yi-",
-              "zhipu", "chatglm", "ernie", "baidu", "doubao", "hunyuan",
+              "zhipu", "zai", "chatglm", "ernie", "baidu", "doubao", "hunyuan",
               "baichuan", "internlm", "step-", "skywork", "tele-", "sensetime")
     for rk, s in ROLES.items():
         for prov, mod in ((s["provider"], s["model"]),
