@@ -357,7 +357,7 @@ def _is_retryable(e) -> bool:
 #   "ollama"     -- OLLAMA_MODEL required (+ OLLAMA_HOST, default localhost:11434)
 #   "cloudflare" -- CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
 #                   (+ CLOUDFLARE_MODEL, default @cf/openai/gpt-oss-120b)
-#   "mistral"    -- MISTRAL_API_KEY   (+ MISTRAL_MODEL, default mistral-medium-latest)
+#   "mistral"    -- MISTRAL_API_KEY   (+ MISTRAL_MODEL, default ministral-8b-2512, CC-101)
 # All five expose an OpenAI-compatible chat.completions.create() interface.
 # Returned tuple: (client_object, model_name, provider_name) or (None, None, None)
 
@@ -455,7 +455,10 @@ def _get_llm_client():
         if not key:
             log.error("S2F_PROVIDER=mistral but MISTRAL_API_KEY not set")
             return None, None, None
-        mistral_model = os.environ.get("MISTRAL_MODEL", "mistral-medium-latest")
+        # CC-101: was the alias mistral-medium-latest, in the class that 429s on this
+        # key (LENS-040) and an alias besides (D-015). Not a live leg: ENSEMBLE_LEGS
+        # does not name mistral. Choosing S2-F's second leg is still order item 1.3.
+        mistral_model = os.environ.get("MISTRAL_MODEL", "ministral-8b-2512")
         client = OpenAI(
             api_key=key,
             base_url="https://api.mistral.ai/v1",
@@ -702,6 +705,8 @@ def detect_operations_in_article(
             stage_filter=stage_filter,
             catalog_version=catalog["catalog_version"],
             error=f"JSON parse: {str(e)[:200]}",
+            provider=provider,      # CC-101: CC-85 named who failed only on LLM_FAILED
+            model=model_name,
         )
 
     # ── Empty-field validator (LENS-019.5 calibration round 3 finding) ──

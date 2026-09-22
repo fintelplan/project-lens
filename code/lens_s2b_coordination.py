@@ -30,10 +30,9 @@ logging.basicConfig(
 log = logging.getLogger("s2b")
 
 MODEL            = "gemini-2.0-flash"
-# The fallback posts this exact string on the wire. The registry's
-# fallback("s2b_coordination") says mistral-small-2603; the wire says
-# -latest. Rows record what RAN, so they record this. Reconciling the two
-# is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
+# CC-101 (LENS-045): this comment used to say the fallback posts
+# mistral-small-latest. It has not since CC-70: MISTRAL_FALLBACK_MODEL below
+# is ministral-8b-2512, the registry's own. Rows record what RAN.
 from lens_text_utils import visible_text, extractor_name
 
 MISTRAL_FALLBACK_MODEL = "ministral-8b-2512"   # CC-70, was
@@ -295,7 +294,7 @@ def call_coordination_analyzer(client, reports: list,
                     time.sleep(RETRY_SLEEP)
 
     log.error(f"S2-B failed after {MAX_RETRIES} attempts")
-    log.warning("S2-B Gemini exhausted — falling back to Mistral-small")
+    log.warning(f"S2-B Gemini exhausted -- falling back to Mistral ({MISTRAL_FALLBACK_MODEL})")   # CC-101: the label said Mistral-small
     import requests as _req
     mistral_key = os.environ.get("MISTRAL_API_KEY", "")
     if not mistral_key:

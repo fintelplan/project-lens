@@ -59,7 +59,11 @@ def already_scored(client, article_id: str, lens: str, stage: str) -> bool:
             .limit(1) \
             .execute()
         return len(response.data or []) > 0
-    except Exception:
+    except Exception as e:
+        # CC-101: any error here read as 'not scored', silently, and the article
+        # was scored again. The behaviour stays; the silence goes.
+        from lens_framing_rubrics import _redact
+        log.warning(f"already_scored check failed, scoring anyway: {_redact(str(e))[:160]}")
         return False
 
 

@@ -73,3 +73,6 @@ jobs:
 
       - name: S1 canary report is loud (CC-100)
         run: python tests/test_s1_report_loud.py
+
+      - name: Five small truths (CC-101)
+        run: python tests/test_cc101_small_truths.py

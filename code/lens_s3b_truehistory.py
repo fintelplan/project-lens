@@ -29,10 +29,9 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY", "")
 MODEL        = "gemini-2.0-flash"
-# The fallback posts this exact string on the wire. The registry's
-# fallback("s3b_history") says mistral-small-2603; the wire says
-# -latest. Rows record what RAN, so they record this. Reconciling the two
-# is the D-015 alias defect (TODO 3.5), a behaviour change, not this commit.
+# CC-101 (LENS-045): this comment used to say the fallback posts
+# mistral-small-latest. It has not since CC-70: MISTRAL_FALLBACK_MODEL below
+# is ministral-8b-2512, the registry's own. Rows record what RAN.
 MISTRAL_FALLBACK_MODEL = "ministral-8b-2512"   # CC-70, was
 # mistral-small-latest, which returned 429 code 1300 twice on wave
 # 34936864688 and failed the position. Hardcoded, so CC-64 could not
@@ -224,7 +223,7 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             if attempt < 3: time.sleep(30 * attempt)
 
     if not analysis:
-        log.warning("Gemini exhausted — falling back to Mistral-small for S3-B")
+        log.warning(f"Gemini exhausted -- falling back to Mistral ({MISTRAL_FALLBACK_MODEL}) for S3-B")   # CC-101
         import requests as _req
         mistral_key = os.environ.get("MISTRAL_API_KEY", "")
         if mistral_key:
