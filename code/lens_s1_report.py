@@ -33,9 +33,8 @@ def fetch_s1_data(run_id: Optional[str] = None) -> dict:
     sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
     # S1 lens reports — latest 4
-    s1 = sb.table("lens_reports") \
-        .select("id,domain_focus,summary,quality_score,cycle,generated_at,articles_used") \
-        .order("generated_at", desc=True).limit(4).execute().data or []
+    from lens_canary_wave import fetch_wave   # CC-114: this wave only; the missing are named
+    s1, missing = fetch_wave(sb, "id,domain_focus,summary,quality_score,cycle,generated_at,articles_used")
 
     # Cross-lens signals from most recent run
     cross = []
@@ -74,7 +73,7 @@ def fetch_s1_data(run_id: Optional[str] = None) -> dict:
 
     log.info(f"S1 report: {len(s1)} lenses, {len(arts)} articles, {len(top_entity)} entities")
     return {
-        "s1": s1, "articles": arts, "sources": sources,
+        "s1": s1, "missing": missing, "articles": arts, "sources": sources,
         "domains": domains, "entities": top_entity, "trend": trend
     }
 
@@ -88,6 +87,9 @@ def build_s1_prompt(data: dict) -> str:
     entities = data["entities"]
     trend = data["trend"]
     total_arts = len(data["articles"])
+    missing = data.get("missing") or []   # CC-114
+    missing_txt = ("; MISSING THIS WAVE: " + ", ".join(missing) +
+                   " -- that lens did not speak; do not write for it") if missing else ""
 
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     avg_q = round(sum(r.get("quality_score") or 0 for r in s1) / len(s1), 1) if s1 else 0
@@ -103,7 +105,7 @@ Domain breakdown: {json.dumps(domains)}
 Top sources by volume: {json.dumps(dict(sorted(sources.items(), key=lambda x: -x[1])[:10]))}
 Average lens quality: {avg_q}/10
 
-LENS REPORTS (4 lenses):
+LENS REPORTS ({len(s1)} of 4 lenses{missing_txt}):
 """
     for r in s1:
         prompt += f"""
@@ -323,7 +325,8 @@ def run_s1_report(run_id: Optional[str] = None) -> dict:
     total_arts = len(data["articles"])
     intro = (
         f"📡 <b>S1 Canary Intelligence Report — {date_str}</b>\n"
-        f"4 lenses | {total_arts} articles | Avg quality {avg_q}/10\n"
+        f"{len(s1)}/4 lenses{' -- MISSING: ' + ', '.join(data.get('missing') or []) if data.get('missing') else ''} "
+        f"| {total_arts} articles | Avg quality {avg_q}/10\n"   # CC-114: was a fixed \"4 lenses\"
         f"<i>Full analytical report attached — compare with S2 to see manipulation delta</i>"
     )
     send_telegram_text(intro)

@@ -30,7 +30,8 @@ def fetch_latest(run_id=None):
     rid = run_id or ma.get("run_id","")
     s2  = sb.table("injection_reports").select("analyst,injection_type,confidence_score").eq("run_id",rid).order("confidence_score",desc=True).limit(5).execute().data or []
     s3  = (sb.table("lens_system3_reports").select("summary,first_domino,patterns_found,position,generated_at").eq("position","S3-A").order("generated_at",desc=True).limit(1).execute().data or [{}])[0]
-    s1  = sb.table("lens_reports").select("summary,quality_score,cycle,generated_at").order("generated_at",desc=True).limit(4).execute().data or []
+    from lens_canary_wave import fetch_wave   # CC-114: this wave only, and who is missing
+    s1, s1_missing = fetch_wave(sb, "summary,quality_score,cycle,generated_at")
     # S2-F: latest detections
     from datetime import timedelta
     cutoff_24h = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
@@ -40,7 +41,10 @@ def fetch_latest(run_id=None):
     # 7-day threat trend
     cutoff_7d = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     trend = sb.table("lens_macro_reports").select("threat_level,created_at").gte("created_at",cutoff_7d).order("created_at",desc=True).limit(7).execute().data or []
-    return {"ma":ma,"s2":s2,"s3":s3,"s1":s1,"s2f":s2f,"top_entity":top_entity,"trend":trend}
+    return {"ma":ma,"s2":s2,"s3":s3,"s1":s1,"s1_missing":s1_missing,"s2f":s2f,"top_entity":top_entity,"trend":trend}
+
+from lens_canary_wave import missing_note   # CC-114
+
 
 def format_daily_brief(data):
     ma,s2,s3,s1 = data["ma"],data["s2"],data["s3"],data["s1"]
@@ -58,7 +62,7 @@ def format_daily_brief(data):
         f"<code>{now}</code>","",
         f"{emoji} <b>THREAT: {threat}</b>","",
         "<b>━━ SYSTEM 1 ━━</b>",
-        f"Lenses: {len(s1)}/4 | Avg quality: {avg_q}/10","",
+        f"Lenses: {len(s1)}/4{missing_note(data.get('s1_missing') or [])} | Avg quality: {avg_q}/10","",   # CC-114
         "<b>━━ SYSTEM 2 ━━</b>",
         f"Top injection: <code>{top_s2.get('injection_type','none')}</code> ({top_s2.get('analyst','?')}, conf={top_s2.get('confidence_score',0):.2f})","",
         "<b>━━ SYSTEM 3 ━━</b>",
@@ -118,17 +122,20 @@ def send_s1_intelligence(run_id=None):
         from datetime import datetime, timezone, timedelta
         sb = _get_sb()
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        s1 = sb.table("lens_reports") \
-            .select("domain_focus,summary,quality_score,cycle,generated_at") \
-            .order("generated_at", desc=True).limit(4).execute().data or []
+        from lens_canary_wave import fetch_wave   # CC-114
+        s1, missing = fetch_wave(sb, "domain_focus,summary,quality_score,cycle,generated_at")
         if not s1:
-            return False
+            # CC-114: this used to return False and send NOTHING when no lens spoke.
+            return send_message("<b>WHAT THE CANARY SEES</b>\n"
+                                f"<b>0/4 lenses spoke this wave.</b> MISSING: {', '.join(missing)}")
         cycle = s1[0].get("cycle", "") if s1 else ""
         avg_q = round(sum(r.get("quality_score") or 0 for r in s1) / len(s1), 1) if s1 else 0
         lines = [
             "🔭 <b>WHAT THE CANARY SEES</b>",
             f"<i>{cycle} | {now} | quality {avg_q}/10</i>", "",
         ]
+        if missing:   # CC-114: say who did not speak; never fill the gap with an older row
+            lines += [f"<b>{len(s1)}/4 lenses spoke this wave. MISSING: {', '.join(missing)}</b>", ""]
         for r in s1:
             focus   = (r.get("domain_focus", "") or "").strip()
             summary = (r.get("summary", "") or "").strip()

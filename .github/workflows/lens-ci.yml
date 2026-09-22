@@ -113,3 +113,6 @@ jobs:
 
       - name: The canary breathes alone (CC-113)
         run: python tests/test_canary_air_alone.py
+
+      - name: The canary's voice counts its lenses (CC-114)
+        run: python tests/test_canary_voice.py
