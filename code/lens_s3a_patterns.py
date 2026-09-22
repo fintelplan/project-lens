@@ -269,6 +269,11 @@ def _generate(prompt, prompt_chars, max_tokens):
                 if retryable and attempt < 2:
                     time.sleep(20)
                     continue
+                try:   # CC-104 (item 11): the leg is given up -- record it once
+                    from lens_provider_refusal import record_refusal
+                    record_refusal(prov, model, status=status or None, text=err)
+                except Exception:
+                    pass
                 break
             log.info(f"S3-A {tag} usage: {prov}/{model} in={usage.get('in')} "
                      f"out={usage.get('out')} max_tokens={mt} "

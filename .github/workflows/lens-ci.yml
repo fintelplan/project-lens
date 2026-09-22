@@ -36,7 +36,8 @@ jobs:
             supabase \
             python-dotenv \
             requests \
-            openai
+            openai \
+            groq
 
       - name: Compile every module (LR-092)
         run: python -m py_compile code/*.py
@@ -82,3 +83,6 @@ jobs:
 
       - name: Provider events are stored once, never raise (CC-103)
         run: python tests/test_provider_events.py
+
+      - name: Groq and Cohere refusals are recorded (CC-104)
+        run: python tests/test_provider_refusal_sites.py

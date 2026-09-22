@@ -97,12 +97,29 @@ def record_refusal(provider: str, model: str, exc=None, status=None, text=None):
         return None
 
 
+def _aggregate(rows: list) -> list:
+    """CC-104: one row per (provider, model, class, status, source, run_id), counted in n.
+
+    Collection alone produced 133 refusals in one run on 2026-09-22; one row each
+    would be ~270 rows a day on a database that has already hit its fair-use limit.
+    The first reason is kept.
+    """
+    out = {}
+    for r in rows:
+        k = (r["provider"], r["model"], r["class"], r["status"], r["source"], r["run_id"])
+        if k in out:
+            out[k]["n"] += 1
+        else:
+            out[k] = dict(r, n=1)
+    return list(out.values())
+
+
 def flush() -> int:
     """Write the buffered events in one request. Returns rows stored; never raises."""
     try:
         if not _PENDING:
             return 0
-        rows = list(_PENDING)
+        rows = _aggregate(list(_PENDING))
         _PENDING.clear()
         if os.environ.get("GITHUB_ACTIONS") != "true":
             log.info(f"PROVIDER_EVENTS not stored: not running in Actions ({len(rows)} events)")
@@ -118,7 +135,8 @@ def flush() -> int:
                                    "Content-Type": "application/json",
                                    "Prefer": "return=minimal"})
         if r.status_code in (200, 201, 204):
-            log.info(f"PROVIDER_EVENTS stored: {len(rows)}")
+            log.info(f"PROVIDER_EVENTS stored: {len(rows)} rows, "
+                     f"{sum(r['n'] for r in rows)} events")
             return len(rows)
         log.warning(f"PROVIDER_EVENTS NOT stored: HTTP {r.status_code} "
                     f"{_redact(r.text)[:160]} ({len(rows)} events)")

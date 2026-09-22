@@ -223,6 +223,7 @@ def call_injection_tracer(client, report: dict, replaced_phrases: list[str], mod
         wire_label = "mistral/" + model
     _tpm.wait_if_needed(2000, label="S2-A")
 
+    _last_err = None   # CC-104
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             log.info(f"S2-A calling {wire_label} for {lens_name} (attempt {attempt}, "
@@ -283,6 +284,7 @@ def call_injection_tracer(client, report: dict, replaced_phrases: list[str], mod
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_SLEEP)
         except Exception as e:
+            _last_err = e
             err = str(e)
             if "429" in err:
                 log.warning(f"Rate limit attempt {attempt} — sleeping 20s"); time.sleep(20)
@@ -293,6 +295,12 @@ def call_injection_tracer(client, report: dict, replaced_phrases: list[str], mod
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_SLEEP)
 
+    if _last_err is not None:
+        try:   # CC-104 (item 11): primary (Groq) when model is None, else the Mistral leg
+            from lens_provider_refusal import record_refusal
+            record_refusal(PROVIDER if model is None else "mistral", model or MODEL, exc=_last_err)
+        except Exception:
+            pass
     log.error(f"S2-A failed after {MAX_RETRIES} attempts for {lens_name}")
     return None
 

@@ -248,6 +248,12 @@ def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[di
         raw = resp.choices[0].message.content.strip()
     except Exception as e:
         log.warning(f"Groq call failed: {e}")
+        try:   # CC-104 (item 11): lazy and wrapped -- this is the canary's air supply (arm 2); the record must
+               # never be able to stop Collection, and it writes nothing here.
+            from lens_provider_refusal import record_refusal
+            record_refusal(provider, model, exc=e)
+        except Exception:
+            pass
         return []
 
     # Strip code fences if present

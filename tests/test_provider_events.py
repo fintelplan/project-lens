@@ -102,6 +102,17 @@ check("both rows in it", len(CALLS[0]["rows"]), 2)
 check("short timeout", CALLS[0]["timeout"], 10)
 check("nothing left pending", len(P._PENDING), 0)
 check("a second flush does nothing", (P.flush(), len(CALLS)), (0, 1))
+check("each row carries n", [r["n"] for r in CALLS[0]["rows"]], [1, 1])
+
+print("== identical events become ONE row, counted (CC-104) ==")
+fresh()
+for _ in range(3):
+    P.record_refusal("groq", "gpt-oss-120b", status=429, text="tokens per day")
+P.record_refusal("groq", "gpt-oss-120b", status=429, text="tokens per minute")
+check("flush returns 2 rows", P.flush(), 2)
+rows = sorted(CALLS[0]["rows"], key=lambda r: r["class"])
+check("daily_quota counted 3", (rows[0]["class"], rows[0]["n"]), ("daily_quota", 3))
+check("rate_limit counted 1", (rows[1]["class"], rows[1]["n"]), ("rate_limit", 1))
 
 print("== outside Actions nothing is written, and it says so ==")
 fresh()
