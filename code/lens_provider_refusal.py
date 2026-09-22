@@ -1,29 +1,37 @@
-"""lens_provider_refusal.py -- one line, one shape, for every provider refusal.
+"""lens_provider_refusal.py -- one line, one shape, for every provider refusal, STORED.
 
-Item 11 (LENS-045), phase 1. SambaNova (402, 2026-07-28) and Cerebras (402,
-~2026-08-17) died with nothing watching, and were found weeks later. Pinging
-a models endpoint would not have caught Cerebras (GET /models answered 200
-while inference answered 402), and an inference ping breathes a lens's quota.
-So this watches what production already hears: the provider's own refusal.
+Item 11 (LENS-045). SambaNova (402, 2026-07-28) and Cerebras (402, ~2026-08-17)
+died with nothing watching, and were found weeks later. Pinging a models
+endpoint would not have caught Cerebras (GET /models answered 200 while
+inference answered 402), and an inference ping breathes a lens's quota. So this
+watches what production already hears: the provider's own refusal.
 
-Every live call site that gives up on a provider calls record_refusal() once,
-and the log gains one line of one shape:
+Phase 1 (CC-102): each live call site that gives up calls record_refusal() once:
 
     PROVIDER_REFUSAL provider=... model=... class=... status=... reason=...
 
-class is one of: payment, daily_quota, rate_limit, model_gone, auth, server,
-other -- read from the status and the provider's own words. The reason is
-redacted against the real environment values (CC-92's rule), and this module
-never raises: a detector must not break the position it watches.
-Phase 2 (LENS-046): the remaining sites, the per-provider summary, the death rule.
+Phase 2 (CC-103), ITIL 4 monitoring and event management -- record, store,
+provide: class maps to a severity (exception = the provider may be gone:
+payment, model_gone, auth; warning = it recovers: daily_quota, rate_limit,
+server, other). Events are buffered in memory and written to
+lens_provider_events ONCE, at process exit, in one batch -- never per call,
+so a refusal storm cannot slow the air supply (gas-mask arm 2). Only inside
+GitHub Actions: local tests and probes do not write to the production table.
+
+This module never raises: a detector must not break the position it watches.
 """
+import atexit
 import logging
 import os
 import re
+import sys
 
 log = logging.getLogger("provider_refusal")
 _SECRET_NAME_HINTS = ("KEY", "TOKEN", "SECRET", "PASSWORD", "ACCOUNT_ID", "URL")
-REFUSALS = []   # (provider, model, class, status) seen in this process
+EXCEPTION_CLASSES = ("payment", "model_gone", "auth")
+REFUSALS = []    # (provider, model, class, status) seen in this process
+_PENDING = []    # rows not yet stored
+_ATEXIT = {"registered": False}
 
 
 def _redact(text: str) -> str:
@@ -60,17 +68,64 @@ def classify(status, text: str) -> str:
     return "other"
 
 
+def severity(cls: str) -> str:
+    return "exception" if cls in EXCEPTION_CLASSES else "warning"
+
+
 def record_refusal(provider: str, model: str, exc=None, status=None, text=None):
-    """Log one PROVIDER_REFUSAL line. Returns the class, or None if it could not."""
+    """Log one PROVIDER_REFUSAL line and buffer it. Returns the class, or None."""
     try:
         if text is None:
             text = str(exc) if exc is not None else ""
         st = status if status is not None else _status_of(exc, text)
         cls = classify(st, text)
-        REFUSALS.append((provider, model, cls, st))
+        sev = severity(cls)
         reason = _redact(" ".join(str(text).split()))[:200]
+        REFUSALS.append((provider, model, cls, st))
+        _PENDING.append({"provider": str(provider), "model": str(model), "class": cls,
+                         "severity": sev, "status": st,
+                         "source": os.path.basename(sys.argv[0] or "") or None,
+                         "run_id": os.environ.get("GITHUB_RUN_ID") or "local",
+                         "reason": reason})
+        if not _ATEXIT["registered"]:
+            atexit.register(flush)
+            _ATEXIT["registered"] = True
         log.warning(f"PROVIDER_REFUSAL provider={provider} model={model} class={cls} "
-                    f"status={st} reason={reason}")
+                    f"status={st} reason={reason}")   # shape unchanged since CC-102
         return cls
     except Exception:
         return None
+
+
+def flush() -> int:
+    """Write the buffered events in one request. Returns rows stored; never raises."""
+    try:
+        if not _PENDING:
+            return 0
+        rows = list(_PENDING)
+        _PENDING.clear()
+        if os.environ.get("GITHUB_ACTIONS") != "true":
+            log.info(f"PROVIDER_EVENTS not stored: not running in Actions ({len(rows)} events)")
+            return 0
+        url = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
+        key = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY") or ""
+        if not url or not key:
+            log.warning(f"PROVIDER_EVENTS NOT stored: no Supabase env ({len(rows)} events)")
+            return 0
+        import requests
+        r = requests.post(f"{url}/rest/v1/lens_provider_events", json=rows, timeout=10,
+                          headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                   "Content-Type": "application/json",
+                                   "Prefer": "return=minimal"})
+        if r.status_code in (200, 201, 204):
+            log.info(f"PROVIDER_EVENTS stored: {len(rows)}")
+            return len(rows)
+        log.warning(f"PROVIDER_EVENTS NOT stored: HTTP {r.status_code} "
+                    f"{_redact(r.text)[:160]} ({len(rows)} events)")
+        return 0
+    except Exception as e:
+        try:
+            log.warning(f"PROVIDER_EVENTS NOT stored: {type(e).__name__} {_redact(str(e))[:120]}")
+        except Exception:
+            pass
+        return 0

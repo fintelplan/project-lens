@@ -79,3 +79,6 @@ jobs:
 
       - name: Provider refusal lines (CC-102)
         run: python tests/test_provider_refusal.py
+
+      - name: Provider events are stored once, never raise (CC-103)
+        run: python tests/test_provider_events.py
