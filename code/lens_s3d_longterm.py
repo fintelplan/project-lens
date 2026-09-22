@@ -295,6 +295,7 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         "position":          "S3-D",
         "report_type":       "TYPE_A",
         "time_horizon":      f"{window_days}_DAY",   # CC-93: was hardcoded 30_DAY
+        "analysis_full":     analysis,   # CC-112 (D4, ICD 203): all 14 fields, not 6 -- ach_check, closing_windows, silent_builders and the drift fields were discarded
         "patterns_found":    json.dumps(analysis.get("patterns_found", [])),
         "structural_trends": json.dumps(analysis.get("structural_trends", {})),
         "summary":           analysis.get("summary", ""),

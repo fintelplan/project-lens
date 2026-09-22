@@ -107,3 +107,6 @@ jobs:
 
       - name: Compendium guard is loud (CC-111)
         run: python tests/test_compendium_refusal.py
+
+      - name: S3-D keeps its whole answer (CC-112)
+        run: python tests/test_s3d_keeps_all.py
