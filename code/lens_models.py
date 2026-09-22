@@ -202,10 +202,12 @@ ROLES = {
     },
     "entity_extract": {
         "provider": "groq", "model": GROQ_GPT_OSS_120B,
-        "key_env": "GROQ_API_KEY", "max_out": 1600,
+        "key_env": "GROQ_S3_API_KEY", "max_out": 1600,
         "fb_provider": "groq", "fb_model": GROQ_GPT_OSS_20B,
-        "fb_key_env": "GROQ_API_KEY",
-        "note": "was MAX_TOKENS=600 (starvation bomb). VERIFY key_env at sweep",
+        "fb_key_env": "GROQ_S3_API_KEY",
+        "note": ("was MAX_TOKENS=600 (starvation bomb). CC-113 (LENS-045): moved off"
+                 " GROQ_API_KEY, Lens 1's org, after its 160 TPD refusals on 2026-09-22"
+                 " evening starved Lens 1 (429_tpd). GROQ_S3_API_KEY was idle."),
     },
     # ---- report generators ----
     "s1_report": {

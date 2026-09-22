@@ -110,3 +110,6 @@ jobs:
 
       - name: S3-D keeps its whole answer (CC-112)
         run: python tests/test_s3d_keeps_all.py
+
+      - name: The canary breathes alone (CC-113)
+        run: python tests/test_canary_air_alone.py
