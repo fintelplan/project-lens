@@ -342,6 +342,11 @@ def call_llm(system_prompt: str, user_msg: str) -> str:
                 time.sleep(sleep_sec)
             else:
                 log.error(f"All {MAX_RETRIES} attempts failed for {provider}")
+                try:   # CC-109 (item 11): the primary provider is given up
+                    from lens_provider_refusal import record_refusal
+                    record_refusal(provider, model, exc=e)
+                except Exception:
+                    pass
                 # Try next provider
                 remaining = [p for p in PROVIDERS if p["name"] != provider
                              and os.environ.get(p["key_env"])]
@@ -365,6 +370,11 @@ def call_llm(system_prompt: str, user_msg: str) -> str:
                         return resp.choices[0].message.content.strip()
                     except Exception as e2:
                         log.error(f"Fallback also failed: {e2}")
+                        try:   # CC-109 (item 11): the fallback provider refused too
+                            from lens_provider_refusal import record_refusal
+                            record_refusal(provider, model, exc=e2)
+                        except Exception:
+                            pass
                 raise RuntimeError(f"All providers exhausted")
 
 

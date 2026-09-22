@@ -98,3 +98,6 @@ jobs:
 
       - name: S3-C window tests (CC-108)
         run: python tests/test_s3c_window.py
+
+      - name: S3-F and Regular Report record refusals (CC-109)
+        run: python tests/test_provider_refusal_s3.py

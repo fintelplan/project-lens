@@ -260,6 +260,7 @@ def call_mistral(prompt: str) -> Optional[str]:
     if not MISTRAL_KEY:
         log.error("MISTRAL_API_KEY not set")
         return None
+    _last = None   # CC-109: (status, text) of the last refusal
     for attempt in range(1, 3):
         try:
             log.info(f"S3-F calling Mistral (attempt {attempt})")
@@ -281,10 +282,18 @@ def call_mistral(prompt: str) -> Optional[str]:
                 log.info(f"S3-F: {len(text)} chars generated")
                 return text
             log.warning(f"Mistral {r.status_code} attempt {attempt}: {r.text[:200]}")
+            _last = (r.status_code, r.text)
             time.sleep(20 * attempt)
         except Exception as e:
             log.error(f"Mistral call failed attempt {attempt}: {e}")
+            _last = (None, str(e))
             time.sleep(15)
+    if _last is not None:
+        try:   # CC-109 (item 11): S3-F has no fallback leg; this is its only voice
+            from lens_provider_refusal import record_refusal
+            record_refusal("mistral", MODEL, status=_last[0], text=_last[1])
+        except Exception:
+            pass
     return None
 
 
