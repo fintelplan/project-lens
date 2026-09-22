@@ -17,6 +17,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 import requests
 from lens_models import assert_model_known, fit_max_tokens, wire, get_role
+from lens_window_sample import sample_window, newest_third, window_span   # CC-99
 from supabase import create_client, Client
 
 # ── Quota guard (LR-074) ──────────────────────────────────────────────────────
@@ -132,21 +133,34 @@ def already_ran_today(sb: Client) -> bool:
 
 
 def fetch_s1_reports(sb: Client, days: int) -> list:
+    """CC-99 (LENS-045): the whole window, evenly in time -- not its oldest rows.
+
+    `order asc` + `limit 20` read the OLDEST 20 reports of the 7 days. At ~8 S1
+    reports a day that was about the first two and a half days, so S3-A's first
+    question -- what SEQUENCE is forming across the last 7 days -- never saw the
+    last four. S3-D had the same defect (CC-93/94/96); this is its sampler.
+    """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-    r = sb.table("lens_reports") \
-        .select("id,domain_focus,summary,cycle,generated_at,quality_score") \
-        .gte("generated_at", cutoff).order("generated_at", desc=False) \
-        .limit(MAX_S1_REPORTS).execute()
-    return r.data or []
+    rows, total = sample_window(sb, "lens_reports",
+                                "id,domain_focus,summary,cycle,generated_at,quality_score",
+                                "generated_at", cutoff, MAX_S1_REPORTS)
+    log.info(f"S1 window={days}d: {total} reports in window, {len(rows)} sampled evenly "
+             f"in time ({newest_third(rows, 'generated_at')} in the newest third)"
+             f"{window_span(rows, 'generated_at')}")
+    return rows
 
 
 def fetch_s2_reports(sb: Client, days: int) -> list:
+    """CC-99: the same fix. injection_reports held 1,169 rows in 30 days
+    (LENS-044), so ~270 in 7; the oldest 15 were the window's first hours."""
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-    r = sb.table("injection_reports") \
-        .select("analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at") \
-        .gte("created_at", cutoff).order("created_at", desc=False) \
-        .limit(MAX_S2_REPORTS).execute()
-    return r.data or []
+    rows, total = sample_window(sb, "injection_reports",
+                                "id,analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at",
+                                "created_at", cutoff, MAX_S2_REPORTS)
+    log.info(f"S2 window={days}d: {total} reports in window, {len(rows)} sampled evenly "
+             f"in time ({newest_third(rows, 'created_at')} in the newest third)"
+             f"{window_span(rows, 'created_at')}")
+    return rows
 
 
 def build_prompt(s1: list, s2: list) -> str:
