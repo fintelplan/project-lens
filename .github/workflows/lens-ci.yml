@@ -35,7 +35,8 @@ jobs:
           pip install \
             supabase \
             python-dotenv \
-            requests
+            requests \
+            openai
 
       - name: Compile every module (LR-092)
         run: python -m py_compile code/*.py
@@ -63,3 +64,6 @@ jobs:
 
       - name: S3-D window and label tests (CC-93)
         run: python tests/test_s3d_window.py
+
+      - name: S2-F quota breaker tests (CC-97)
+        run: python tests/test_s2f_quota_breaker.py

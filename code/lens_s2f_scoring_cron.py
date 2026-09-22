@@ -108,6 +108,7 @@ def main():
     scored = 0
     skipped = 0
     failed = 0
+    quota_skipped = 0   # CC-97: the provider refused for the day; no call was made
 
     for article in articles:
         article_id = article["id"]
@@ -141,6 +142,14 @@ def main():
                     stage_filter="early_warning",
                 )
 
+                if result.status == "SKIP_QUOTA":
+                    # CC-97: not scored, not written, and not a new failure --
+                    # the refusal that tripped the breaker was counted once, as failed,
+                    # so a run that scored nothing still exits 1 (CC-85).
+                    quota_skipped += 1
+                    log.info("  -> quota-skipped: " + (result.error or "")[:120])
+                    continue
+
                 uid = write_detection_result(
                     result=result,
                     raw_article_id=article_id,
@@ -160,7 +169,11 @@ def main():
                 log.error(f"  → Error: {str(e)[:200]}")
                 failed += 1
 
-    log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed}")
+    log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed} "
+             f"quota_skipped={quota_skipped}")
+    if quota_skipped:
+        log.warning(f"S2-F: {quota_skipped} scorings not attempted -- a provider "
+                    f"refused for the day (CC-97 breaker)")
 
     code = scoring_exit_code(scored, failed)
     if code:

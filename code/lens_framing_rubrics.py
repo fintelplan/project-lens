@@ -309,6 +309,43 @@ def _guard_for(provider: str) -> "TPMGuard":
     return g
 
 
+# CC-97 (LENS-045): a daily-quota circuit breaker. Cloudflare answers HTTP 429
+# with body code 4006 when the day's 10,000-neuron free allocation is gone
+# (run 35640858699, 2026-09-21 evening: 9 refusals, each retried twice by the
+# SDK = 27 hopeless POSTs). A refusal for the DAY cannot succeed later in the
+# same run, so the first one trips the breaker and every later call to that
+# provider returns SKIP_QUOTA without an HTTP request. The test reads the
+# parsed body, never a substring: "4006" also occurs inside log timestamps.
+_quota_tripped: dict = {}
+_DAILY_EXHAUSTED = {("cloudflare", 4006)}
+_MAX_ATTEMPTS = 3                 # the openai SDK's own default: 1 call + 2 retries
+_RETRY_BACKOFF_SEC = (1, 2)
+
+
+def _error_codes(e) -> list:
+    body = getattr(e, "body", None)
+    if not isinstance(body, dict):
+        return []
+    errs = body.get("errors")
+    if not isinstance(errs, list):
+        return []
+    return [x.get("code") for x in errs if isinstance(x, dict)]
+
+
+def _is_daily_exhausted(provider: str, e) -> bool:
+    if getattr(e, "status_code", None) != 429:
+        return False
+    return any((provider, c) in _DAILY_EXHAUSTED for c in _error_codes(e))
+
+
+def _is_retryable(e) -> bool:
+    """The SDK's own retry rule, kept now that the SDK's retries are off."""
+    status = getattr(e, "status_code", None)
+    if isinstance(status, int):
+        return status in (408, 409, 429) or status >= 500
+    return type(e).__name__ in ("APIConnectionError", "APITimeoutError")
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # LLM client -- provider-agnostic, one of five explicit providers
 # ══════════════════════════════════════════════════════════════════════════════
@@ -362,6 +399,7 @@ def _get_llm_client():
         client = OpenAI(
             api_key=key,
             base_url="https://openrouter.ai/api/v1",
+            max_retries=0,   # CC-97: the call loop owns retries
         )
         model = "openai/gpt-oss-120b:free"
         log.info(f"Using OpenRouter provider (model: {model})")
@@ -383,6 +421,7 @@ def _get_llm_client():
         client = OpenAI(
             api_key="ollama",  # Ollama ignores this but openai SDK requires non-empty
             base_url=f"http://{host}/v1",
+            max_retries=0,   # CC-97: the call loop owns retries
         )
         log.info(f"Using Ollama provider (model: {model}, host: {host})")
         return client, model, "ollama"
@@ -402,6 +441,7 @@ def _get_llm_client():
         client = OpenAI(
             api_key=token,
             base_url=f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+            max_retries=0,   # CC-97: the call loop owns retries
         )
         log.info(f"Using Cloudflare Workers AI provider (model: {cf_model})")
         return client, cf_model, "cloudflare"
@@ -419,6 +459,7 @@ def _get_llm_client():
         client = OpenAI(
             api_key=key,
             base_url="https://api.mistral.ai/v1",
+            max_retries=0,   # CC-97: the call loop owns retries
         )
         log.info(f"Using Mistral provider (model: {mistral_model})")
         return client, mistral_model, "mistral"
@@ -437,7 +478,7 @@ def _get_llm_client():
 @dataclass
 class DetectionResult:
     """Return contract for detect_operations_in_article."""
-    status: str                              # "OK" | "LLM_FAILED" | "PARSE_FAILED" | "SKIP_TOO_SHORT" | "SKIP_NO_KEY" | "SKIP_NO_CATALOG"
+    status: str                              # "OK" | "LLM_FAILED" | "PARSE_FAILED" | "SKIP_TOO_SHORT" | "SKIP_NO_KEY" | "SKIP_NO_CATALOG" | "SKIP_QUOTA"
     state_actor_lens: str
     stage_filter: str                        # "early_warning" | "all"
     catalog_version: str = ""
@@ -577,23 +618,58 @@ def detect_operations_in_article(
     )
 
     # ── Call LLM ──
+    # CC-97: a provider that refused for the day earlier in this run is not called again.
+    if provider in _quota_tripped:
+        return DetectionResult(
+            status="SKIP_QUOTA",
+            state_actor_lens=state_actor_lens,
+            stage_filter=stage_filter,
+            catalog_version=catalog["catalog_version"],
+            error=f"{provider} refused for the day earlier in this run: {_quota_tripped[provider][:160]}",
+            provider=provider,
+            model=model_name,
+        )
+
     estimated_tokens = 3000  # bigger prompt for ops detection
     _guard_for(provider).wait_if_needed(estimated_tokens, label=f"S2F-{state_actor_lens}-{provider}")
 
-    try:
-        resp = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user",   "content": user_msg},
-            ],
-            max_tokens=MAX_TOKENS,
-            temperature=TEMPERATURE,
-            timeout=REQUEST_TIMEOUT_SEC,
-        )
-        raw = resp.choices[0].message.content.strip()
-        _guard_for(provider).log_usage(estimated_tokens)
-    except Exception as e:
+    # CC-97: the SDK's retries are off (max_retries=0 on every client above) and
+    # this loop owns them, so a refusal for the day is never retried. Anything
+    # the SDK would have retried is still retried, the same number of times.
+    raw = None
+    last_exc = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_msg},
+                ],
+                max_tokens=MAX_TOKENS,
+                temperature=TEMPERATURE,
+                timeout=REQUEST_TIMEOUT_SEC,
+            )
+            raw = resp.choices[0].message.content.strip()
+            _guard_for(provider).log_usage(estimated_tokens)
+            break
+        except Exception as e:
+            last_exc = e
+            if _is_daily_exhausted(provider, e):
+                _quota_tripped[provider] = _redact(str(e))[:400]
+                log.warning(f"[BREAKER] {provider} refused for the day -- "
+                            f"no further {provider} calls this run")
+                break
+            if attempt < _MAX_ATTEMPTS and _is_retryable(e):
+                wait = _RETRY_BACKOFF_SEC[min(attempt - 1, len(_RETRY_BACKOFF_SEC) - 1)]
+                log.info(f"{provider} attempt {attempt}/{_MAX_ATTEMPTS} failed "
+                         f"({type(e).__name__}); retrying in {wait}s")
+                time.sleep(wait)
+                continue
+            break
+
+    if raw is None:
+        e = last_exc
         # CC-92: this text was captured and never printed. The provider names
         # its own reason here -- Cloudflare returns a numbered error code when
         # the daily neuron allocation is gone, and a different shape when it is
