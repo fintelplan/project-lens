@@ -225,6 +225,7 @@ def call_coordination_analyzer(client, reports: list,
     user_prompt  = build_prompt(reports)
     full_content = SYSTEM_PROMPT + "\n\n" + user_prompt
 
+    _last_err = None   # CC-102
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             rpm_guard.wait_if_needed(label="S2-B")
@@ -269,6 +270,7 @@ def call_coordination_analyzer(client, reports: list,
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_SLEEP)
         except Exception as e:
+            _last_err = e
             err = str(e)
             if "429" in err:
                 wait = 30 * attempt   # escalating: 30s, 60s, 90s
@@ -293,6 +295,12 @@ def call_coordination_analyzer(client, reports: list,
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_SLEEP)
 
+    if _last_err is not None:
+        try:   # CC-102 (item 11)
+            from lens_provider_refusal import record_refusal
+            record_refusal("google", MODEL, exc=_last_err)
+        except Exception:
+            pass
     log.error(f"S2-B failed after {MAX_RETRIES} attempts")
     log.warning(f"S2-B Gemini exhausted -- falling back to Mistral ({MISTRAL_FALLBACK_MODEL})")   # CC-101: the label said Mistral-small
     import requests as _req

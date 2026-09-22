@@ -194,6 +194,7 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     analysis = None
     model_used    = MODEL       # overwritten if the fallback is the one
     provider_used = "google"    # that actually produces the analysis
+    _last_err = None   # CC-102
     for attempt in range(1, 4):
         try:
             log.info(f"S3-B calling {MODEL} (attempt {attempt})")
@@ -219,9 +220,16 @@ def run_s3b(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
                      f"total_tokens={getattr(_g_usage, 'total_token_count', 'UNAVAILABLE')}")
             break
         except Exception as e:
+            _last_err = e
             log.warning(f"Attempt {attempt} failed: {e}")
             if attempt < 3: time.sleep(30 * attempt)
 
+    if not analysis and _last_err is not None:
+        try:   # CC-102 (item 11)
+            from lens_provider_refusal import record_refusal
+            record_refusal("google", MODEL, exc=_last_err)
+        except Exception:
+            pass
     if not analysis:
         log.warning(f"Gemini exhausted -- falling back to Mistral ({MISTRAL_FALLBACK_MODEL}) for S3-B")   # CC-101
         import requests as _req

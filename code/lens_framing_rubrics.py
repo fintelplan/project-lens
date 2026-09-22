@@ -673,6 +673,11 @@ def detect_operations_in_article(
 
     if raw is None:
         e = last_exc
+        try:   # CC-102 (item 11): one refusal line of one shape
+            from lens_provider_refusal import record_refusal
+            record_refusal(provider, model_name, exc=e, text=_redact(str(e)))
+        except Exception:
+            pass
         # CC-92: this text was captured and never printed. The provider names
         # its own reason here -- Cloudflare returns a numbered error code when
         # the daily neuron allocation is gone, and a different shape when it is

@@ -154,6 +154,7 @@ def call_mistral(prompt: str) -> Optional[str]:
         log.error("MISTRAL_API_KEY not set")
         return None
 
+    _last = None   # CC-102: the last refusal, for one PROVIDER_REFUSAL line
     for attempt in range(1, 4):
         try:
             log.info(f"S1 report calling Mistral (attempt {attempt})")
@@ -178,10 +179,18 @@ def call_mistral(prompt: str) -> Optional[str]:
                     log.warning(f"S1 report hit max_tokens={MAX_TOKENS} -- PART E may be cut off")
                 return text
             log.warning(f"Mistral {r.status_code} attempt {attempt}")
+            _last = (r.status_code, r.text)
             time.sleep(20 * attempt)
         except Exception as e:
             log.error(f"Mistral call failed attempt {attempt}: {e}")
+            _last = (None, str(e))
             time.sleep(15)
+    if _last is not None:
+        try:   # CC-102 (item 11)
+            from lens_provider_refusal import record_refusal
+            record_refusal("mistral", MODEL, status=_last[0], text=_last[1])
+        except Exception:
+            pass
     return None
 
 

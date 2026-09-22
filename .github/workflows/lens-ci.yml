@@ -76,3 +76,6 @@ jobs:
 
       - name: Five small truths (CC-101)
         run: python tests/test_cc101_small_truths.py
+
+      - name: Provider refusal lines (CC-102)
+        run: python tests/test_provider_refusal.py
