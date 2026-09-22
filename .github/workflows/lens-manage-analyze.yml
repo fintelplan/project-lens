@@ -58,7 +58,7 @@ jobs:
           LENS_DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '0' }}
         run: |
           python code/lens_orchestrator.py
-          python code/lens_s1_report.py || true
+          python code/lens_s1_report.py   # CC-100: no `|| true` -- a missing canary report is a red step
           echo "System 1 complete — proceeding to System 2"
 
       - name: Run System 2 Orchestrator (injection + coordination + emotion + adversary + legitimacy + mission analyst)

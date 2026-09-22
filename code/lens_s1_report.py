@@ -1,7 +1,7 @@
 """
 lens_s1_report.py — S1 Canary Intelligence Report
 Project Lens | LENS-023
-Model: mistral-small-latest (free)
+Model: ministral-8b-2512 (free) -- CC-100, was mistral-small-latest
 Purpose: Full quality docx of what the 4-lens canary detected today.
          Companion to S2 report — operator compares S1 (raw signal)
          vs S2 (how that signal was shaped) to reveal manipulation delta.
@@ -16,9 +16,13 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S1-RPT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s1_report")
 
-MODEL       = "mistral-small-latest"
+MODEL       = "ministral-8b-2512"   # CC-100 (LENS-045), was mistral-small-latest.
+# The whole mistral-small* class 429s on this key (LENS-040). On 2026-09-22
+# all three attempts were refused and the canary report never reached
+# Telegram, while the wave stayed green. Same repoint as CC-68 (Regular Report).
 TEMPERATURE = 0.3
-MAX_TOKENS  = 4000
+MAX_TOKENS  = 6000   # CC-100: the probe used 3,096 of 4,000 (77%); one prompt has
+                     # varied by >1,800 tokens at T=0.3 (LENS-044). A ceiling only.
 TELEGRAM_CAPTION_CAP = 950
 
 
@@ -165,8 +169,13 @@ def call_mistral(prompt: str) -> Optional[str]:
                 timeout=120
             )
             if r.status_code == 200:
-                text = r.json()["choices"][0]["message"]["content"].strip()
-                log.info(f"S1 report: {len(text)} chars generated")
+                ch = r.json()["choices"][0]
+                text = (ch["message"]["content"] or "").strip()
+                fr = ch.get("finish_reason")
+                log.info(f"S1 report: {len(text)} chars generated, finish_reason={fr}")
+                if fr == "length":
+                    # CC-100: a cut-off verdict must not pass as a whole report.
+                    log.warning(f"S1 report hit max_tokens={MAX_TOKENS} -- PART E may be cut off")
                 return text
             log.warning(f"Mistral {r.status_code} attempt {attempt}")
             time.sleep(20 * attempt)
@@ -202,7 +211,7 @@ def render_docx(report_text: str, date_str: str) -> str:
 
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    sr = sub.add_run(f"{date_str}  |  System 1  |  4-Lens Canary  |  Mistral-small")
+    sr = sub.add_run(f"{date_str}  |  System 1  |  4-Lens Canary  |  {MODEL}")   # CC-100: was a fixed "Mistral-small"
     sr.font.size = Pt(10); sr.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     disclaimer = doc.add_paragraph()
@@ -326,7 +335,22 @@ def run_s1_report(run_id: Optional[str] = None) -> dict:
     return {"status": "COMPLETE" if sent else "SEND_FAILED", "elapsed": elapsed}
 
 
+def exit_code(result: dict) -> int:
+    """CC-100: anything short of a delivered report is a failed step.
+
+    The workflow ran this script with `|| true` and the script always exited 0,
+    so on 2026-09-22 a canary report that was never written left the wave green.
+    """
+    return 0 if result.get("status") == "COMPLETE" else 1
+
+
 if __name__ == "__main__":
     from dotenv import load_dotenv; load_dotenv()
     result = run_s1_report()
     print(result)
+    if result.get("status") != "COMPLETE":
+        # Operator status, not the canary's voice: plain text, apart from the report.
+        send_telegram_text(f"S1 Canary Report FAILED today: {result.get('status')} "
+                           f"(model {MODEL}). No report was sent.")
+    import sys
+    sys.exit(exit_code(result))

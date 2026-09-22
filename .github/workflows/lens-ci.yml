@@ -70,3 +70,6 @@ jobs:
 
       - name: S3-A window tests (CC-99)
         run: python tests/test_s3a_window.py
+
+      - name: S1 canary report is loud (CC-100)
+        run: python tests/test_s1_report_loud.py
