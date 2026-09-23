@@ -1,13 +1,20 @@
 # NEXT SESSION BRIEF — LENS-046
-DRAFT written 2026-09-22 during LENS-045 (session still open). SESSION STATE ONLY.
+Written 2026-09-23 at the LENS-045 close (session ran Sep 22-23). SESSION STATE ONLY.
 The item list lives in docs/LENS_TARGET_AND_ORDER_LENS046.md. This brief
 references order items BY NUMBER and never restates them.
 
 ## HEAD — VERIFY, DO NOT TRUST THIS LINE
-Last code commit: `7771891` (CC-115), pushed, `ls-remote`-matched, Lens CI green 2026-09-22.
+Last code commit: `0c457f9` (CC-116 amendment), pushed, `ls-remote`-matched, Lens CI green 2026-09-22.
 `git ls-remote origin refs/heads/main` is the only truth (LR-104).
 
 ## READ THIS BEFORE ANYTHING ELSE
+- **Certs owed:** tonight's M+A (CC-115 retired primary, CC-116 alert on change);
+  **Thursday 2026-09-24** (S3-D 90-day + CC-112 `analysis_full`, S3-C CC-108); the
+  CC-114 MISSING path whenever a lens next fails. Read with `lens045_certs.sh`.
+- **First task: D3's open question.** The S2 report IS wired (`lens_s2_orchestrator.py:246`,
+  since `3d56327`) yet no S2 docx reaches Telegram and no `S2-RPT` line is in the log.
+  Grep the module's OWN message strings (its log prefix is probably `[QUOTA_GUARD]`),
+  not a prefix. It still calls `mistral-small-latest` (the refused class).
 - **2026-09-22 EVENING: THE CANARY LOST LENS 1 AND ITS VOICE SAID 4/4.** Collection's
   entity extraction drew 160 `tokens per day` refusals on GROQ_API_KEY; Lens 1 (same
   key) failed `429_tpd_escalated` 3s after firing. The canary block, the S1 report
@@ -21,7 +28,7 @@ Last code commit: `7771891` (CC-115), pushed, `ls-remote`-matched, Lens CI green
 - **James's sequence (LENS-045):** handover -> urgent+important -> record OTHERS ->
   DISCUSS D1-D7 -> decide. No mission is declared until the discussion.
 
-## WHAT SHIPPED (LENS-045) — nineteen commits, Lens CI green on each; gates 9 -> 27
+## WHAT SHIPPED (LENS-045) — twenty-one commits, Lens CI green on each; gates 9 -> 28
 | SHA | What |
 | --- | --- |
 | `b52f7f0` | **CC-97** S2-F daily-quota breaker: first `4006` trips it; SDK retries off, the loop owns them. Gate 10 on the real openai SDK |
@@ -38,6 +45,8 @@ Last code commit: `7771891` (CC-115), pushed, `ls-remote`-matched, Lens CI green
 | `a336d46` | **CC-108** **S3-C read the OLDEST 40 rows of its 30-day window** (~5 days of S1, ~1 day of S2); now sampled evenly in time, ids selected; Cohere refusals recorded. Gate 20 |
 | `72924dd` | **CC-109** S3-F (Mistral, no fallback) and the Regular Report record refusals. Gate 21 |
 | `4bfa018` | **CC-110** S3-D records refusals — nine added lines, zero removed, proven by a diff guard. Gate 22 |
+| `0c457f9` | **CC-116b** hysteresis: an escalation must pass the last ~24h (the live week flipped HIGH<->CRITICAL: C C C C H C H C H H H C H H) |
+| `cdbd343` | **CC-116** the CRITICAL alert fires on a change, not on every HIGH/CRITICAL wave; says when it stays quiet; the Brief says `(N waves in a row)`. Replayed on the live week: 14 alerts -> 3. Gate 28 |
 | `7771891` | **CC-115** `RETIRED_PROVIDERS = {cerebras}` in the registry; S2-D, S2-E and MA skip their dead primary and go straight to the ministral-8b fallback that answered every wave. 26 lines added, 0 removed. Gate 27 |
 | `b9dde9b` | **CC-114** the canary's voice counts THIS wave (`lens_canary_wave.py`): canary block, S1 report prompt and intro, Daily Brief say `3/4 -- MISSING: Foundation`; zero lenses is sent, not skipped. Live dry read on the Sep 22 evening rows: `3/4 lenses -- MISSING: Foundation`. Gate 26 |
 | `184c09e` | **CC-113** entity extraction moves to GROQ_S3_API_KEY (idle; a separate org: 999/1000 daily requests left while Lens 1's org had spent 321+). Gate 25 = a ratchet: no NEW role may share a canary lens's key; Lens 1 carries no debt |
@@ -83,6 +92,10 @@ binary, all-or-nothing; every sandbox hash matched James's machine.
   evidence** (the canary lost Lens 1). Re-ruled A, refined by the key map: move entity
   extraction to an IDLE Groq org (GROQ_S3_API_KEY), not GROQ_S2DGCOM (that would
   have starved S2-GAP). Shipped CC-113.
+- **D6 delegated -> Claude ruled A:** make S2-F coverage visible (scored/attempted) now,
+  set the RED threshold with D2's wiring. NOT built: the attempted count is stored
+  nowhere yet (only the cron log). James: discussions must stay on each workflow's
+  original purpose -- anchor every ruling on why the position was built.
 - **D2 delegated -> Claude ruled A**: Mistral `ministral-8b-2512` primary on every
   article, Cloudflare a best-effort second leg (CC-97 makes a refusal cost one
   POST). Not wired: LR-106 probe on S2-F's real prompt first.
@@ -150,6 +163,10 @@ binary, all-or-nothing; every sandbox hash matched James's machine.
 - The cert reader's S3-A pattern assumed an `[S3-A]` prefix; S3-A logs under
   `[QUOTA_GUARD]` (the guard's basicConfig wins). The eighth substring slip; the
   position's own words (`window=7d`) found the lines.
+- "The threat has been CRITICAL all week" -- it alternated HIGH/CRITICAL; the Brief's
+  "7-DAY TREND" shows only the last THREE reports (`trend[:3]`) under a 7-day label.
+- CC-116 was committed (`cdbd343`) before its hysteresis amendment ran: Claude handed the
+  commit block in the same message as the amendment script. Caught by bytes; `0c457f9`.
 - **ESTIMATES THAT HELD:** every sandbox sha matched; CC-97 22/22 on the real
   catalog; the S1 probe prediction (200/stop/5 parts); forensic trigger has no
   conclusion filter; RLS; bites RED as predicted.
@@ -161,6 +178,12 @@ binary, all-or-nothing; every sandbox hash matched James's machine.
   builds a Cerebras client before the CC-115 skip; removing the secret breaks them.
 - Did not wire the canary lenses into the detector (gas-mask test first).
 - Did not wire S2-RPT (D3). Did not touch S3-D storage (D4).
+
+## SUPABASE CHANGE (email, 2026-09-23)
+From 2026-10-30, a NEW table in `public` gets no Data API grants by default. Existing
+tables (incl. `lens_provider_events`, created Sep 22) keep theirs. Any new table must
+be created with `grant select, insert, update, delete on public.<t> to service_role;`
+and **NOT** the email's `grant select ... to anon` -- Lens's RLS model gives anon nothing.
 
 ## LEAK LOG
 `lens045_cc100.sh.log` held the Supabase project URL (httpx INFO, unmasked

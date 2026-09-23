@@ -1,5 +1,5 @@
 # LENS TARGET AND ORDER — LENS-046
-DRAFT written 2026-09-22 during LENS-045 (session still open). Supersedes LENS045 entirely.
+Regenerated 2026-09-23 at the LENS-045 close. Supersedes LENS045 entirely.
 Item numbers are NEW. Nothing carries its old number.
 
 ## THE TARGET (unchanged since LENS-036)
@@ -40,6 +40,8 @@ A change that moves a position away from its charter is a STOP-and-ask.
 ---
 
 # THE MISSION
+**Not declared** -- James rules it at LENS-046's open. Claude's suggestion: the D3
+first task (an hour), then D2's LR-106 matrix and wiring with D6's coverage line.
 **Not declared.** James ruled the LENS-045 sequence: finish the handover, then
 urgent+important, then record OTHERS, then DISCUSS (D1–D7), then decide.
 The mission for LENS-046 comes out of that discussion.
@@ -85,6 +87,7 @@ Mistral concentration (DORA Art. 29), watched by item 3's detector.
 | **CC-113 canary air -- CERTIFIED Sep 23 (Lens 1 ✅ 6.8)** | `184c09e` | next morning M+A | `[ORCH] Lens 1: ✅`, no `429_tpd`; any Groq refusals now come from `fetch_text.py` on its own org |
 | **CC-114 canary voice -- 4/4 path CERTIFIED; MISSING path owed** | `b9dde9b` | next M+A | `4/4` when all spoke; otherwise `N/4 ... MISSING: <lens>` on the block, the Brief and the S1 report; never a borrowed row |
 | CC-115 retired primary | `7771891` | next M+A | `S2-D primary cerebras/gpt-oss-120b is RETIRED -- ... going straight to the fallback leg` (S2-D x2, S2-E x4, MA x1); no `calling cerebras`; no `provider=cerebras` refusal; S2 step shorter |
+| CC-116 alert on change | `cdbd343`, `0c457f9` | next M+A | `CRITICAL alert not sent: unchanged ...` in the log and NO critical-alert message while the level holds; the Brief says `(N waves in a row)` |
 | S3-D 90-day (CC-93/94/96) | `b1e28b7` | **Thu 2026-09-24** | as LENS045 item 4 |
 | S3-D 30-day | same | Mon 2026-09-28 | `30 sampled`, ~10 in the newest third |
 
@@ -144,13 +147,20 @@ Unchanged from LENS045 item 8. **ANSWERED Sep 22:** Direction B's "5 findings" a
 trump_office Verification finding, one row per day Sep 18-22, all unreviewed, re-sent
 every wave (seen in Telegram, 2026-09-23 01:08 ICT).
 
-## 7. A PARTIAL FAILURE IS STILL GREEN — RULING (D6)
-Unchanged from LENS045 item 9. `scoring_exit_code(1, 23)` returns 0.
+## 7. A PARTIAL FAILURE IS STILL GREEN — RULED (D6 = A), NOT BUILT
+S2-F reads a 6h lookback: an article unscored in its wave is lost for good, so partial
+failure costs coverage permanently (PHI-004's Verification needs its ~44-article sample).
+Ruling: show coverage (scored/attempted) where the reader sees it; set the RED threshold
+inside D2's wiring (with Mistral on every article, a failure is rare and serious). The
+attempted count must first be stored somewhere -- a new table needs the Oct-30 grant rule.
 
-## 8. THE S2 REPORT IS NEVER SCHEDULED — RULING (D3, new)
-`lens_s2_step_report.py` runs only from `lens-resume.yml`. The S1 report tells
-the reader to "compare with S2 to see the manipulation delta"; the S2 report
-never arrives. It still calls `mistral-small-latest` (the refused class).
+## 8. THE S2 REPORT NEVER ARRIVES — RULING (D3), lean A
+**Corrected:** it IS wired -- `lens_s2_orchestrator.py:246` calls `run_s2_report` (since
+`3d56327`, LENS-022). Built as the trio's middle (S1 raw signal / S2 how it was shaped /
+S3 strategic) so the operator can see the manipulation delta (PHI-001, PHI-004). No S2
+docx reaches Telegram; the log shows no `S2-RPT` line (its prefix is probably
+`[QUOTA_GUARD]` -- grep its own strings). It calls `mistral-small-latest`. Claude's lean:
+A -- restore it the CC-100 way (probe ministral-8b, repoint, loud exit), as designed.
 
 ## 9. CARRIED FORWARD (OTHERS)
 - ~~S3-B retries a dead model~~ and ~~S2-B's `failed after 3 attempts`~~ — CLOSED by
@@ -162,8 +172,11 @@ never arrives. It still calls `mistral-small-latest` (the refused class).
   logged in production is unverified.
 - `rpc/` functions not checked for SECURITY DEFINER (RLS bypass).
 - The Cloudflare pacing guard logs usage only on success.
-- **Alert fatigue:** the CRITICAL ALERT fires every wave (7-day trend CRITICAL x3), so
-  it no longer marks a change. A threshold question for James.
+- ~~Alert fatigue~~ -- CC-116 (`cdbd343` + `0c457f9`): alert on an escalation past the last
+  ~24h; 14 -> 3 a week on the live history. Left open: **Mission Analyst flips HIGH<->CRITICAL
+  wave to wave** -- the top of its scale may no longer discriminate (calibration, for D1).
+- The Brief's "7-DAY TREND" shows the last THREE reports (`trend[:3]`) -- a label that lies
+  about its window; it hid the HIGH/CRITICAL alternation from both of us.
 - The Brief's "Patterns: 5" disagrees with the S3 report's "3 patterns" (same wave).
 - `**` markdown is sent unrendered (Brief, S2 message, Regular Report caption); S3-B's
   historical parallel sometimes arrives as raw JSON (Sep 22), sometimes as text (Sep 23).
@@ -184,6 +197,9 @@ external and live; GNI's were internal. GNI's own route is not yet proven.
 ---
 
 # OPEN RULINGS (discussion first — James, LENS-045)
+**James's method for every discussion: anchor on why the workflow was built; do not
+drift from it.** Ruled at LENS-045: D2 = A, D4 = A (shipped), D6 = A, D7 = A (shipped).
+Still open: D1, D3, and the new MA-calibration question inside D1.
 - **D1** target + completion test · **D2** item 1 · **D3** item 8 · **D4** item 5 ·
   **D5** item 6 · **D6** item 7 · **D7** item 4.
 - **R10** — Claude's lean is RULE OUT, unchanged since LENS-039.
@@ -212,6 +228,8 @@ external and live; GNI's were internal. GNI's own route is not yet proven.
   the debt in sight.
 - **Prove an org boundary without touching the thing you protect.** Daily-request
   headroom on the idle key (999/1000) proved a separate org; the canary's key was never called.
+- **Never hand a commit block in the same message as the script it depends on.** CC-116
+  shipped once without its amendment that way.
 - **Run the guard before you rely on it.** The CC-110 diff guard had never run;
   its first run crashed. A proof that has not been executed is a promise.
 - **A design that names a place must first find the place.** The pre-flight
