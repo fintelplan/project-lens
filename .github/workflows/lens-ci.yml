@@ -116,3 +116,6 @@ jobs:
 
       - name: The canary's voice counts its lenses (CC-114)
         run: python tests/test_canary_voice.py
+
+      - name: A retired provider is not called (CC-115)
+        run: python tests/test_retired_provider.py

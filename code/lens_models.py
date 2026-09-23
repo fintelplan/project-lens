@@ -477,6 +477,14 @@ def fit_max_tokens(prompt_chars, cap, provider, model):
 # Gas-mask test ARM 4. The four S1 lenses breathe these keys; a probe or test
 # that spends them competes with the canary (GROQ_API_KEY is also Collection's).
 CANARY_LENS_ROLES = ("lens1", "lens2", "lens3", "lens4")
+
+# CC-115 (LENS-045): providers that refuse every call. A position whose primary is
+# listed goes straight to its fallback leg instead of trying, waiting and failing.
+# Remove an entry to restore the primary. Evidence: PROVIDER HEALTH said DOWN.
+RETIRED_PROVIDERS = {
+    "cerebras": "402 payment_required on every call since ~2026-08-17; "
+                "DOWN in provider health 2026-09-23 (payment x14 in 2 runs)",
+}
 CANARY_AIR_MIN_REASON = 12
 
 

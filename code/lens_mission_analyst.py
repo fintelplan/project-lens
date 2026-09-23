@@ -637,6 +637,11 @@ def call_mission_analyst(client, prompt: str, cycle: Optional[str]) -> Optional[
     # CC-1c: pace on the real request size, not a flat 3000 guess.
     _tpm.wait_if_needed(prompt_chars // 3 + max_tokens, label="MA")
 
+    if PROVIDER in __import__("lens_models").RETIRED_PROVIDERS:   # CC-115
+        log.warning(f"MA primary {PROVIDER}/{MODEL} is RETIRED -- "
+                    f"{__import__('lens_models').RETIRED_PROVIDERS[PROVIDER][:80]}; "
+                    f"going straight to the fallback leg")
+        return _call_fallback_leg(user_message, max_tokens)
     _last_err = None   # CC-107
     for attempt in range(1, MAX_RETRIES + 1):
         try:

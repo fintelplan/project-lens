@@ -374,6 +374,11 @@ def call_adversary_analyst(client, articles: list[dict], guard: "TPMGuard") -> O
     prompt_chars = len(SYSTEM_PROMPT) + len(user_message)
     max_tokens = fit_max_tokens(prompt_chars, MAX_OUT, PROVIDER, MODEL)
 
+    if PROVIDER in __import__("lens_models").RETIRED_PROVIDERS:   # CC-115
+        log.warning(f"S2-D primary {PROVIDER}/{MODEL} is RETIRED -- "
+                    f"{__import__('lens_models').RETIRED_PROVIDERS[PROVIDER][:80]}; "
+                    f"going straight to the fallback leg")
+        return _call_fallback_leg(user_message, prompt_chars)
     _last_err = None   # CC-107
     for attempt in range(1, MAX_RETRIES + 1):
         try:
