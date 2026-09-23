@@ -50,6 +50,14 @@ def format_daily_brief(data):
     ma,s2,s3,s1 = data["ma"],data["s2"],data["s3"],data["s1"]
     now    = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     threat = ma.get("threat_level","UNKNOWN")
+    # CC-116: how long the level has held -- the alert now fires only on a change.
+    streak = 0
+    for _t in (data.get("trend") or []):
+        if _t.get("threat_level") == threat:
+            streak += 1
+        else:
+            break
+    held = (f" ({streak}{'+' if streak >= 7 else ''} waves in a row)" if streak > 1 else "")
     emoji  = {"CRITICAL":"🔴","HIGH":"🟠","ELEVATED":"🟡","MODERATE":"🟢","LOW":"⚪"}.get(threat,"❓")
     avg_q  = round(sum(r.get("quality_score") or 0 for r in s1)/len(s1),1) if s1 else 0
     top_s2 = s2[0] if s2 else {}
@@ -60,7 +68,7 @@ def format_daily_brief(data):
     lines = [
         "<b>🔭 PROJECT LENS — Daily Brief</b>",
         f"<code>{now}</code>","",
-        f"{emoji} <b>THREAT: {threat}</b>","",
+        f"{emoji} <b>THREAT: {threat}</b>{held}","",
         "<b>━━ SYSTEM 1 ━━</b>",
         f"Lenses: {len(s1)}/4{missing_note(data.get('s1_missing') or [])} | Avg quality: {avg_q}/10","",   # CC-114
         "<b>━━ SYSTEM 2 ━━</b>",
@@ -356,6 +364,44 @@ def send_daily_brief(run_id=None):
         return result
     except Exception as e:
         log.error(f"Daily brief failed: {e}"); return False
+
+THREAT_RANK = {"LOW": 0, "MODERATE": 1, "ELEVATED": 2, "HIGH": 3, "CRITICAL": 4}
+
+
+def alert_decision(current, previous):
+    """CC-116: an alert says something CHANGED. (send?, why).
+
+    previous: threat levels of the earlier Mission Analyst reports in the last 7 days,
+    newest first, this run excluded; None if they could not be read -- then alert,
+    because a missed escalation is worse than a repeated one.
+    """
+    if current not in ("CRITICAL", "HIGH"):
+        return False, f"{current} is below HIGH"
+    if previous is None:
+        return True, "history unreadable -- alerting rather than risk a silent escalation"
+    if not previous:
+        return True, "the first Mission Analyst report in 7 days"
+    if THREAT_RANK.get(current, 0) > THREAT_RANK.get(previous[0], 0):
+        return True, f"escalated from {previous[0]}"
+    if current not in previous:
+        return True, f"the first {current} in 7 days"
+    return False, (f"unchanged: {current} already reported {previous.count(current)} time(s) "
+                   f"in 7 days, the last report said {previous[0]}")
+
+
+def previous_threats(run_id):
+    """Threat levels of the other MA reports in the last 7 days, newest first; None on error."""
+    try:
+        from datetime import timedelta
+        sb = _get_sb()
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        rows = (sb.table("lens_macro_reports").select("threat_level,run_id,created_at")
+                .gte("created_at", cutoff).order("created_at", desc=True).limit(30).execute().data) or []
+        return [r.get("threat_level") for r in rows if r.get("run_id") != run_id]
+    except Exception as e:
+        log.warning(f"previous_threats failed: {e}")
+        return None
+
 
 def send_critical_alert(reason, signal, threat="CRITICAL"):
     return send_message(format_critical_alert(reason, signal, threat))

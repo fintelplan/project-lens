@@ -119,3 +119,6 @@ jobs:
 
       - name: A retired provider is not called (CC-115)
         run: python tests/test_retired_provider.py
+
+      - name: The alert says what changed (CC-116)
+        run: python tests/test_alert_on_change.py

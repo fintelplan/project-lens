@@ -894,9 +894,13 @@ def run_mission_analyst(
     try:
         import sys as _sys
         _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from lens_telegram import send_daily_brief, send_critical_alert
+        from lens_telegram import send_daily_brief, send_critical_alert, alert_decision, previous_threats
         send_daily_brief(run_id=run_id)
-        if summary.get("threat_level") in ("CRITICAL", "HIGH"):
+        # CC-116: alert on a CHANGE, not on every CRITICAL wave; say when it stays quiet.
+        _send, _why = alert_decision(summary.get("threat_level"), previous_threats(run_id))
+        log.info(f"CRITICAL alert {'SENT' if _send else 'not sent'}: {_why}"
+                 f"{'' if _send else ' (the Daily Brief still says ' + str(summary.get('threat_level')) + ')'}")
+        if _send:
             send_critical_alert(
                 reason=f"Mission Analyst threat={summary['threat_level']}",
                 signal=summary.get("executive_summary","")[:400],
