@@ -1,14 +1,14 @@
 """
 lens_s2_step_report.py — S2 Information Shaping Intelligence Report
 Project Lens | LENS-023
-Model: mistral-small-latest (free)
+Model: ministral-8b-2512 (free) -- CC-117, was mistral-small-latest
 Purpose: Full quality docx of how today's information environment was shaped.
          Shows injection patterns, adversary narratives, coordination signals,
          emotional architecture, legitimacy gaps, and what S1 missed.
 Output: YYYYMMDD_S2_Shaping_Intelligence_DC{time}.docx → Telegram
 """
 
-import os, json, time, logging, tempfile, requests
+import os, re, json, time, logging, tempfile, requests
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
@@ -16,9 +16,13 @@ logging.basicConfig(level=logging.INFO,
     format="%(asctime)s [S2-RPT] %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("s2_report")
 
-MODEL       = "mistral-small-latest"
+MODEL       = "ministral-8b-2512"   # CC-117 (LENS-046), was mistral-small-latest.
+# LENS-041 left the prose reports on the refused class until they were
+# instrumented (D-027 by analogy); CC-100 moved S1-RPT. This one stayed:
+# Sep 21-23, 5 of 5 waves, 429 on the first call, no report, no word of it.
+# LR-106 probe on the real prompt (LENS-046): 200, stop, 3,278 tokens, PART A-F.
 TEMPERATURE = 0.3
-MAX_TOKENS  = 4500
+MAX_TOKENS  = 6000   # CC-117: was 4500; the probe used 3,278 (S1-RPT runs at 6000)
 TELEGRAM_CAPTION_CAP = 950
 
 
@@ -218,6 +222,7 @@ def call_mistral(prompt: str) -> Optional[str]:
     api_key = os.environ.get("MISTRAL_API_KEY", "")
     if not api_key:
         log.error("MISTRAL_API_KEY not set"); return None
+    last = None   # CC-117: the last refusal, for one PROVIDER_REFUSAL line
     for attempt in range(1, 4):
         try:
             log.info(f"S2 report calling Mistral (attempt {attempt})")
@@ -228,17 +233,53 @@ def call_mistral(prompt: str) -> Optional[str]:
                       "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE},
                 timeout=120)
             if r.status_code == 200:
-                text = r.json()["choices"][0]["message"]["content"].strip()
-                log.info(f"S2 report: {len(text)} chars generated")
-                return text
+                ch = r.json()["choices"][0]
+                text = (ch["message"]["content"] or "").strip()
+                fr = ch.get("finish_reason")
+                log.info(f"S2 report: {len(text)} chars generated, finish_reason={fr}")
+                if text:
+                    return text
+                last = (200, f"empty answer, finish_reason={fr}")
+                continue
             log.warning(f"Mistral {r.status_code} attempt {attempt}")
-            time.sleep(20 * attempt)
+            last = (r.status_code, r.text)
+            if attempt < 3:
+                time.sleep(20 * attempt)
         except Exception as e:
-            log.error(f"Mistral call failed: {e}"); time.sleep(15)
+            log.error(f"Mistral call failed: {e}")
+            last = (None, str(e))
+            if attempt < 3:
+                time.sleep(15)
+    log.error(f"S2 report: no report from Mistral after 3 attempts (model {MODEL})")
+    if last is not None and last[0] != 200:
+        try:
+            from lens_provider_refusal import record_refusal
+            record_refusal("mistral", MODEL, status=last[0], text=last[1])
+        except Exception as _rr:
+            log.warning(f"S2 report: refusal not recorded: {_rr}")
     return None
 
 
 # ── Docx renderer ─────────────────────────────────────────────────────────────
+
+def _plain(line: str) -> str:
+    """CC-117: a heading without its markdown. ministral writes
+    `## **PART A \u2014 ...**`; the renderer only knew a bare `PART A \u2014 ...`,
+    so every PART would have landed as a paragraph full of # and *."""
+    s = line.strip().lstrip("#").strip()
+    if len(s) > 4 and s.startswith("**") and s.endswith("**"):
+        s = s[2:-2].strip()
+    return s
+
+
+def _add_runs(p, text: str) -> None:
+    """CC-117: **bold** becomes a bold run, not literal asterisks."""
+    for i, part in enumerate(re.split(r"\*\*(.+?)\*\*", text)):
+        if part:
+            run = p.add_run(part)
+            if i % 2 == 1:
+                run.bold = True
+
 
 def render_docx(report_text: str, date_str: str, ma: dict) -> str:
     try:
@@ -265,7 +306,7 @@ def render_docx(report_text: str, date_str: str, ma: dict) -> str:
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     threat = ma.get("threat_level", "UNKNOWN")
-    sr = sub.add_run(f"{date_str}  |  System 2  |  THREAT: {threat}  |  Mistral-small")
+    sr = sub.add_run(f"{date_str}  |  System 2  |  THREAT: {threat}  |  {MODEL}")   # CC-117: was a fixed "Mistral-small"
     sr.font.size = Pt(10); sr.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     depth = ma.get("contamination_depth", "UNKNOWN")
@@ -281,12 +322,16 @@ def render_docx(report_text: str, date_str: str, ma: dict) -> str:
         line = line.strip()
         if not line:
             doc.add_paragraph(); continue
-        if line.startswith("PART ") and "—" in line:
-            doc.add_heading(line, level=1)
-        elif line.isupper() and len(line) < 80 and ":" not in line:
-            doc.add_heading(line, level=2)
+        head = _plain(line)   # CC-117
+        if head.startswith("PART ") and "—" in head:
+            doc.add_heading(head, level=1)
+        elif line.startswith("#") and head:
+            doc.add_heading(head, level=2)
+        elif head.isupper() and len(head) < 80 and ":" not in head:
+            doc.add_heading(head, level=2)
         else:
-            p = doc.add_paragraph(line)
+            p = doc.add_paragraph()
+            _add_runs(p, line)
             p.paragraph_format.space_after = Pt(6)
 
     time_str = datetime.now(timezone.utc).strftime("%H%M")
@@ -384,7 +429,23 @@ def run_s2_report(run_id: Optional[str] = None) -> dict:
     return {"status": "COMPLETE" if sent else "SEND_FAILED", "elapsed": elapsed}
 
 
+def announce_failure(result: dict) -> bool:
+    """CC-117: a report that did not arrive is said, not left to silence.
+
+    Operator status, plain text, apart from the report. Returns True when
+    it announced a failure."""
+    status = (result or {}).get("status") or "NO_STATUS"
+    if status == "COMPLETE":
+        return False
+    log.error(f"S2 SHAPING REPORT FAILED: {status}")
+    send_telegram_text(f"S2 Shaping Report FAILED today: {status} "
+                       f"(model {MODEL}). No report was sent.")
+    return True
+
+
 if __name__ == "__main__":
     from dotenv import load_dotenv; load_dotenv()
     result = run_s2_report()
     print(result)
+    announce_failure(result)
+    raise SystemExit(0 if result.get("status") == "COMPLETE" else 1)   # CC-117

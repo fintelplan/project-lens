@@ -122,3 +122,6 @@ jobs:
 
       - name: The alert says what changed (CC-116)
         run: python tests/test_alert_on_change.py
+
+      - name: The S2 report is restored, loud and readable (CC-117)
+        run: python tests/test_s2_report_loud.py

@@ -242,11 +242,20 @@ def main():
         send_s2_intelligence()
     except Exception as _te:
         print(f"[S2-ORC] Telegram step failed (non-fatal): {_te}")
+    report_status = "EXCEPTION"   # CC-117: the report's outcome is read, not discarded
     try:
-        from lens_s2_step_report import run_s2_report
-        run_s2_report(run_id=RUN_ID)
+        import lens_s2_step_report as _S2R
+        _res = _S2R.run_s2_report(run_id=RUN_ID) or {}
+        report_status = _res.get("status") or "NO_STATUS"
+        if report_status != "COMPLETE":
+            _S2R.announce_failure(_res)
     except Exception as _s2r:
-        log.warning(f"S2 step report failed (non-fatal): {_s2r}")
+        log.warning(f"S2 step report failed: {_s2r}")
+        try:
+            _S2R.announce_failure({"status": "EXCEPTION"})
+        except Exception:
+            pass
+    print(f"[S2-ORC] S2 Shaping Report: {report_status}")
 
     if skipped:
         print(f"\n[S2-ORC] {len(skipped)} position(s) deliberately skipped: {skipped}")
@@ -263,6 +272,10 @@ def main():
         print("\n[S2-ORC] All positions complete.")
 
     print("=" * 60 + "\n")
+    if report_status != "COMPLETE":
+        # CC-117: only a delivered S2 report is a green step (the CC-100 rule).
+        # S3 and the health step run under `if: !cancelled()`: red skips nothing.
+        sys.exit(1)
 
 
 if __name__ == "__main__":
