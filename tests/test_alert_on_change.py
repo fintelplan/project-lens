@@ -27,7 +27,16 @@ def check(name, got, want):
 d = T.alert_decision
 print("== when the alert fires ==")
 check("CRITICAL after six CRITICALs: quiet", d("CRITICAL", ["CRITICAL"] * 6)[0], False)
-check("CRITICAL after HIGH: escalation", d("CRITICAL", ["HIGH", "CRITICAL"])[0], True)
+check("CRITICAL after a full day of HIGH: escalation", d("CRITICAL", ["HIGH", "HIGH", "CRITICAL"])[0], True)
+check("CRITICAL after one HIGH flip: NOT news (hysteresis)", d("CRITICAL", ["HIGH", "CRITICAL"])[0], False)
+LIVE = ["CRITICAL", "CRITICAL", "CRITICAL", "HIGH", "CRITICAL", "HIGH", "CRITICAL",
+        "HIGH", "HIGH", "HIGH", "CRITICAL", "HIGH", "HIGH"]   # 2026-09-23, this run excluded
+check("the live history: a CRITICAL now is quiet", d("CRITICAL", LIVE)[0], False)
+# replay the live sequence oldest-first: how many alerts would the week have sent?
+seq = list(reversed(["CRITICAL"] + LIVE))
+sent = sum(1 for i, lvl in enumerate(seq) if d(lvl, list(reversed(seq[:i])))[0])
+print(f"  (the live week: {sent} alerts instead of {sum(1 for s in seq if s in ('HIGH', 'CRITICAL'))})")
+check("the live week sends at most 3 alerts", sent <= 3, True)
 check("HIGH after ELEVATED: escalation", d("HIGH", ["ELEVATED"])[0], True)
 check("HIGH after CRITICAL: not an escalation, but HIGH was seen?", d("HIGH", ["CRITICAL", "HIGH"])[0], False)
 check("first CRITICAL in 7 days, after a drop", d("CRITICAL", ["HIGH", "HIGH"])[0], True)

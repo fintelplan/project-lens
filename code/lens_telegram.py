@@ -381,8 +381,10 @@ def alert_decision(current, previous):
         return True, "history unreadable -- alerting rather than risk a silent escalation"
     if not previous:
         return True, "the first Mission Analyst report in 7 days"
-    if THREAT_RANK.get(current, 0) > THREAT_RANK.get(previous[0], 0):
-        return True, f"escalated from {previous[0]}"
+    recent = previous[:2]   # ~24h: MA flips HIGH<->CRITICAL wave to wave (live history,
+                            # 2026-09-23: C C C C H C H C H H H C H H) -- a flip is not news
+    if THREAT_RANK.get(current, 0) > max(THREAT_RANK.get(p, 0) for p in recent):
+        return True, f"escalated from {'/'.join(recent)} (the last ~24h)"
     if current not in previous:
         return True, f"the first {current} in 7 days"
     return False, (f"unchanged: {current} already reported {previous.count(current)} time(s) "
