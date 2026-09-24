@@ -32,10 +32,26 @@ def fetch_latest(run_id=None):
     s3  = (sb.table("lens_system3_reports").select("summary,first_domino,patterns_found,position,generated_at").eq("position","S3-A").order("generated_at",desc=True).limit(1).execute().data or [{}])[0]
     from lens_canary_wave import fetch_wave   # CC-114: this wave only, and who is missing
     s1, s1_missing = fetch_wave(sb, "summary,quality_score,cycle,generated_at")
-    # S2-F: latest detections
+    # S2-F: what Stage 1 scoring did in the last 24 h, and which Verification findings are
+    # open in Direction B's ledger (CC-121, completion test L2.3). A failed read becomes a
+    # line in the brief, never a lost brief.
     from datetime import timedelta
     cutoff_24h = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    s2f = sb.table("lens_operation_detections").select("state_actor_lens,operation_count,confidence,scored_at").gte("scored_at",cutoff_24h).eq("not_applicable",False).order("confidence",desc=True).limit(5).execute().data or []
+    s2f = {}
+    try:
+        s2f["scored_24h"] = sb.table("lens_operation_detections").select("scored_at", count="exact").gte("scored_at",cutoff_24h).limit(1).execute().count or 0
+        app = sb.table("lens_operation_detections").select("operation_count").gte("scored_at",cutoff_24h).eq("not_applicable",False).limit(1000).execute().data or []
+        s2f["applicable_24h"] = len(app)
+        s2f["ops_24h"] = sum(r.get("operation_count") or 0 for r in app)
+        newest = sb.table("lens_operation_detections").select("scored_at").order("scored_at",desc=True).limit(1).execute().data or []
+        s2f["newest_scored_at"] = newest[0]["scored_at"] if newest else None
+    except Exception as e:
+        s2f.pop("scored_24h", None); s2f["scoring_error"] = str(e)[:80]
+    try:
+        from lens_s2f_delivery_rules import open_findings
+        s2f["open"] = open_findings(sb.table("lens_s2f_deliveries").select("voice_name,state_actor_lens,kind,reported_ops,sent_at").order("sent_at",desc=True).limit(5000).execute().data or [])
+    except Exception as e:
+        s2f["ledger_error"] = str(e)[:80]
     # Top entity
     top_entity = (sb.table("lens_entities").select("canonical_name,total_mentions").order("total_mentions",desc=True).limit(1).execute().data or [{}])[0]
     # 7-day threat trend
@@ -79,13 +95,10 @@ def format_daily_brief(data):
     ]
     if s3.get("first_domino"):
         lines += ["", f"⚠️ <b>First Domino:</b> {s3['first_domino'][:150]}"]
-    # S2-F status line
-    s2f = data.get("s2f", [])
-    if s2f:
-        top_s2f = s2f[0]
-        s2f_line = f"Operations: {sum(d.get('operation_count',0) for d in s2f)} detected | Top: {top_s2f.get('state_actor_lens','?')} conf={top_s2f.get('confidence',0):.2f}"
-    else:
-        s2f_line = "No detections yet (pipeline accumulating)"
+    # S2-F: Stage 1 scoring and Verification told apart; a stopped scorer says how long
+    # (CC-121, completion test L2.3 -- was "No detections yet (pipeline accumulating)")
+    from lens_s2f_delivery_rules import s2f_brief_lines
+    s2f_line = "\n".join(s2f_brief_lines(data.get("s2f"), datetime.now(timezone.utc)))
     # Top entity
     top_entity = data.get("top_entity", {})
     entity_line = f"{top_entity.get('canonical_name','No data')} ({top_entity.get('total_mentions',0)} mentions)" if top_entity.get("canonical_name") else "Accumulating..."

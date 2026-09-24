@@ -31,7 +31,9 @@ Numbers from the replay on the real history (lens047_l34_replay): HOLD_DAYS=3 cu
 15-article gate were gone 3-4 aggregator days (TeleSUR Jun 15-18, RT x khamenei Jul 20-22);
 findings that really stopped were gone 8 days or more.
 """
+import html
 import re
+from datetime import datetime, timezone
 
 HOLD_DAYS = 3
 CLEAR_ALIVE_DAYS = 7
@@ -123,3 +125,60 @@ def decide(series, last, alive_days, today, hold=None, clear_after=None):
         return None                     # only the rows that were already cleared
     return {"kind": "NEW", "reported_ops": sorted(series[-1][1]), "added": [], "dropped": [],
             "row": row, "last_day": latest_day, "alive_since": alive_since}
+
+
+# -- CC-121: the Daily Brief's S2-F section ---------------------------------------------
+# The brief showed one line, "No detections yet (pipeline accumulating)", whenever Stage 1
+# scoring wrote nothing in 24 h -- the same words for a pipeline that is starting and for a
+# scorer that has stopped -- and it said nothing of the Verification findings Direction B
+# sends, so one wave could say "No detections" beside five HIGH findings (completion test
+# L2.3). Scoring and Verification are now two lines, and a stopped scorer says how long.
+
+def open_findings(entries):
+    """Ledger rows (any order) -> the findings whose newest entry is NEW or CHANGED,
+    newest first: [{"voice", "lens", "kind", "ops", "sent_at"}]."""
+    newest = {}
+    for e in entries or []:
+        key = (e.get("voice_name"), e.get("state_actor_lens"))
+        if key not in newest or str(e.get("sent_at")) > str(newest[key].get("sent_at")):
+            newest[key] = e
+    out = [{"voice": k[0], "lens": k[1], "kind": e.get("kind"),
+            "ops": len(e.get("reported_ops") or []), "sent_at": str(e.get("sent_at") or "")}
+           for k, e in newest.items() if e.get("kind") in OPEN_KINDS]
+    return sorted(out, key=lambda f: f["sent_at"], reverse=True)
+
+
+def _utc(ts):
+    return datetime.strptime(str(ts)[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+
+
+def s2f_brief_lines(s2f, now):
+    """The Daily Brief's S2-F lines. s2f is the dict fetch_latest builds:
+    scored_24h, applicable_24h, ops_24h, newest_scored_at, open, scoring_error, ledger_error."""
+    if not isinstance(s2f, dict):
+        s2f = {}
+    out = []
+    if "scored_24h" not in s2f:
+        err = s2f.get("scoring_error")
+        out.append("Scoring: status unavailable" + (" (%s)" % html.escape(err) if err else ""))
+    elif s2f["scored_24h"]:
+        out.append("Scoring (24 h): %d articles scored, %d with operations (%d operations)" % (
+            s2f["scored_24h"], s2f.get("applicable_24h", 0), s2f.get("ops_24h", 0)))
+    elif s2f.get("newest_scored_at"):
+        hours = int((now - _utc(s2f["newest_scored_at"])).total_seconds() // 3600)
+        out.append("\u26a0\ufe0f Scoring: nothing scored in the last 24 h \u2014 last scored "
+                   "%s UTC (%d h ago)" % (str(s2f["newest_scored_at"])[:16].replace("T", " "), hours))
+    else:
+        out.append("\u26a0\ufe0f Scoring: nothing has ever been scored")
+    if "open" not in s2f:
+        err = s2f.get("ledger_error")
+        out.append("Verification: status unavailable" + (" (%s)" % html.escape(err) if err else ""))
+    elif not s2f["open"]:
+        out.append("Verification: no open findings")
+    else:
+        items = ["%s \u00d7 %s: %d ops, told %s (%s)" % (
+            html.escape(f["voice"] or "?"), html.escape(f["lens"] or "?"), f["ops"],
+            f["sent_at"][:10], f["kind"]) for f in s2f["open"]]
+        out.append("Verification: %d open, unchanged since last told \u2014 %s" % (
+            len(items), "; ".join(items)))
+    return out
