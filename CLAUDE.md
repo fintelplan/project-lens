@@ -32,7 +32,7 @@ and posted test output to the live channel -- all without noticing.
 
 ## 0a. Charters and origins -- read before changing a position
 
-`docs/LENS_FOUNDATIONS_LENS042.md` holds, in one grep-able file: the four
+`docs/LENS_FOUNDATIONS_LENS046.md` holds, in one grep-able file: the four
 philosophy documents (PHI-001..PHI-004), the architecture logic from DOC-006,
 the engineering principles from DOC-007, and a charter for every position and
 workflow -- why it exists, what it reads, what it must produce, and where the
@@ -163,7 +163,8 @@ text copied out of a screen (BEV).
 - Public data only. No private or login-required data. No personal info (no names/emails) in records.
 - $0/month budget — free-tier infrastructure only.
 - PHI alignment: dig behind the screen (PHI-001), anti-pretense / Cui Bono (PHI-002),
-  Freedom from Fear (PHI-003), closed-loop verification (PHI-004).
+  popular sovereignty (PHI-003), cognitive sovereignty cadence (PHI-004).
+- Purpose (Bro Alpha, LENS-046): Freedom from Fear -- LENS_FOUNDATIONS_LENS046.md section 0.
 
 ---
 
