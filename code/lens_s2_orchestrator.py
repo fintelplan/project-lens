@@ -8,12 +8,12 @@ Called by GitHub Actions lens-manage-analyze.yml.
 All positions built in LENS-009. Orchestrator updated in LENS-010.
 
 Positions:
-  S2-A  lens_s2a_injection.py    run_s2a()           llama-3.3-70b  GROQ_S2A_API_KEY (dedicated)
-  S2-B  lens_s2b_coordination.py run_s2b()           gemini-1.5-flash GEMINI_S2B_API_KEY
-  S2-C  lens_s2c_emotion.py      run_s2c()           mistral-small  MISTRAL_API_KEY
-  S2-D  lens_s2d_adversary.py    run_s2d()           qwen3-32b      GROQ_API_KEY
-  S2-E  lens_s2e_legitimacy.py   run_s2e()           llama-3.3-70b  GROQ_S2E_API_KEY
-  MA    lens_mission_analyst.py  run_mission_analyst() llama-3.3-70b GROQ_MA_API_KEY
+  S2-A  lens_s2a_injection.py    run_s2a()           [model, provider, key: code/lens_models.py -- CC-125]
+  S2-B  lens_s2b_coordination.py run_s2b()           [model, provider, key: code/lens_models.py -- CC-125]
+  S2-C  lens_s2c_emotion.py      run_s2c()           [model, provider, key: code/lens_models.py -- CC-125]
+  S2-D  lens_s2d_adversary.py    run_s2d()           [model, provider, key: code/lens_models.py -- CC-125]
+  S2-E  lens_s2e_legitimacy.py   run_s2e()           [model, provider, key: code/lens_models.py -- CC-125]
+  MA    lens_mission_analyst.py  run_mission_analyst() [model, provider, key: code/lens_models.py -- CC-125]
 
 Architecture: LR-058 to LR-064.
   One-way flow. System 1 scripts FROZEN.

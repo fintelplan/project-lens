@@ -214,6 +214,12 @@ def main():
 
     log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed} "
              f"quota_skipped={quota_skipped}")
+    _attempted = scored + failed + quota_skipped   # CC-125 (D6, ruled A at LENS-045): say the coverage
+    if _attempted:
+        _cov = 100 * scored // _attempted
+        (log.warning if _cov < 50 else log.info)(
+            f"S2F_COVERAGE scored {scored} of {_attempted} attempted scorings ({_cov}%)"
+            + (" -- under half; the exit stays green until D2 sets the RED threshold" if _cov < 50 else ""))
     if quota_skipped:
         log.warning(f"S2-F: {quota_skipped} scorings not attempted -- a provider "
                     f"refused for the day (CC-97 breaker)")

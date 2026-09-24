@@ -736,7 +736,7 @@ def save_macro_report(
     row = {
         "run_id":               run_id,
         "cycle":                cycle,
-        "threat_level":         analysis.get("threat_level", "MODERATE"),
+        "threat_level":         analysis.get("threat_level") or "UNKNOWN",   # CC-125: no silent MODERATE
         "executive_summary":    analysis.get("executive_summary", ""),
         "key_findings":         analysis.get("key_findings", []),
         "manufactured_narratives": analysis.get("manufactured_narratives", []),

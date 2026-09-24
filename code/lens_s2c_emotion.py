@@ -1,7 +1,7 @@
 """
 lens_s2c_emotion.py — System 2 Position C: Emotion Decoder
 Project Lens | LENS-009
-Model: mistral-small-latest (Mistral free tier — via requests, no SDK)
+Model: [model, provider, key: code/lens_models.py -- CC-125]
 Input: lens_reports (latest cycle)
 Output: injection_reports (analyst='S2-C')
 Decodes: PRIME → TRIGGER → FRAME → DELIVER → ANCHOR sequence

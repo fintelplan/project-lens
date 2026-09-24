@@ -1,7 +1,7 @@
 """
 lens_s3f_countercheck.py — System 3 Position F: Counter-Check
 Project Lens | LENS-023
-Model: mistral-small-latest (free, reliable)
+Model: [model, provider, key: code/lens_models.py -- CC-125]
 
 Purpose: Adversarial challenger to S3-A (Pattern Intelligence) and S3-D (Long-term).
          Asks: what if S3-A and S3-D are wrong? What is the strongest case AGAINST
