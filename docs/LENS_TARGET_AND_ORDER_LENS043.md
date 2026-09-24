@@ -22,7 +22,7 @@ A change that moves a position away from its charter is a STOP-and-ask.
   providers, one row per lens per wave. CERTIFIED Sep 18-20.
 - **S3 Strategic Report** delivers daily with real headings. CERTIFIED.
 - **The harness no longer reaches production.** CERTIFIED.
-- **Rulings:** AI-origin guideline (China never; the rest is James's call, case
+- **Rulings:** AI-origin guideline (China never; the rest is Bro Alpha's call, case
   by case); F7=A (attribution fixed in the originals); F8=A (PHI-002
   reconstructed with provenance).
 - Registry banned families: 7 -> 19 names.
@@ -119,7 +119,7 @@ Lens 3 onto its own key/account.
   Measure whether such a layer exists in code, then rule which governs.
 - **F6** S3-E is local-only by design (PHI-002) and DOC-006 names SambaNova,
   which is dead. Which local model, from an allowed origin, and does S3-E ever
-  run if only James's machine can run it?
+  run if only Bro Alpha's machine can run it?
 
 ## 7. `lens_escalations` AND `lens_run_meta` DO NOT EXIST
 `escalate()` POSTs to `lens_escalations` and `update_learning()` to

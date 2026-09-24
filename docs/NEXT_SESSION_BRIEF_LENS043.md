@@ -88,12 +88,12 @@ S3-D last saved a row on **2026-09-03**. Order item 3.
 Nothing is half-shipped. Every commit is complete, gated and pushed. The only
 unfinished work is work that was never started.
 
-## RULINGS TAKEN THIS SESSION (James)
+## RULINGS TAKEN THIS SESSION (Bro Alpha)
 - **AI engines and brains:** use only Freedom-from-Fear origins; **China-related
-  never, no exception**; anything else not clearly Freedom-from-Fear is James's
+  never, no exception**; anything else not clearly Freedom-from-Fear is Bro Alpha's
   call, case by case — an agent stops and asks. Recorded in CLAUDE.md §0b and
   in the registry self-test (19 banned families).
-- **F7 = A** — fix the "Team Geeks" attribution in the original PHI-003 and
+- **F7 = A** — fix the team-name attribution in the original PHI-003 and
   DOC-007 documents. Done in CC-83.
 - **F8 = A** — PHI-002 has no original file; reconstruct it from the LENS-004
   record with the provenance stated. Done in CC-83.
@@ -117,7 +117,7 @@ unfinished work is work that was never started.
 - **Groq console (2026-09-17):** `openai/gpt-oss-120b` and `-20b` = RPM 30,
   RPD 1K, **TPM 8,000, TPD 200,000**; limits are ORGANIZATION-level. Registry
   row matches. `groq/compound` is decommissioned 2026-09-21 (Lens does not use
-  it; GNI should check). `allam-2-7b` (Saudi) and `qwen/qwen3.8-27b` are on the
+  it; Partner A should check). `allam-2-7b` (Saudi) and `qwen/qwen3.8-27b` are on the
   list and are NOT to be used.
 - **Cloudflare Workers AI console:** `gpt-oss-120b` 53.24k neurons over 7 days,
   5.81k/10k used on the day read; daily free allocation is 10,000 neurons.
@@ -151,7 +151,7 @@ unfinished work is work that was never started.
   (Cerebras is dead) held; the evidence did not. Corrected in the order.
 - **Said Lens 1's quality-floor retry was a new doctrine question** without
   searching the record. LENS-030 (Aug 3) had already diagnosed it, proposed
-  CC-22, and predicted this exact failure. James had to point at the records.
+  CC-22, and predicted this exact failure. Bro Alpha had to point at the records.
 - **Ran the orchestrator harness eight times** without asking whether a test
   could reach production. It posted "WHAT THE CANARY SEES" to the live Telegram
   chat each time, showing one lens's rows as four perspectives.

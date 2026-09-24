@@ -12,7 +12,7 @@ Shorter session than LENS-023 (38h). Focused: 3 bugs, 3 new sources, 1 architect
 
 **S2-C complete rewrite**: Rather than patching around the SDK, rewrote the full file cleanly with requests pattern — consistent with all other Mistral callers in the system.
 
-**Architectural thinking on xlsx timing**: Rejected "shift cron earlier" as symptom chasing. Proposed separate yml with own schedule — correct solution. James approved C (separate independent yml) immediately.
+**Architectural thinking on xlsx timing**: Rejected "shift cron earlier" as symptom chasing. Proposed separate yml with own schedule — correct solution. Bro Alpha approved C (separate independent yml) immediately.
 
 **PHI-003 awareness on NDTV**: Correctly identified India as missing non-Western democratic voice. Framed NDTV addition as PHI-003 counterbalance, not just "more sources."
 
@@ -29,7 +29,7 @@ The fix was correct (#93cc0b7) but the miss was avoidable. LR-098 now exists to 
 
 ---
 
-## James's style this session
+## Bro Alpha's style this session
 
 - "not my yml, our yml, ok?" — caught ownership framing immediately. Claude corrected.
 - "please remember error fighting, bird-eye view..." — used consistently as reset signal. Always worked.
@@ -58,11 +58,11 @@ Zero India sources for a global OSINT system. NDTV fills an important gap — no
 ## Forward protocol — LENS-025 onward
 
 - Add LR-095/096/097/098 to rules.md — 2 sessions overdue
-- T3 steno calibration at 6-8 AM Thai
+- T3 steno calibration at 6-8 AM UTC+7
 - S3-F data gate: ~10 more S3-A runs
 - S4-B: July 2026
 - Default model: Sonnet 4.6 adaptive (LR-090, unchanged)
 
 ---
 
-**Collaboration update**: ~10:45 AM Thai, May 17, 2026
+**Collaboration update**: ~10:45 AM UTC+7, May 17, 2026

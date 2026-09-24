@@ -1,8 +1,8 @@
 # Session Audit — Apr 30, 2026 (LENS-021 ENTITY WIRING + T2)
 
 **Session model**: Claude Opus 4.7 adaptive
-**Operator**: James Maverick (Bro Alpha)
-**Time**: ~14:00 → 16:30 Thai (~2.5 hours)
+**Operator**: Bro Alpha
+**Time**: ~14:00 → 16:30 UTC+7 (~2.5 hours)
 **Last commit**: `49c46f6`
 **Status**: CLOSED ✅
 **Session weekly burn**: ~80% (cf. ~25% Sonnet equivalent — see Q3 analysis)
@@ -39,13 +39,13 @@
 
 ## Failure patterns observed (model-as-target)
 
-### Pattern Match Bias on entity_id (GNI-R-233)
+### Pattern Match Bias on entity_id (imported from Partner A)
 Saw "TODO comment + NOT NULL violation" → jumped to ALTER TABLE recommendation before:
 - Reading the 2 other aggregators (turned out same bug in 3 places, not 1)
 - Verifying `lens_entity_extract.py` infrastructure (already fully built since LENS-018)
 - Checking `lens_entities` schema (guessed `lens_key` column; wrong)
 
-James escalated correction twice. Recovery only after second correction.
+Bro Alpha escalated correction twice. Recovery only after second correction.
 
 ### Style drift from marathon Claude (Apr 28-30 session)
 - Narrating protocol while executing it ("now applying bird-eye view... step 1...")
@@ -68,9 +68,9 @@ Per LENS-014 protocol, gates 1–3 are now BLOCKING (not guidelines):
 
 1. **BIRD-EYE** → read full state of related files
 2. **DEEP ANALYSIS** → root cause, no symptom patches
-3. **SWOT if architectural** → schema/architecture = L2 (propose, James approves)
+3. **SWOT if architectural** → schema/architecture = L2 (propose, Bro Alpha approves)
 4. **PROPOSE** → only after 1–3 evidence shown
-5. **JAMES DECIDES** → no premature lean when ground truth absent
+5. **BRO ALPHA DECIDES** → no premature lean when ground truth absent
 6. **BUILD + TEST** → manual workflow_dispatch before commit
 
 When ground truth is absent: **"I don't have enough to lean — your call"** + data only, no leans.
@@ -90,8 +90,8 @@ Files: `code/lens_s2f_helpers.py` (new) + 3 patched aggregators. 4 files changed
 ## Pending → handed to LENS-022 (Sonnet 4.6)
 
 ### Verification (FIRST TASK NEXT SESSION)
-- Confirm tonight's scheduled cron (01:30 UTC = 08:30 Thai May 1) wrote findings with `entity_id` populated, no NOT NULL errors
-- Confirm Forensic Report (02:00 UTC = 09:00 Thai May 1) renders with non-empty Part B and delivers docx to Telegram
+- Confirm tonight's scheduled cron (01:30 UTC = 08:30 UTC+7 May 1) wrote findings with `entity_id` populated, no NOT NULL errors
+- Confirm Forensic Report (02:00 UTC = 09:00 UTC+7 May 1) renders with non-empty Part B and delivers docx to Telegram
 
 ### IMPORTANT tier (T1, T3–T7)
 1. **T1**: Opus Report — rewire to run S2+MA+S2F live (not pre-processed DB)
@@ -110,4 +110,4 @@ Files: `code/lens_s2f_helpers.py` (new) + 3 patched aggregators. 4 files changed
 
 ---
 
-**Session closed**: 16:30 Thai, Apr 30 2026. Next session: LENS-022, Claude Sonnet 4.6 adaptive.
+**Session closed**: 16:30 UTC+7, Apr 30 2026. Next session: LENS-022, Claude Sonnet 4.6 adaptive.

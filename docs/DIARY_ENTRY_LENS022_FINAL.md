@@ -3,7 +3,7 @@
 ## LENS-022 Phase 1 — Ref System Redesign + Production Hotfix Marathon
 *(Apr 30 → May 4, 2026)*
 
-**Session window**: Apr 30 ~00:00 → May 4 ~21:00 Thai (~5 days)
+**Session window**: Apr 30 ~00:00 → May 4 ~21:00 UTC+7 (~5 days)
 **Commits**: 20 commits (0751c82 → 560c2a1)
 **Model**: Claude Sonnet 4.6 adaptive (first Sonnet session per LR-090)
 
@@ -70,7 +70,7 @@ symptom without scanning for the same pattern elsewhere. LR-092 + LR-093 address
 ## LENS-022 Phase 2 — Quota Isolation + Intelligence Docx Reports
 *(May 5 → May 7, 2026)*
 
-**Session window**: May 5 → May 7 ~04:30 Thai
+**Session window**: May 5 → May 7 ~04:30 UTC+7
 **Commits**: 8 commits (b030338 → 562e415)
 **Model**: Claude Sonnet 4.6 adaptive (continued)
 
@@ -139,4 +139,4 @@ gets its own account. LR-094 formalizes this permanently.
 **yml propagation isn't automatic**: Defining env vars at job level doesn't guarantee
 they propagate into every subprocess. Adding them explicitly at step level is always safer.
 
-**Session closed**: May 7, 2026 ~04:30 Thai by Sonnet 4.6
+**Session closed**: May 7, 2026 ~04:30 UTC+7 by Sonnet 4.6

@@ -145,7 +145,7 @@ and `probe_lens_models.py:1183` (the `--candidate` help text).
 
 ## TIER 2 — IMPORTANT (broken NOW, measurable cost, but each needs a ruling or a console read)
 
-Total realistic time: **6–10 hours** if all four are attempted. Pick by what James wants.
+Total realistic time: **6–10 hours** if all four are attempted. Pick by what Bro Alpha wants.
 
 ### 2.1 — S2-B and S3-B: ALIVE on a Mistral fallback, blocked on a token measurement
 
@@ -254,7 +254,7 @@ production) but deliberately did not fix it.
 Manage+Analyze writes it.** Correcting the timestamp would arm `DAILY_BUDGET` against
 the *wrong pipeline's* run count, which is worse than dormant.
 
-**Needs James's ruling:** should Manage+Analyze have its own run counter, or should
+**Needs Bro Alpha's ruling:** should Manage+Analyze have its own run counter, or should
 `DAILY_BUDGET` be retired? Then fix format and cross-wire together, in one commit,
 with a shared helper (LR-112: two consumers, one mechanism) emitting
 `strftime("%Y-%m-%dT%H:%M:%SZ")`.
@@ -370,7 +370,7 @@ the brief's "Most active". **Fix at the extractor (2.2), never at collection.**
 
 ---
 
-## RULINGS JAMES MUST GIVE (a new agent cannot decide these alone)
+## RULINGS BRO ALPHA MUST GIVE (a new agent cannot decide these alone)
 
 1. **2.1** — which Google project do the S2B/S3B Gemini keys belong to?
    **DEFERRED, not retired** (see 2.1): both positions are alive on Mistral, so
@@ -444,6 +444,6 @@ otherwise 2.2 (the visible-text gate), which needs no ruling and removes both th
 
 **Leave Tier 3 alone.** Especially 3.1 — it deserves a session that starts fresh.
 
-**And leave real slack.** Twelve days remain to Aug 16, and GNI is next. The migration
+**And leave real slack.** Twelve days remain to Aug 16, and Partner A is next. The migration
 is done and certified; everything above makes it *safe*, not *finished*. Finishing it
 tired is how S1-001 happened.

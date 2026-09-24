@@ -25,7 +25,7 @@ Last code commit: `0c457f9` (CC-116 amendment), pushed, `ls-remote`-matched, Len
   does not carry the commit being certified.
 - **S2-F scored nothing on the 2026-09-22 morning wave** (order item 1): Cloudflare
   refused the first call of the UTC day. The (iii) lean is withdrawn.
-- **James's sequence (LENS-045):** handover -> urgent+important -> record OTHERS ->
+- **Bro Alpha's sequence (LENS-045):** handover -> urgent+important -> record OTHERS ->
   DISCUSS D1-D7 -> decide. No mission is declared until the discussion.
 
 ## WHAT SHIPPED (LENS-045) — twenty-one commits, Lens CI green on each; gates 9 -> 28
@@ -54,7 +54,7 @@ Last code commit: `0c457f9` (CC-116 amendment), pushed, `ls-remote`-matched, Len
 | `9f5672c` | **CC-111** the Compendium's zero-failure guard (CC-23) keeps shipping, logs that its intro is CANNED, and records the refusal. Gate 23 |
 
 Every gate was proven to BITE before commit. Every patch was sha-checked,
-binary, all-or-nothing; every sandbox hash matched James's machine.
+binary, all-or-nothing; every sandbox hash matched Bro Alpha's machine.
 
 ## CERTIFIED THIS SESSION
 | What | Evidence |
@@ -77,13 +77,13 @@ binary, all-or-nothing; every sandbox hash matched James's machine.
 - Item 11 delegated -> Claude ruled (a) passive, (b) not the canary's voice,
   visibly separate (order "settled"). Storage delegated -> Claude ruled a new
   table (ITIL 4 monitoring and event management: record, store, provide).
-- **James ruled: S3-D is done NOW, by this session** ("the agent that knows it all
+- **Bro Alpha ruled: S3-D is done NOW, by this session** ("the agent that knows it all
   now is cheaper than a later one"), overriding Claude's lean to wait until after
   Thursday's cert. The cost (touching code under cert) was met with a diff guard:
   0 removed lines, 9 added, all record lines; gate 9 unchanged at 30/30.
 - Claude (reversible): the health message is its own script and step, exits 0
   always (a dead primary with a working fallback must not redden every wave).
-- James: the target/completion-test question is NOT decided; discuss first.
+- Bro Alpha: the target/completion-test question is NOT decided; discuss first.
 - **D4 delegated -> Claude ruled A** (ICD 203: S3-D produced alternatives #4,
   relevance #5 and change #7 and stored none of them): a jsonb `analysis_full`.
   The promised dry insert was DROPPED (it would write a fake production row);
@@ -94,7 +94,7 @@ binary, all-or-nothing; every sandbox hash matched James's machine.
   have starved S2-GAP). Shipped CC-113.
 - **D6 delegated -> Claude ruled A:** make S2-F coverage visible (scored/attempted) now,
   set the RED threshold with D2's wiring. NOT built: the attempted count is stored
-  nowhere yet (only the cron log). James: discussions must stay on each workflow's
+  nowhere yet (only the cron log). Bro Alpha: discussions must stay on each workflow's
   original purpose -- anchor every ruling on why the position was built.
 - **D2 delegated -> Claude ruled A**: Mistral `ministral-8b-2512` primary on every
   article, Cloudflare a best-effort second leg (CC-97 makes a refusal cost one

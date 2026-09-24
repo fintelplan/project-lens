@@ -92,11 +92,11 @@ Nothing is half-shipped. `probe_out_s3d*` (three S3-D probe bodies) are
 untracked on purpose; `probe_results.jsonl` holds their permanent record.
 
 ## RULINGS TAKEN THIS SESSION
-- James delegated the openers ("your call"). Claude chose: hoist the `--dry`
+- Bro Alpha delegated the openers ("your call"). Claude chose: hoist the `--dry`
   parser into one helper rather than copy it twice more; DELETE Verification's
   Mistral env block rather than wire it (charter: arithmetic, no LLM; the key
   was Lens 4's); ship CC-91 at once because CC-85 had caused the regression.
-- **James ruled A + C at LENS-044: remove the Cerebras leg and split the guard
+- **Bro Alpha ruled A + C at LENS-044: remove the Cerebras leg and split the guard
   now.** This overrides Claude's lean (B, docs first) and LENS-043's recorded
   "removing it is the same decision as choosing its replacement". Grounds: the
   order's definition of done removes Cerebras in both branches, and the
@@ -191,7 +191,7 @@ untracked on purpose; `probe_results.jsonl` holds their permanent record.
   body arrived on the last wave read before close; the breaker is now
   designable against it and is order item 5.
 - **No change to S3-D's system prompt or schema**, and no DB column for its
-  discarded fields. Charter and schema: James's ruling (order item 6).
+  discarded fields. Charter and schema: Bro Alpha's ruling (order item 6).
 - **Did not close any Watch rows** (order item 8).
 - **Did not commit the probe bodies.**
 

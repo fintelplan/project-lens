@@ -56,7 +56,7 @@ landed 8/7/5/7 and 5/5/4/4. That is the evidence for R8 and order item 5.
 ## IN FLIGHT
 Order item 1 is the declared next mission; its 1.1 and 1.2 must ship together.
 Item 2 needs the gas-mask test before any edit. Item 3.3 and 3.4 are rulings
-James owes, not build work. Item 4.1 (CC-57) is designed but BLOCKED on the
+Bro Alpha owes, not build work. Item 4.1 (CC-57) is designed but BLOCKED on the
 prompt-change finding -- do not ship it as "just a metadata key".
 
 ## HAZARDS FOUND THIS SESSION (promote or drop -- these are now LRs)

@@ -99,4 +99,4 @@ This is reproducible across 4 articles spanning 4 genres. Strong signal for LENS
 
 ## Note on cross-lab evidence requirement
 
-Per GNI-R-233, this addendum codifies a methodology lesson: **single-model evidence cannot distinguish model-bias from catalog/article-structure issues**. Cross-lab evidence is required before concluding model-specific bias. The original Apr 27 framing of the symmetry test was structurally correct — but the test needed at least 2 models, not just 2 articles on 1 model, to reach the bias conclusion.
+Per Partner A's this addendum codifies a methodology lesson: **single-model evidence cannot distinguish model-bias from catalog/article-structure issues**. Cross-lab evidence is required before concluding model-specific bias. The original Apr 27 framing of the symmetry test was structurally correct — but the test needed at least 2 models, not just 2 articles on 1 model, to reach the bias conclusion.

@@ -3,7 +3,7 @@ lens_injection_detector.py
 Project Lens — Adversarial Content Detection
 
 69 patterns across 13 categories:
-  Cat 01-10: GNI battle-tested patterns (66 patterns)
+  Cat 01-10: Partner A battle-tested patterns (66 patterns)
   Cat 11:    PHI-002 bias attacks (Lens-specific)
   Cat 12:    Sectarian trap content injection (Lens-specific)
   Cat 13:    Indicator stuffing detection (Lens-specific)

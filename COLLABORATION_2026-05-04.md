@@ -22,7 +22,7 @@ First full Sonnet session per LR-090. Performance assessment:
 **Verdict**: Sonnet 4.6 is correct for daily driver work (LR-090 confirmed).
 The mistakes above are fixable with LR-092 and LR-093. Opus would have been overkill.
 
-## What James does that works
+## What Bro Alpha does that works
 
 - **Shows logs directly** — pastes terminal output or screenshots without asking
   if Claude needs them. This is the fastest diagnostic path.
@@ -35,7 +35,7 @@ The mistakes above are fixable with LR-092 and LR-093. Opus would have been over
 - **Stays technically engaged** — knows when to ask "can we batch instead of reduce?"
   for S2-D. Preserves quality that Claude might have traded away for simplicity.
 
-## What Claude should never do with James
+## What Claude should never do with Bro Alpha
 
 - Narrate the protocol while executing it
 - Give multi-paragraph self-analysis when 2 sentences suffice
@@ -52,7 +52,7 @@ wiring touched 4 files (3 aggregators + helpers). The broken import pattern exis
 in all 3 aggregators but only one was fixed and checked. Cost: 8 consecutive S2F
 failures over 4 days.
 
-**"Token-aware > time-aware"** — James's instinct to batch by token count rather
+**"Token-aware > time-aware"** — Bro Alpha's instinct to batch by token count rather
 than fixed article splits was architecturally correct. Measuring actual cost and
 waiting only when needed is always better than fixed delays or arbitrary splits.
 
@@ -77,4 +77,4 @@ Understanding the dependency chain prevents misdiagnosis.
 - Cleanup list in session close is MANDATORY before committing docs
 
 ---
-**Collaboration update**: 21:00 Thai, May 4, 2026
+**Collaboration update**: 21:00 UTC+7, May 4, 2026

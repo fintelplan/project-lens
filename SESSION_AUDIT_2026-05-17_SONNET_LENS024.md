@@ -2,7 +2,7 @@
 # Date: May 12–17, 2026
 
 **Session model**: Claude Sonnet 4.6 adaptive
-**Operator**: James Maverick (Bro Alpha)
+**Operator**: Bro Alpha
 **Last commit**: `e4d7ce3`
 **Sources**: 69 (was 66 at LENS-023 close)
 **Status**: CLOSED ✅
@@ -17,7 +17,7 @@
 | `dba12f2` | fix: remove mistralai from pip install (not on PyPI — manage-analyze failed at 9s) |
 | `93cc0b7` | fix: S2-C emotion decoder — replace mistralai SDK with requests directly |
 | `1a22f93` | feat: SRC-081 NDTV World News (India, TIER1, global geopolitics focus) |
-| `143f40f` | feat: lens-ref-export.yml — standalone xlsx at 09:30 AM/PM Thai (independent of manage-analyze) |
+| `143f40f` | feat: lens-ref-export.yml — standalone xlsx at 09:30 AM/PM UTC+7 (independent of manage-analyze) |
 | `e4d7ce3` | fix: remove ref export from manage-analyze (now handled by standalone yml) |
 
 ---
@@ -41,16 +41,16 @@
 **S2-C confirmed working**: #83 run — S2-C COMPLETE | 4 reports | steps=14 | emotion=fear/urgency/anger | 97.2s ✅
 
 ### Fix 3 — xlsx timing fix (commits 143f40f + e4d7ce3) ✅
-**Root cause**: xlsx was generated at END of 30-min manage-analyze pipeline. manage-analyze cron has 2-4h GitHub delay → xlsx delivered at midnight/2 AM Thai instead of expected 9-10 AM/PM.
+**Root cause**: xlsx was generated at END of 30-min manage-analyze pipeline. manage-analyze cron has 2-4h GitHub delay → xlsx delivered at midnight/2 AM UTC+7 instead of expected 9-10 AM/PM.
 
 **Solution**: Separate `lens-ref-export.yml` on own cron:
-- `30 2 UTC` = 09:30 AM Thai → `1of2`
-- `30 14 UTC` = 09:30 PM Thai → `2of2`
+- `30 2 UTC` = 09:30 AM UTC+7 → `1of2`
+- `30 14 UTC` = 09:30 PM UTC+7 → `2of2`
 - Only needs: SUPABASE_URL, SUPABASE_SERVICE_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 - pip install: only requests, supabase, openpyxl, tzdata (~15s vs 2min full install)
 - Fully independent — reads DB directly, no manage-analyze dependency
 
-**Confirmed working**: Lens Reference Export appears in Actions sidebar. Both `1of2` and `2of2` delivered every day since May 13. May 16: `1of2` at 12:38 PM Thai, `2of2` at 10:34 PM Thai. GitHub cron still has ~1-3h delay but now at least `1of2` is never missing.
+**Confirmed working**: Lens Reference Export appears in Actions sidebar. Both `1of2` and `2of2` delivered every day since May 13. May 16: `1of2` at 12:38 PM UTC+7, `2of2` at 10:34 PM UTC+7. GitHub cron still has ~1-3h delay but now at least `1of2` is never missing.
 
 **Also removed ref export from manage-analyze** (`e4d7ce3`) — prevents duplicate delivery.
 
@@ -75,7 +75,7 @@
 Removed `mistralai` from pip without checking code imports. S2-C had hardcoded SDK import. Pipeline failed again at #82 after #81 was "fixed." LR-092 (sibling check) applies to both yml AND code files when removing a package.
 
 ### "1of2 missing since May 10" root cause
-Morning manage-analyze cron (#81, 5:42 PM Thai = 10:42 UTC → `1of2` slot) was failing at 9s due to mistralai pip error from May 10 onwards. Evening cron kept producing `2of2`. Fix: standalone yml with own cron, independent of manage-analyze health.
+Morning manage-analyze cron (#81, 5:42 PM UTC+7 = 10:42 UTC → `1of2` slot) was failing at 9s due to mistralai pip error from May 10 onwards. Evening cron kept producing `2of2`. Fix: standalone yml with own cron, independent of manage-analyze health.
 
 ---
 
@@ -89,7 +89,7 @@ Morning manage-analyze cron (#81, 5:42 PM Thai = 10:42 UTC → `1of2` slot) was 
 
 ---
 
-## System status at LENS-024 close (May 17, 2026 ~10:45 AM Thai)
+## System status at LENS-024 close (May 17, 2026 ~10:45 AM UTC+7)
 
 | Component | Status | Notes |
 |---|---|---|
@@ -128,7 +128,7 @@ Morning manage-analyze cron (#81, 5:42 PM Thai = 10:42 UTC → `1of2` slot) was 
 
 ### IMPORTANT
 - **LR-095/096/097/098** — add all four to `lens-DOC-002_rules.md` (overdue since LENS-023)
-- **T3 steno calibration Article 6** — run at 6-8 AM Thai, Cerebras queue fresh
+- **T3 steno calibration Article 6** — run at 6-8 AM UTC+7, Cerebras queue fresh
 - **S4-B architecture** — July 2026
 
 ### DEFERRED
@@ -138,5 +138,5 @@ Morning manage-analyze cron (#81, 5:42 PM Thai = 10:42 UTC → `1of2` slot) was 
 
 ---
 
-**Session closed**: May 17, 2026 ~10:45 AM Thai by Sonnet 4.6
+**Session closed**: May 17, 2026 ~10:45 AM UTC+7 by Sonnet 4.6
 **Next session**: LENS-025

@@ -26,9 +26,9 @@ is done. A system with one silent failure is not.
 - **R6 — The record cannot attribute.** Outputs do not carry enough
   provenance to reconstruct which instrument produced them.
 - **R7 — Nothing watches our external dependencies' lifecycle.** PROPOSED at
-  LENS-036, JAMES RULES.
+  LENS-036, BRO ALPHA RULES.
 - **R8 — Certification measures mechanics, not behaviour.** PROPOSED at
-  LENS-037, JAMES RULES. We verify that a position RUNS; we have never
+  LENS-037, BRO ALPHA RULES. We verify that a position RUNS; we have never
   verified that it BEHAVES the same after a change. Evidence: D-016 moved
   S2-E and S2-D to Cerebras on 2026-07-28 and both changed substantially
   (S2-E actors/row 4.00 -> 8.50; S2-D claims/row 8.8 -> 26.6) while both

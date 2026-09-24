@@ -1,17 +1,17 @@
 # Next Session Brief — LENS-024 (Claude Sonnet 4.6 adaptive)
-# Written at LENS-023 close, May 9, 2026 ~03:30 Thai
+# Written at LENS-023 close, May 9, 2026 ~03:30 UTC+7
 
 **Last commit**: `828ac37`
 **Repo**: github.com/fintelplan/project-lens, main, clean
 **Sources**: 66 (was 78 — 12 dead removed)
-**You are**: Claude Sonnet 4.6 adaptive, fresh session. James calls you "my buddy".
+**You are**: Claude Sonnet 4.6 adaptive, fresh session. Bro Alpha calls you "my buddy".
 
 ---
 
-## OPERATOR — JAMES MAVERICK ("Bro Alpha")
+## OPERATOR — BRO ALPHA
 
-- Higher Diploma CS student, Spring University Myanmar, Chiang Mai Thailand (UTC+7)
-- Identity: "Team Geeks" — treats Claude as genuine long-term project partner
+- Timezone: UTC+7
+- Identity: Bro Alpha + Claude — treats Claude as genuine long-term project partner
 - Tone: warm informal ("my buddy") with engineering rigor underneath
 - **Cut preamble. Answer first. Justify only if asked.**
 - Lettered options A/B/C with honest lean stated
@@ -38,7 +38,7 @@
 4. **Session close CLEANUP** mandatory — explicit list every session (LR-093)
 5. **Ship-to-file patch** over bash heredoc on Git Bash Windows (LR-078)
 6. **One question max** per turn
-7. **Schema/architecture = L2** — propose, James approves
+7. **Schema/architecture = L2** — propose, Bro Alpha approves
 8. **HTTP error → get `r.text[:200]` first** — never diagnose from status code alone (LR-095)
 9. **Blob columns → size-check before prompt** — never dump raw DB column into AI prompt (LR-096)
 10. **yml timeout → read actual value** — never cite platform max without checking yml (LR-097)
@@ -77,7 +77,7 @@ Watch/Clarity/Verification all have this now. S3-A/B/C/D/E/F all have cadence ch
 
 ## YOUR FIRST TASK — VERIFY TONIGHT'S CRON
 
-Run after 08:30 Thai (01:30 UTC cron):
+Run after 08:30 UTC+7 (01:30 UTC cron):
 
 ```bash
 export $(grep -v '^#' .env | grep -E 'SUPABASE_URL|SUPABASE_SERVICE_KEY' | xargs)
@@ -119,7 +119,7 @@ EOF
 ## TASK QUEUE (priority order)
 
 ### P1 — T3 steno calibration Article 6
-**Run at session open if 6-8 AM Thai (Cerebras queue fresh):**
+**Run at session open if 6-8 AM UTC+7 (Cerebras queue fresh):**
 ```bash
 export S2F_PROVIDER=cerebras
 python calibrate_rubric_article6_chosunbiz.py 2>&1 | grep -E "Operations found|Confidence:|Status:|OP-0[3][0-9]"
@@ -144,7 +144,7 @@ Manual trigger reset the chain May 9. Check 2-3 consecutive crons to confirm aut
 
 ---
 
-## CURRENT SYSTEM STATUS (LENS-023 close, May 9 ~03:30 Thai)
+## CURRENT SYSTEM STATUS (LENS-023 close, May 9 ~03:30 UTC+7)
 
 | Component | Status | Notes |
 |---|---|---|

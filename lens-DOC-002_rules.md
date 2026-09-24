@@ -9,7 +9,7 @@ When testing LOCAL models for S2-F rubric calibration or S3-E self-check:
 
 1. **Provider setup**: `export S2F_PROVIDER=ollama && export OLLAMA_HOST=localhost:11434 && export OLLAMA_MODEL=<model_name>`
 2. **LM Studio alternative**: use port 1234 instead of 11434 — same OpenAI-compatible API
-3. **RAM constraint (James machine: 32GB)**: models >24GB will cause OOM. Safe limit: 20GB model size
+3. **RAM constraint (Bro Alpha machine: 32GB)**: models >24GB will cause OOM. Safe limit: 20GB model size
 4. **JSON quality gate**: run calibration script first. If `LLM_FAILED` or malformed JSON on 2+ runs — reject model regardless of benchmark claims
 5. **Proven LOCAL models (Apr 2026)**: `ministral-3:8b` (6GB, best quality, MistralAI lineage) ✅
 6. **Rejected LOCAL models**: `gemma4:e4b` — failed JSON quality gate ❌
@@ -71,7 +71,7 @@ Origin: S2-A was designated critical but shared GROQ_S2_API_KEY with S2-GAP.
 By second daily run, shared quota was depleted -> S2-A failed -> manage-analyze
 exit(1) -> workflow_run for forensic report never fired -> 0 Opus docx for days.
 
-Pattern: Same lesson as GNI S30 (LR-058), LENS-010 S2-A/E isolation, LENS-022
+Pattern: Same lesson as Partner A (LR-058), LENS-010 S2-A/E isolation, LENS-022
 GEMINI_S2B_API_KEY. Same-account keys share quota. Critical positions need
 guaranteed headroom = dedicated account.
 
@@ -196,7 +196,7 @@ Rule: On every new Supabase table:
 ---
 
 ## LR-101 — Trust Calibration (LENS-028)
-**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: a Partner A session
 Trust is a function of verified-by-the-current-model-in-detail, NOT a function
 of runs-fine-routinely. "It's been green for weeks" is not evidence of
 correctness — it is evidence that nothing has forced the bug to surface.
@@ -214,7 +214,7 @@ ran fine routinely AND were broken. Routine success masked both failures.
 ---
 
 ## LR-102 — Model-Change Re-Audit Ritual (LENS-028)
-**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: a Partner A session
 On ANY model change — a new session OR a new model version — prior verifications
 partially reset. The new model did not perform the old sign-offs and cannot
 inherit their confidence. A version upgrade is therefore a free, high-value
@@ -232,7 +232,7 @@ a different reasoner.
 ---
 
 ## LR-103 — Protections Are Guilty Until BEV'd (LENS-028)
-**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: a Partner A session
 Mechanism guesses ("what does this code do?") are usually right. Protection /
 blast-radius / "it's already handled" guesses are usually too optimistic — that
 is exactly where confident wrongness lives. Treat every claimed protection as
@@ -254,7 +254,7 @@ sounded.
 ---
 
 ## LR-104 — Live-State Discipline (LENS-028)
-**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: GNI-S46
+**Type**: Process | **Added**: LENS-028 | **Status**: RATIFIED | **Origin**: a Partner A session
 Current work-state must live in a durable artifact (memory + registry), NOT only
 in Claude's transient context. It must be precise enough that a fresh session or
 a new model can resume WITHOUT re-derivation.
@@ -805,7 +805,7 @@ in a patch body stalls the shell (LR-078 amendment).
 Scope: every string built inside a patch script.
 
 ## LR-152 — A clock reading is a banked number the moment it is read (LENS-038)
-`date -u` was read once at step 0 and reused hours later to tell James the run
+`date -u` was read once at step 0 and reused hours later to tell Bro Alpha the run
 list contradicted his statement that the evening wave had finished. It had
 finished. The session had been running about sixteen hours; the commit stamp
 proved it afterwards. A timestamp describes the instant it was taken and
@@ -815,7 +815,7 @@ fresh `date -u` IN THE SAME BLOCK as the claim. Corollary: when the operator's
 account of the world disagrees with your derivation, suspect the derivation
 first — he is standing in the world and you are reading a transcript.
 Scope: every schedule estimate, wave-count, "should have landed by now", and
-any correction issued to James about timing.
+any correction issued to Bro Alpha about timing.
 
 ## LR-153 — Report the split, never the sum: one label over two quantities can indict neither (LENS-038)
 A table-size query reported `pg_total_relation_size - pg_relation_size` as a

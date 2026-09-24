@@ -36,13 +36,13 @@ The system is honest and not working. That is the right order to fix it in.
 - **R9 — Free-tier resources are CONSUMED, not merely rate-limited, and
   nothing meters what we accumulate.**
 - **R10 — A position's declared status is not derived from its own work.**
-  PROPOSED at LENS-039, **STILL JAMES'S TO RULE.** Evidence recorded against
+  PROPOSED at LENS-039, **STILL BRO ALPHA'S TO RULE.** Evidence recorded against
   it at LENS-039 and unchanged: 20 top-level status literals in `code/`, 18
   already derive status from the work, only 2 hardcoded it. Claude's lean is
   **RULE R10 OUT** — 2 departures from a sound convention is a gate problem,
   not a structural root. CC-60 fixed both departures and was certified.
 - **R11 — WE TAKE PROVIDER DEFAULTS AND NEVER ASK FOR THE GUARANTEES ON
-  OFFER.** PROPOSED this session, **JAMES RULES.** `response_format` appears
+  OFFER.** PROPOSED this session, **BRO ALPHA RULES.** `response_format` appears
   ZERO times in all of `code/`, across twelve Mistral legs that parse JSON.
   The server-side JSON constraint has existed the whole time. Distinct from R2
   (our capability, unwired) and R3 (our number, stale): R11 is a capability the
@@ -389,8 +389,8 @@ exactly right and is why it was findable; copy that pattern.
 - Mistral's Free plan allowance resets on the first of each calendar month —
   **1 October** is the next reset. It is NOT known whether that affects the
   small-class block, because the block is not an allowance problem (1.2).
-- GNI: `grep -rn "\.delete()"` across GNI_Autonomous returns ZERO. R9 and D-022
-  belong in the next Lens-to-GNI transfer packet.
+- Partner A: `grep -rn "\.delete()"` across Partner A returns ZERO. R9 and D-022
+  belong in the next Lens-to-Partner-A transfer packet.
 
 ## STANDING BLOCKER
 $0/month. D-019 stands.
@@ -423,7 +423,7 @@ $0/month. D-019 stands.
   diagnosis**. Convergence/burst is disproven. Recorded as a correction rather
   than silently replaced.
 - NEW ROOT PROPOSED: **R11** — we take provider defaults and never ask for the
-  guarantees on offer. JAMES RULES.
+  guarantees on offer. BRO ALPHA RULES.
 - NEW: item 2 (Regular Report truncation, two defects), item 3 (no JSON
   constraint on twelve legs), item 4 (registry Mistral limits wrong in every
   field), item 8 (nobody reads the red workflows), 18.2 (CI does not cover

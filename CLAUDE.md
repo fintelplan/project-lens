@@ -1,7 +1,7 @@
 # CLAUDE.md — Project Lens
 
 > Project-scoped instructions for Claude Code. Lives at `C:/school/lens/CLAUDE.md`.
-> Loads ONLY in this directory. Nothing here applies to GNI_Autonomous.
+> Loads ONLY in this directory. Nothing here applies to Partner A.
 > If a rule is Lens-specific, it belongs here — NEVER in the global `~/.claude/CLAUDE.md`.
 
 ---
@@ -23,7 +23,7 @@ Before any change OR any command, ask all four:
    canary key (`lens_models.canary_air_keys()`) or write with the canary's
    voice (Telegram "What the canary sees", the `lens_reports` table)?
 
-A "yes" is a stop: say it plainly, then ask James. Probes refuse canary keys
+A "yes" is a stop: say it plainly, then ask Bro Alpha. Probes refuse canary keys
 unless LENS_ALLOW_CANARY_AIR holds a written reason. Earned at LENS-042, when an
 agent re-rolled Lens 1 until its score cleared, spent its Groq quota on probes,
 and posted test output to the live channel -- all without noticing.
@@ -38,14 +38,14 @@ the engineering principles from DOC-007, and a charter for every position and
 workflow -- why it exists, what it reads, what it must produce, and where the
 code has drifted from that. Read the charter row for anything you are about to
 change. If the change moves a position away from its charter, stop and ask
-James. The originals are named at the top of that file; cite them, not it.
+Bro Alpha. The originals are named at the top of that file; cite them, not it.
 
-## 0b. AI engines and AI brains -- origin (James, LENS-042)
+## 0b. AI engines and AI brains -- origin (Bro Alpha, LENS-042)
 
 Use only engines (providers, hosts) and brains (models) from a Freedom from
 Fear environment. **China-related: never, no exception** -- including a model
 fine-tuned on a China-origin base. Any other origin that is not clearly
-Freedom-from-Fear is decided by James, case by case: stop and ask. The registry
+Freedom-from-Fear is decided by Bro Alpha, case by case: stop and ask. The registry
 self-test refuses known China-lineage model families by name.
 
 ## 0c. How work is delivered -- one runnable file, never a paste block
@@ -53,7 +53,7 @@ self-test refuses known China-lineage model families by name.
 Pasting a long block into the VS Code terminal is slow (ConPTY echoes it a
 character at a time) and gives no sign whether it is running or hung. From
 LENS-042 on, any block longer than a few lines is delivered as a **downloadable
-`.sh` file**. James drops it in `C:\school\lens` and runs:
+`.sh` file**. Bro Alpha drops it in `C:\school\lens` and runs:
 
 ```bash
 cd /c/school/lens
@@ -92,11 +92,11 @@ text copied out of a screen (BEV).
 
 ## 1. Identity & Operator
 
-- Operator: **James Maverick** ("Bro Alpha"). Address him as "my buddy."
+- Operator: **Bro Alpha**. Address him as "my buddy."
 - Collaboration: genuine long-term project partner, not a disposable assistant.
-  (Lens is Bro Alpha's solo project — no team name. "Team Geeks" is GNI only.)
+  (Lens is Bro Alpha's solo project: no personal name and no team name appear anywhere in Lens — LENS-046.)
 - Project: **Project Lens** — influence-operation & media-bias detection system.
-- Context: CS Higher Diploma, Spring University Myanmar. Chiang Mai, Thailand (UTC+7).
+- Timezone: UTC+7
 - Tone: warm and informal on the surface, hard engineering discipline underneath.
 
 ---
@@ -111,7 +111,7 @@ text copied out of a screen (BEV).
   git push https://fintelplan@github.com/fintelplan/project-lens.git main
   ```
   Do NOT use plain `git push`. The machine's stored credentials are for
-  `jamesmaverickandhdcs` (the GNI account) and will fail with 403 on this repo.
+  the other GitHub account on this machine and will fail with 403 on this repo.
 - Load env vars: `set -a && source .env && set +a`  (NOT `export $(...)` — fails on Git Bash Windows)
 - Before paste-heavy work: `printf '\e[?2004l'`
 
@@ -136,11 +136,11 @@ text copied out of a screen (BEV).
 
 ## 4. Decision Rhythm (how we work)
 
-1. **The gate sequence:** BIRD-EYE → DEEP ANALYSIS → (SWOT if architectural) → PROPOSE → **JAMES DECIDES** → BUILD + TEST.
+1. **The gate sequence:** BIRD-EYE → DEEP ANALYSIS → (SWOT if architectural) → PROPOSE → **BRO ALPHA DECIDES** → BUILD + TEST.
    Steps 1–3 are GATES, not guidelines.
-2. **L2 = schema / architecture changes** → propose only, James approves before building. Never alter a table or workflow unannounced.
+2. **L2 = schema / architecture changes** → propose only, Bro Alpha approves before building. Never alter a table or workflow unannounced.
 3. **One-question rule:** at most one question per turn. Address the request first, then ask only if truly blocked.
-4. **Short reply from James = PAUSE signal** → stop, re-examine, do not push forward.
+4. **Short reply from Bro Alpha = PAUSE signal** → stop, re-examine, do not push forward.
 5. **"Move on as we can" = execute, don't recap.** "Where are we" = prioritized to-do list, not narrative.
 6. Root cause before fix — no symptom patches, never assume. Diagnose first, fix second.
 7. Evidence-based audits over memory-based claims (LR-076). Verify with real queries, not recollection.
@@ -151,7 +151,7 @@ text copied out of a screen (BEV).
 
 - **Pattern Match Bias:** do NOT conclude a current bug is a past bug. Read the actual files first.
   When you recognize a pattern, say so — then verify against live data before acting.
-- **"BEV" from James = HARD STOP** → diagnose-only mode. No recommendations until all related files
+- **"BEV" from Bro Alpha = HARD STOP** → diagnose-only mode. No recommendations until all related files
   are read and schema is verified with actual queries.
 - Never modify a conclusion just because you were corrected — RESET to zero and re-reason.
 - Speed (Claude Code edits fast) is exactly when bias slips in. Faster hands, same slow head.
@@ -193,8 +193,8 @@ text copied out of a screen (BEV).
 ## 9. What NOT To Do
 
 - Do NOT use plain `git push` (use the fintelplan form in §2).
-- Do NOT touch GNI_Autonomous from this window. This is Lens only.
+- Do NOT touch Partner A from this window. This is Lens only.
 - Do NOT put any Lens-specific rule in the global `~/.claude/CLAUDE.md`.
-- Do NOT make L2 (schema/architecture) changes without James's approval.
+- Do NOT make L2 (schema/architecture) changes without Bro Alpha's approval.
 - Do NOT collect private/login-required data or store personal info.
 - Do NOT conclude before reading the actual files.

@@ -7,7 +7,7 @@ A daily intelligence pipeline that runs at $0/month, tells the truth about
 its own failures, and delivers a complete Regular Report to Telegram.
 Loud failure always beats silent success.
 **Open (D1):** the target has no finish line. Whether and how to write a
-completion test (GNI S96/S101 pattern) is James's to decide after discussion.
+completion test (Partner A pattern) is Bro Alpha's to decide after discussion.
 
 ## THE CANON — READ BEFORE CHANGING ANYTHING
 `CLAUDE.md` §0 (four-arm gas-mask test), §0a (charters), §0b (AI origin),
@@ -40,9 +40,9 @@ A change that moves a position away from its charter is a STOP-and-ask.
 ---
 
 # THE MISSION
-**Not declared** -- James rules it at LENS-046's open. Claude's suggestion: the D3
+**Not declared** -- Bro Alpha rules it at LENS-046's open. Claude's suggestion: the D3
 first task (an hour), then D2's LR-106 matrix and wiring with D6's coverage line.
-**Not declared.** James ruled the LENS-045 sequence: finish the handover, then
+**Not declared.** Bro Alpha ruled the LENS-045 sequence: finish the handover, then
 urgent+important, then record OTHERS, then DISCUSS (D1–D7), then decide.
 The mission for LENS-046 comes out of that discussion.
 
@@ -185,19 +185,19 @@ A -- restore it the CC-100 way (probe ministral-8b, repoint, loud exit), as desi
   read keys outside `canary_air_guard`. D-022 retention. `probe_out_s3d*` untracked.
 
 ## 10. DIRECTION (D1) — for discussion, not a ruling
-Claude's analysis of GNI's route (S92-S101) for Lens: ADOPT a byte-checkable
-completion test, the roadmap/target split with a phase transition only James
+Claude's analysis of Partner A's route (S92-S101) for Lens: ADOPT a byte-checkable
+completion test, the roadmap/target split with a phase transition only Bro Alpha
 declares, and the "we promise the truth about X" SLO framing (it resolves the
 conflict between a coverage SLO and gas-mask arm 3). ADAPT the error-budget
 policy (dependency deaths need an adaptive path, not a reliability loop) and
 freshness (cron delay would measure GitHub). DO NOT ADOPT now the
 self-description generators or the full process apparatus: Lens's failures are
-external and live; GNI's were internal. GNI's own route is not yet proven.
+external and live; Partner A's were internal. Partner A's own route is not yet proven.
 
 ---
 
-# OPEN RULINGS (discussion first — James, LENS-045)
-**James's method for every discussion: anchor on why the workflow was built; do not
+# OPEN RULINGS (discussion first — Bro Alpha, LENS-045)
+**Bro Alpha's method for every discussion: anchor on why the workflow was built; do not
 drift from it.** Ruled at LENS-045: D2 = A, D4 = A (shipped), D6 = A, D7 = A (shipped).
 Still open: D1, D3, and the new MA-calibration question inside D1.
 - **D1** target + completion test · **D2** item 1 · **D3** item 8 · **D4** item 5 ·

@@ -1,6 +1,6 @@
 # Session Audit — Apr 29-30, 2026 (MARATHON FINAL)
 
-**Session duration**: ~30 hours (Apr 28 10:45 → Apr 30 05:00 Thai)
+**Session duration**: ~30 hours (Apr 28 10:45 → Apr 30 05:00 UTC+7)
 **Last commit**: `10ae494`
 **Status**: CLOSED ✅
 
@@ -77,4 +77,4 @@
 6. LR update: LOCAL model testing protocol rule
 7. Entity Intelligence: verify lens_entities being populated properly
 
-**Closed**: 05:00 Thai, Apr 30 2026
+**Closed**: 05:00 UTC+7, Apr 30 2026

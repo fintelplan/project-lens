@@ -2,12 +2,12 @@
 
 **Last commit**: `49c46f6`
 **Repo**: github.com/fintelplan/project-lens, main, clean
-**Brief written by**: Opus 4.7 at LENS-021 close, Apr 30 2026 ~16:30 Thai
+**Brief written by**: Opus 4.7 at LENS-021 close, Apr 30 2026 ~16:30 UTC+7
 **You are**: Claude Sonnet 4.6 adaptive, in a fresh session
 
 ---
 
-## OPERATOR — JAMES MAVERICK ("Bro Alpha")
+## OPERATOR — BRO ALPHA
 
 - Tone: warm informal ("my buddy") with engineering rigor underneath
 - Every word costs message budget — be tight
@@ -31,7 +31,7 @@
 1. **BIRD-EYE** before any patch — read full state of related files (use `view`, `grep`)
 2. **No recommendation** until evidence is shown
 3. **One question max** per turn
-4. **Schema/architecture decisions = L2** (propose, James approves)
+4. **Schema/architecture decisions = L2** (propose, Bro Alpha approves)
 5. **Ship-to-file patch** over bash heredoc on Git Bash Windows (LR-078 — heredocs corrupt)
 6. **Verify schema with actual queries**, never guess column names
 
@@ -55,10 +55,10 @@ State office UUIDs (for reference, not code):
 ## YOUR FIRST TASK — verify the fix worked overnight
 
 Tonight's scheduled cron should fire at:
-- `01:30 UTC May 1` = **08:30 Thai May 1** — S2-F scoring + Watch/Clarity/Verification
-- `02:00 UTC May 1` = **09:00 Thai May 1** — Forensic Report (Opus, ~$0.46)
-- `02:10 UTC May 1` = **09:10 Thai May 1** — Regular Report (Mistral)
-- `02:30 UTC May 1` = **09:30 Thai May 1** — Compendium
+- `01:30 UTC May 1` = **08:30 UTC+7 May 1** — S2-F scoring + Watch/Clarity/Verification
+- `02:00 UTC May 1` = **09:00 UTC+7 May 1** — Forensic Report (Opus, ~$0.46)
+- `02:10 UTC May 1` = **09:10 UTC+7 May 1** — Regular Report (Mistral)
+- `02:30 UTC May 1` = **09:30 UTC+7 May 1** — Compendium
 
 Run this diagnostic when you start:
 
@@ -117,7 +117,7 @@ Codify lessons from gemma4/gpt-oss/ministral-3:8b testing on Ollama. Add to `len
 **T7 — Entity Intelligence verification** (~0.5 session)
 Separate from LENS-021. Verify `lens_entities` is being populated by `lens_entity_extract.py` for authors/experts during article ingestion. Currently 1 row visible (Apr 21, journalist test). Should be growing daily.
 
-### DEFERRED (do not pull in unless James asks)
+### DEFERRED (do not pull in unless Bro Alpha asks)
 - S4-B build: needs 90 days predictions, ~July 2026
 - Direction A / web app: after S4-B
 - Forensic Report paid: only manual when needed

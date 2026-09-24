@@ -1,7 +1,7 @@
 # Session Audit — Apr 28-29, 2026 (PRE-CLOSE, pending cross-lab tests)
 
 **Session**: LENS-019.5 Day 3 + LENS-020 + LENS-021 (extended)
-**Time**: 10:45 Apr 28 → ~03:45 Apr 29 Thai (~17h)
+**Time**: 10:45 Apr 28 → ~03:45 Apr 29 UTC+7 (~17h)
 **Commits**: 20+ across both repos
 **Status**: PRE-CLOSE — waiting for quota reset + cron verification
 
@@ -43,7 +43,7 @@
 
 ## Pending (session not fully closed)
 
-1. **Cross-lab tests** — quota resets ~10:00 Thai
+1. **Cross-lab tests** — quota resets ~10:00 UTC+7
    - gemma4:e4b, llama-4-scout, mistral on Cloudflare
    - Run on Article 6 + Article 7 xi_office EW only
 
@@ -82,5 +82,5 @@
 
 ---
 
-**Pre-close**: 03:45 Thai, Apr 29 2026
-**Resume**: ~10:00 Thai after quota reset + cron results
+**Pre-close**: 03:45 UTC+7, Apr 29 2026
+**Resume**: ~10:00 UTC+7 after quota reset + cron results

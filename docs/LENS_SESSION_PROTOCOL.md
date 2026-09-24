@@ -59,7 +59,7 @@ LENS-0XX OPEN | model: <model name>
    ASSERT ITEM NUMBERS ARE UNIQUE. A presence-only check passes a duplicate
    (53fe0e3 shipped one), and the brief references items BY NUMBER.
    If the target is ACHIEVED, run the PHASE TRANSITION ritual instead
-   (LENS_CONTRACT.md) -- James declares the new target, not Claude.
+   (LENS_CONTRACT.md) -- Bro Alpha declares the new target, not Claude.
 5) Declare NEXT session's mission = new top of the order.
 6) Rewrite NEXT_SESSION_BRIEF as SESSION STATE ONLY -- what shipped with
    SHAs, what is in flight, hazards found, LIVE vs BANKED. Reference order
@@ -87,5 +87,5 @@ LENS-0XX OPEN | model: <model name>
 - Claude Code sessions use docs/LENS_LCLIFF_BUILD_PLAN.md task blocks by ID ("execute CC-3") — no free-form instructions.
 - ONE load-bearing command block per message. Multiple blocks get partially pasted: a commit block once ran while its patch block did not, committing nothing and printing "working tree clean", which looks exactly like success. Never put a rollback in the same message as an apply (LR-140).
 - Never hand Claude's output a placeholder to substitute (`MA=<id from above>`). It gets pasted literally and dies with a bash syntax error. Derive IDs inside the command. Twice now.
-- `$HOME` on this machine is `/c/Users/James Maverick` — it contains a space. Quote every path variable; an unquoted one splits into extra arguments.
+- `$HOME` on this machine contains a space. Quote every path variable; an unquoted one splits into extra arguments.
 - Long documents are delivered as DOWNLOADS, never heredocs: this file contains literal backticks, which stall the shell inside a heredoc body (LR-078 amendment). Place them by copy, then byte-compare — existence is not correctness, and an `ls` that succeeds proves only that something is there.

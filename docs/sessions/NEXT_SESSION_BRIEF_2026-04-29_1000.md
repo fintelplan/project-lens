@@ -1,16 +1,16 @@
-# Next Session Brief — Apr 29 2026, ~10:00 Thai Resume
+# Next Session Brief — Apr 29 2026, ~10:00 UTC+7 Resume
 
-**Author**: Claude, Apr 29 ~03:45 Thai
+**Author**: Claude, Apr 29 ~03:45 UTC+7
 **Reader**: Tomorrow's Claude (same day, new session)
-**Operator**: James Maverick (Bro Alpha)
+**Operator**: Bro Alpha
 
 ---
 
 ## ⚠️ OPERATOR CONTRACT
 - Every word costs message budget. Cut preamble. Answer first.
 - Warm informal ("my buddy"). Engineering rigor underneath.
-- GNI-R-233 (Pattern Match Bias) — two incidents yesterday, stay sharp
-- GNI-R-076 (Read before patch) — verify actual state before writing code
+- a Partner A rule (Pattern Match Bias) — two incidents yesterday, stay sharp
+- a Partner A rule (Read before patch) — verify actual state before writing code
 
 ---
 
@@ -23,10 +23,10 @@
 **What happened overnight (check before anything else):**
 
 ```bash
-# 1. Did S2-F cron run? (04:30 UTC = 11:30 Thai)
+# 1. Did S2-F cron run? (04:30 UTC = 11:30 UTC+7)
 # Check GitHub Actions → Lens S2-F Scoring Pipeline
 
-# 2. Did Forensic Report render? (02:00 UTC = 09:00 Thai)
+# 2. Did Forensic Report render? (02:00 UTC = 09:00 UTC+7)
 # Check GitHub Actions → Lens Forensic Report
 # Should be GREEN now (python-docx fix deployed)
 
@@ -47,7 +47,7 @@ EOF
 
 ## TASKS FOR THIS SESSION
 
-### Task 1 — Cross-lab tests (quota resets ~10:00 Thai)
+### Task 1 — Cross-lab tests (quota resets ~10:00 UTC+7)
 Run gemma4:e4b, llama-4-scout, mistral on Cloudflare → Article 6 + 7, xi_office EW only
 
 ```bash
@@ -81,4 +81,4 @@ Add cross-lab results + cron verification to SESSION_AUDIT.
 
 ---
 
-**Brief written**: 03:45 Thai, Apr 29 2026. Go well, my buddy. 🤜
+**Brief written**: 03:45 UTC+7, Apr 29 2026. Go well, my buddy. 🤜

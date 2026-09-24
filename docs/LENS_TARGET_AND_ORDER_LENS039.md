@@ -3,7 +3,7 @@
 Ranks are TARGET-RELATIVE. Freshness confers no priority. This file holds the
 target instance and the path; LENS_CONTRACT.md holds the mission and the method.
 
-**THE FILENAME CARRIES THE CONSUMING SESSION** (CONTRACT v4, James's ruling at
+**THE FILENAME CARRIES THE CONSUMING SESSION** (CONTRACT v4, Bro Alpha's ruling at
 the LENS-037 close): this file is `docs/LENS_TARGET_AND_ORDER_LENS039.md` and
 the OPEN prompt resolves the LATEST by glob. The previous generation's header
 argued the opposite — that a fixed `docs/LENS_TARGET_AND_ORDER.md` was
@@ -29,13 +29,13 @@ is done. A system with one silent failure is not.
 - **R4 — Epistemic diversity is assumed, not verified.**
 - **R6 — The record cannot attribute.**
 - **R7 — Nothing watches our external dependencies' lifecycle.** PROPOSED at
-  LENS-036, JAMES RULES. Now breached a second time: the Cerebras EOL email of
+  LENS-036, BRO ALPHA RULES. Now breached a second time: the Cerebras EOL email of
   2026-07-17 and the Supabase quota mail of 2026-08-23 are the same class.
 - **R8 — Certification measures mechanics, not behaviour.** PROPOSED at
-  LENS-037, JAMES RULES. Strengthened this session: the LENS-037 calibration
+  LENS-037, BRO ALPHA RULES. Strengthened this session: the LENS-037 calibration
   bands predicted live behaviour to the digit.
 - **R9 — Free-tier resources are CONSUMED, not merely rate-limited, and
-  nothing meters what we accumulate.** PROPOSED at LENS-038, JAMES RULES.
+  nothing meters what we accumulate.** PROPOSED at LENS-038, BRO ALPHA RULES.
   Every quota discipline in this repo is about tokens per minute or per day —
   a flow. Storage is a STOCK: it only grows, no wave resets it, and no code
   anywhere in Lens deletes a row or measures a table. Distinct from R7: R7 is
@@ -257,10 +257,10 @@ TPMGuard still paces against the PRIMARY's TPM on a fallback path.
 - Prediction from LENS-037 still holds and still needs a longer series: the
   pre-wiring calibration bands predicted live Mistral behaviour to the digit.
 - MA's S1 allotment oscillation (item 8).
-- GNI: verified ALIVE on 2026-08-24 and in a DIFFERENT Supabase org, so it did
+- Partner A: verified ALIVE on 2026-08-24 and in a DIFFERENT Supabase org, so it did
   not share this blast radius — but `grep -rn "\.delete()"` across
-  GNI_Autonomous returns ZERO. It has no retention policy either. Lens's R9
-  belongs in the next Lens-to-GNI transfer packet.
+  Partner A returns ZERO. It has no retention policy either. Lens's R9
+  belongs in the next Lens-to-Partner-A transfer packet.
 
 ## STANDING BLOCKER
 $0/month. The Supabase Pro plan at $25/month would have lifted this
@@ -276,9 +276,9 @@ restriction immediately and was REJECTED — see DECISIONS.
 - **D-019 — do not buy the Supabase Pro plan.** $25/month lifts the
   restriction today but does not fix the write side or the absent retention
   policy, and the same wall arrives at the next tier. Nineteen days of outage
-  accepted instead. James's call, taken 2026-08-24.
+  accepted instead. Bro Alpha's call, taken 2026-08-24.
 - **D-020 — shrink `articles_used`, do not delete `lens_raw_articles`.**
-  James proposed deleting the raw articles. Rejected on two grounds: the whole
+  Bro Alpha proposed deleting the raw articles. Rejected on two grounds: the whole
   table is 139 MB, so deleting all of it still leaves 2.4x the quota; and the
   shrink is only safe BECAUSE the ids resolve against that table, so the two
   plans destroy each other.
@@ -291,7 +291,7 @@ restriction immediately and was REJECTED — see DECISIONS.
 - CLOSED: the appending half of old item 13.1 — LR-142..151 were already in
   the register at the LENS-038 open; the format split remains as 14.1.
 - NEW ROOT PROPOSED: **R9** — free-tier resources are consumed, not merely
-  rate-limited, and nothing meters what we accumulate. JAMES RULES.
+  rate-limited, and nothing meters what we accumulate. BRO ALPHA RULES.
 - NEW: item 1 (the Supabase outage and its five sub-items) at the TOP. It is
   not merely urgent; nothing else can be worked or certified while it stands.
 - NEW: item 2 (CC-58 shipped and uncertified) — a shipped change with no live
@@ -315,5 +315,5 @@ retention policy.** 1.3 and 1.2 are BLOCKED until 11 September and 1.1 is
 done. A retention policy can be DESIGNED against a dead database: the table
 inventory, the growth rates and the consumer read-windows were all measured on
 2026-08-24 and are in the LENS-039 brief. Ship the design as a decision record
-now and the code when the database returns. If James rules R9 out as a root,
+now and the code when the database returns. If Bro Alpha rules R9 out as a root,
 re-rank before working anything.

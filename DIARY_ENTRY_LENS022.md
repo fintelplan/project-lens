@@ -2,7 +2,7 @@
 
 ## LENS-022 — Ref System Redesign + Production Hotfix Marathon
 
-**Session window**: Apr 30 ~00:00 → May 4 ~21:00 Thai (~5 days)
+**Session window**: Apr 30 ~00:00 → May 4 ~21:00 UTC+7 (~5 days)
 **Commits**: 20 commits (0751c82 → 560c2a1)
 **Model**: Claude Sonnet 4.6 adaptive (first Sonnet session per LR-090)
 
@@ -64,4 +64,4 @@ Confirmed LR-090 (model selection by task tier) is correct. The T5 Mistral model
 name bug and S2F sibling file oversight are classic Pattern Match Bias — fixing the
 symptom without scanning for the same pattern elsewhere. LR-092 + LR-093 address both.
 
-**Session closed**: May 4, 2026 ~21:00 Thai by Sonnet 4.6
+**Session closed**: May 4, 2026 ~21:00 UTC+7 by Sonnet 4.6

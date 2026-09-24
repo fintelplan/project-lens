@@ -28,7 +28,7 @@
 
 ---
 
-**Rule update**: ~02:00 Thai, Apr 29 2026
+**Rule update**: ~02:00 UTC+7, Apr 29 2026
 
 ## RATIFICATION RECORD
 

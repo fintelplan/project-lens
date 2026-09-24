@@ -30,8 +30,8 @@ When it does, four steps, in this order:
    history and SHOULD be named; only the live one keeps the fixed path, so
    the OPEN prompt can always name it and no agent has to hunt for the
    current version.
-3. DECLARE THE NEW TARGET -- JAMES RULES THIS. A target states what Lens is
-   FOR at this stage. Claude proposes options with honest leans; James
+3. DECLARE THE NEW TARGET -- BRO ALPHA RULES THIS. A target states what Lens is
+   FOR at this stage. Claude proposes options with honest leans; Bro Alpha
    decides. Claude does not choose a target.
 4. REGENERATE THE ORDER FROM SCRATCH AGAINST THE NEW TARGET. Ranks are
    TARGET-RELATIVE, so every surviving item is RE-CLASSIFIED, never
@@ -54,7 +54,7 @@ new = (b"   The regenerated order carries a CHANGED THIS REGENERATION section:\n
        b"   items closed, merged, retired, re-ranked -- one line each. git log -p\n"
        b"   keeps every version; the section says WHY it changed.\n"
        b"   If the target is ACHIEVED, run the PHASE TRANSITION ritual instead\n"
-       b"   (LENS_CONTRACT.md) -- James declares the new target, not Claude.\n"
+       b"   (LENS_CONTRACT.md) -- Bro Alpha declares the new target, not Claude.\n"
        b"5) Declare NEXT session's mission = new top of the order.\n")
 n = b2.count(old); assert n == 1, "protocol anchor %d != 1 -- STOP" % n
 p2.write_bytes(b2.replace(old, new, 1))

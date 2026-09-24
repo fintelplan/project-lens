@@ -10,3 +10,11 @@ lens-TEST-*.py
 code/.lens_stagger
 # *.docx removed — session docs must be tracked
 _s4*
+
+# LENS-046: scratch scripts, logs and private notes never enter this public repo
+/lens0[0-9][0-9]_*.sh
+/lens0[0-9][0-9]_*.py
+*.sh.log
+/probe_out_*
+/phi004_full_*.txt
+PRIVATE_*

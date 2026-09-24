@@ -42,9 +42,9 @@ WHY WE DID IT
    Both Sonnet reports now get equally fresh synthesis input.
 
 4. BOTH CRONS DURING OPERATOR WAKING HOURS
-   Bro Alpha in Thailand (UTC+7). Under old 4x, cron at 04:28 UTC = 11:28 AM Thai (watchable)
-   but cron at 21:28 UTC = 04:28 AM Thai (asleep). Under new 2x, both crons are at
-   20:28 Thai (evening) and 08:28 Thai (morning). Both watchable in real time.
+   Bro Alpha in UTC+7. Under old 4x, cron at 04:28 UTC = 11:28 AM UTC+7 (watchable)
+   but cron at 21:28 UTC = 04:28 AM UTC+7 (asleep). Under new 2x, both crons are at
+   20:28 UTC+7 (evening) and 08:28 UTC+7 (morning). Both watchable in real time.
 
 WHY WE DID IT THIS WAY (NOT SOMETHING ELSE)
 -------------------------------------------
@@ -107,5 +107,5 @@ LR-073(A) — Lookback-Frequency Coupling
 
 AUTHOR
 ------
-Team Geeks (Bro Alpha + Claude Opus 4.7)
+Bro Alpha + Claude Opus 4.7
 LENS-013 session, April 17, 2026

@@ -1,18 +1,18 @@
 # LENS OPERATING CONTRACT (permanent — born at LENS-028 close; edit only when a rule of engagement changes)
 
 ## ROLES
-- James Maverick (Bro Alpha, Chiang Mai UTC+7): continuity + gate + final authority on every push. Sole operator. "Your call" = Claude decides WITH full reasoning, never bounces back.
-- Chat-Claude (the day's top reasoning model): audit / design / rulings / probe + cert READS / close briefs. Spends tokens on judgment only (GNI contract v3 economy rule, adopted). Never invents numbers; never displays key values.
-- Claude Code: executor of BUILD_PLAN blocks (CC-N). May edit, commit, AND push — but only a block James approved in-session, one purpose per commit, receipts (SHAs + ls-remote + test counts) back to chat. Anything the bytes contradict in a spec comes back BEFORE edits: pre-approval never overrides BEV.
+- Bro Alpha (UTC+7): continuity + gate + final authority on every push. Sole operator. "Your call" = Claude decides WITH full reasoning, never bounces back.
+- Chat-Claude (the day's top reasoning model): audit / design / rulings / probe + cert READS / close briefs. Spends tokens on judgment only (Partner A contract v3 economy rule, adopted). Never invents numbers; never displays key values.
+- Claude Code: executor of BUILD_PLAN blocks (CC-N). May edit, commit, AND push — but only a block Bro Alpha approved in-session, one purpose per commit, receipts (SHAs + ls-remote + test counts) back to chat. Anything the bytes contradict in a spec comes back BEFORE edits: pre-approval never overrides BEV.
 
 ## GATE SEQUENCE (gates, not guidelines)
-BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> JAMES RULES -> BUILD -> RECEIPTS -> CERT (live cron, read from logs).
+BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> BRO ALPHA RULES -> BUILD -> RECEIPTS -> CERT (live cron, read from logs).
 
-## SHARED DISCIPLINE (adopted from GNI CONTRACT v3 — if GNI changes a shared rule, mirror it here and log it)
+## SHARED DISCIPLINE (adopted from Partner A CONTRACT v3 — if Partner A changes a shared rule, mirror it here and log it)
 - BEV before any edit; read the FULL file before any patch; root cause before fix. FAMILIAR/EASY = THE TELL: "I recognize this pattern but let me read first."
 - Bytes beat reports, greps-from-memory, and banked numbers. Existence != correctness.
 - Trust calibration: verified-this-session ~90-95%; inferred ~50-60%; banked ~30-40%. New session or new MODEL = reset to leads (LR-101/102).
-- LR-078 ship-to-file patches, ASCII anchors, assert count==1. py_compile everything touched (LR-092). SELECT-verify every DB write (LR-080). One purpose per commit; stage files explicitly, never `add -A`. A short reply from James = pause signal, re-examine.
+- LR-078 ship-to-file patches, ASCII anchors, assert count==1. py_compile everything touched (LR-092). SELECT-verify every DB write (LR-080). One purpose per commit; stage files explicitly, never `add -A`. A short reply from Bro Alpha = pause signal, re-examine.
 
 ## LENS-SPECIFIC LAW
 - LR-105 Registry law: every model string, key env, output budget, and limit flows from code/lens_models.py. Call sites run assert_model_known immediately before each request (may raise — per-position blast radius). The guard verifies alignment LOG-ONLY + CI test + pre-flight Telegram line; the guard NEVER raises (fail-safe contract).
@@ -23,17 +23,17 @@ BIRD-EYE -> DEEP ANALYSIS -> PROPOSE (lettered A/B/C, honest lean) -> JAMES RULE
 ## SESSION RHYTHM + DOC MAP (this contract outranks briefs; briefs outrank recollection)
 - TARGET + WORKING ORDER (read FIRST, it names this session's mission): latest docs/LENS_TARGET_AND_ORDER_*.md, named for the session that consumes it.
 - Open/close prompts: docs/LENS_SESSION_PROTOCOL.md. Live state (SESSION STATE ONLY, never the item list): latest docs/NEXT_SESSION_BRIEF_*.md. Rationale (the WHY): docs/LENS_LCLIFF_DECISIONS.md. Execution blocks: docs/LENS_LCLIFF_BUILD_PLAN.md.
-- Begin close at ~80% context or when James calls it. James works marathons and self-reports state accurately.
-- A CLOSE IS A CHECKPOINT, NOT A HARD STOP. Work may legitimately continue after a close -- it has happened three times across Lens and GNI, each time for a good reason. An amendment is valid ONLY if the order is regenerated again and the amendment is logged in its CHANGED THIS REGENERATION section. What harmed us was never the continuing; it was continuing WITHOUT regenerating, which leaves the order describing a state that has already passed.
+- Begin close at ~80% context or when Bro Alpha calls it. Bro Alpha works marathons and self-reports state accurately.
+- A CLOSE IS A CHECKPOINT, NOT A HARD STOP. Work may legitimately continue after a close -- it has happened three times across Lens and Partner A, each time for a good reason. An amendment is valid ONLY if the order is regenerated again and the amendment is logged in its CHANGED THIS REGENERATION section. What harmed us was never the continuing; it was continuing WITHOUT regenerating, which leaves the order describing a state that has already passed.
 
 ## TONE
 Warm long-term partnership ("my buddy"), rigorous underneath. Answer first, cut preamble. One question max per turn. Honest leans, honest self-critique; mistakes owned plainly and fixed; real wins celebrated for real.
 
 ## VERSION LOG
-- v4 -- 2026-08-19, LENS-037. JAMES'S RULING: the working order is NAMED for the session that consumes it (docs/LENS_TARGET_AND_ORDER_LENS0XX.md), matching the brief convention, and the OPEN prompt resolves the latest by glob. Reason: a fixed filename plus a renamed regeneration silently leaves the OPEN prompt reading the previous session's order -- which happened at this close. Every hardcoded path moved in the same commit; a convention that lives in two places is the dual source this contract exists to prevent.
-- v3 -- 2026-08-18, LENS-035. A close is a CHECKPOINT, not a hard stop. This was the open question LENS-033 left unruled, and it was demonstrated twice afterwards (LENS-033 closed at abcb38d then shipped three more commits; LENS-034 closed at c6850f1 then shipped 89e7fde). Settled by MIRRORING GNI's S82 ruling of 2026-08-17, per the SHARED DISCIPLINE sync rule -- and logged on both sides, which is the point. First rule to travel the full circuit: Lens sent GNI the target/order/discovery machinery in August, GNI adopted it as its CONTRACT v4/v5 and ruled this clause from it, Lens mirrors it back.
-- v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after James named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.
-- v1 — born 2026-07-28 at LENS-028 close (written by Fable 5, the day the registry landed and CC-1 certified live). Shared discipline adopted from GNI CONTRACT v3 by reference-and-mirror, not blind copy — dual sources of truth are how S2-D died; process docs obey the same law.
+- v4 -- 2026-08-19, LENS-037. BRO ALPHA'S RULING: the working order is NAMED for the session that consumes it (docs/LENS_TARGET_AND_ORDER_LENS0XX.md), matching the brief convention, and the OPEN prompt resolves the latest by glob. Reason: a fixed filename plus a renamed regeneration silently leaves the OPEN prompt reading the previous session's order -- which happened at this close. Every hardcoded path moved in the same commit; a convention that lives in two places is the dual source this contract exists to prevent.
+- v3 -- 2026-08-18, LENS-035. A close is a CHECKPOINT, not a hard stop. This was the open question LENS-033 left unruled, and it was demonstrated twice afterwards (LENS-033 closed at abcb38d then shipped three more commits; LENS-034 closed at c6850f1 then shipped 89e7fde). Settled by MIRRORING Partner A's S82 ruling of 2026-08-17, per the SHARED DISCIPLINE sync rule -- and logged on both sides, which is the point. First rule to travel the full circuit: Lens sent Partner A the target/order/discovery machinery in August, Partner A adopted it as its CONTRACT v4/v5 and ruled this clause from it, Lens mirrors it back.
+- v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after Bro Alpha named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.
+- v1 — born 2026-07-28 at LENS-028 close (written by Fable 5, the day the registry landed and CC-1 certified live). Shared discipline adopted from Partner A CONTRACT v3 by reference-and-mirror, not blind copy — dual sources of truth are how S2-D died; process docs obey the same law.
 
 ## MISSION AND SCOPE (added LENS-033, 2026-08-06)
 - MISSION (permanent): Project Lens produces valid intelligence on influence operations, with epistemic diversity intact (canary doctrine).
@@ -72,13 +72,13 @@ When it does, four steps, in this order:
 2. ARCHIVE THE COMPLETED ORDER -- git mv to
    docs/archive/LENS_TARGET_AND_ORDER_<target-slug>.md. An archived order is
    history and belongs out of the working folder. EVERY order is named for the
-   session that consumes it (v4, 2026-08-19, James's convention) and the OPEN
+   session that consumes it (v4, 2026-08-19, Bro Alpha's convention) and the OPEN
    prompt resolves the LATEST by glob, exactly as it already does for briefs.
    A fixed filename was the old mechanism; it failed the moment a regenerated
    order was placed beside it under a different name and the fixed path kept
    serving the previous session's list.
-3. DECLARE THE NEW TARGET -- JAMES RULES THIS. A target states what Lens is
-   FOR at this stage. Claude proposes options with honest leans; James
+3. DECLARE THE NEW TARGET -- BRO ALPHA RULES THIS. A target states what Lens is
+   FOR at this stage. Claude proposes options with honest leans; Bro Alpha
    decides. Claude does not choose a target.
 4. REGENERATE THE ORDER FROM SCRATCH AGAINST THE NEW TARGET. Ranks are
    TARGET-RELATIVE, so every surviving item is RE-CLASSIFIED, never

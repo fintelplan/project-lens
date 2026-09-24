@@ -2,7 +2,7 @@
 probe_lens_models.py -- LENS-028 CC-5 probe pack.
 
 Measures whether a candidate model can actually do a Lens position's real job,
-BEFORE that model is wired into a live cron. Built because the April GNI
+BEFORE that model is wired into a live cron. Built because the April Partner A
 evidence against gpt-oss-120b (3/3 failures on Iran/US content) is confounded:
 those tests ran at max_tokens=200, and gpt-oss burns ~1500-1600 tokens
 reasoning before it writes a word. Silent-empty is ALSO the starvation
@@ -42,7 +42,7 @@ Usage:
 One role per invocation, on purpose. There is no "run everything" mode:
 probes cost real quota on production keys and must be read between waves.
 
-Author: Claude Opus 5 for James Maverick (Bro Alpha) | LENS-028 CC-5
+Author: Claude Opus 5 for Bro Alpha | LENS-028 CC-5
 """
 from __future__ import annotations
 

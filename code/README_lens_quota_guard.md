@@ -9,7 +9,7 @@ already-exhausted provider quota, leaving downstream positions (MA, S3-A)
 with no headroom. Before expensive calls fire, check the ledger, decide
 PROCEED / DEGRADE / SKIP.
 
-Imported from GNI Autonomous `ai_engine/quota_guard.py` pattern (GNI-R-112)
+Imported from Partner A's quota guard pattern (imported from Partner A)
 and adapted for Project Lens multi-position architecture.
 
 ## Philosophy (from DOC-006)
@@ -50,8 +50,8 @@ Expected: 16 columns including `positions text[]`.
 ### Step 2: Move module
 
 ```bash
-mv "/c/Users/James Maverick/Downloads/lens_quota_guard.py" /c/school/lens/code/
-mv "/c/Users/James Maverick/Downloads/test_lens_quota_guard.py" /c/school/lens/tests/
+mv "$HOME/Downloads/lens_quota_guard.py" /c/school/lens/code/
+mv "$HOME/Downloads/test_lens_quota_guard.py" /c/school/lens/tests/
 ```
 
 (Create `tests/` folder if it doesn't exist.)
@@ -122,7 +122,7 @@ THRESHOLD_DEGRADE  = 20.0   # < 20% → DEGRADE (skip heaviest positions)
 THRESHOLD_SKIP     =  0.0   # <= 0% → SKIP (skip all positions using this provider)
 ```
 
-Adjust after observing real data — current values are imported from GNI
+Adjust after observing real data — current values are imported from Partner A
 experience.
 
 ### Known provider limits (update when tiers change)
@@ -204,7 +204,7 @@ If the guard misbehaves in production:
 
 ## Author
 
-James Maverick (Bro Alpha) + Claude Opus 4.7, April 17, 2026, LENS-013 session.
+Bro Alpha + Claude Opus 4.7, April 17, 2026, LENS-013 session.
 
-Imported and adapted from GNI Autonomous `ai_engine/quota_guard.py`
-(GNI-R-112 Pre-flight quota reservation).
+Imported and adapted from Partner A's quota guard
+(a Partner A rule Pre-flight quota reservation).

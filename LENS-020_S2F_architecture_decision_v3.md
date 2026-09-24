@@ -3,7 +3,7 @@
 **Decision**: Option B — Dual-provider Ensemble
 **qwen-3-235b on Cerebras + gpt-oss-120b on Cloudflare Workers AI**
 **Status**: READY FOR OPERATOR RATIFICATION
-**Updated**: ~01:00 Thai, Apr 29 2026
+**Updated**: ~01:00 UTC+7, Apr 29 2026
 
 ## 2-lab matrix results
 - Article 6 (steno):   qwen 5ops/0.88 | gpt-oss 5ops/0.86

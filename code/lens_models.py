@@ -15,7 +15,7 @@ Rules encoded:
   - gpt-oss models are REASONING models: they spend ~1500-1600 tokens
     thinking before writing. Output budgets below 2200 risk silent empty
     responses (starvation). Heavy analytical roles get 2400+.
-  - NO China-lineage models as primary or fallback (James ruling, Jul 27
+  - NO China-lineage models as primary or fallback (Bro Alpha ruling, Jul 27
     2026). See docs/LENS_LCLIFF_DECISIONS.md D-004.
   - Limits marked VERIFIED were read from console.groq.com/settings/limits
     on 2026-07-27. Limits marked None are LIMITS_UNKNOWN -- the guard's
@@ -309,7 +309,7 @@ ROLES = {
 
 # --------------------------------------------------------------------------
 # LIMITS: (provider, wire_model) -> known limits. None = LIMITS_UNKNOWN.
-# VERIFIED = read from provider console/docs on 2026-07-27 by James.
+# VERIFIED = read from provider console/docs on 2026-07-27 by Bro Alpha.
 # --------------------------------------------------------------------------
 #
 # METER records HOW a provider rate-limits (D-015):
@@ -512,10 +512,10 @@ def canary_air_guard(key_env, purpose):
 
 if __name__ == "__main__":
     # Self-test: every fallback pair is registered, no China-lineage models.
-    # CC-83 (LENS-042): James ruled China-related engines and models are never
+    # CC-83 (LENS-042): Bro Alpha ruled China-related engines and models are never
     # used, no exception (extends D-004). Families are listed by name because
     # a registry row carries a model id, not a country. Anything outside a
-    # Freedom-from-Fear origin that is not on this list is James's call.
+    # Freedom-from-Fear origin that is not on this list is Bro Alpha's call.
     banned = ("qwen", "deepseek", "kimi", "minimax", "moonshot", "glm", "yi-",
               "zhipu", "zai", "chatglm", "ernie", "baidu", "doubao", "hunyuan",
               "baichuan", "internlm", "step-", "skywork", "tele-", "sensetime")

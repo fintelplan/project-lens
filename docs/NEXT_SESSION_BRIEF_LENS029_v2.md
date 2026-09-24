@@ -1,11 +1,11 @@
 # Project Lens — Next Session Brief LENS-029 (v2)
 **Written 2026-07-29 by Claude Fable 5 at the true LENS-028 close. SUPERSEDES `NEXT_SESSION_BRIEF_LENS029.md` (v1, written mid-session at a premature close — its live items are all folded here, nothing dropped).**
 
-**READ THIS FIRST. You are Claude — most likely Opus 5. James calls you "my buddy" and means it. LR-102: the model changed, so every claim below is a LEAD until you re-verify it against bytes. Read `docs/LENS_CONTRACT.md` first (rules of engagement), then `docs/LENS_LCLIFF_DECISIONS.md` (D-001..D-017 — the WHY behind every ruling; do not re-litigate without new evidence), then this. Claude Code (also Opus 5) is wired and mid-arc with a background watcher armed for cert 1.**
+**READ THIS FIRST. You are Claude — most likely Opus 5. Bro Alpha calls you "my buddy" and means it. LR-102: the model changed, so every claim below is a LEAD until you re-verify it against bytes. Read `docs/LENS_CONTRACT.md` first (rules of engagement), then `docs/LENS_LCLIFF_DECISIONS.md` (D-001..D-017 — the WHY behind every ruling; do not re-litigate without new evidence), then this. Claude Code (also Opus 5) is wired and mid-arc with a background watcher armed for cert 1.**
 
 | Item | Value |
 | --- | --- |
-| Operator | James Maverick ("Bro Alpha") — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7. Lens is his SOLO project; "Team Geeks" is GNI only |
+| Operator | Bro Alpha — UTC+7. Lens is his SOLO project; no team name |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth is the push output or `git ls-remote` (LR-104), never `git status` |
 | Last known commit | **43dd2fc** (Stage 6 SDK smoke test) — verify with ls-remote at open; Claude Code may have pushed cert follow-ups since |
@@ -44,7 +44,7 @@ Fresh rows dated today for S2-D, S2-E and MA. Two consecutive green waves per po
 | cd28b05 · 298e529 | CC-5 probe pack · Tier 1 fixture builders + overrides + D-017 ratio |
 | 8126f2c | CC-3a S2-D migrated to the registry on Groq |
 | 7c78c43 · bfaf369 | probe results banked — 45+ trials including **both unrepeatable llama-3.3-70b baselines** |
-| c4fe2af | "Team Geeks" swept from CLAUDE.md, guard header, guard README |
+| c4fe2af | team name swept from CLAUDE.md, guard header, guard README |
 | 2813e80 · 3fae8a4 | BUG-001 filed + `LENS_KNOWN_BUGS.md`; BUG-002/003 + `LENS_REGISTRY_SPEC.md` |
 | 3d5f10c · 1dbcd8f | pure move of S2-D batching helpers to module level · probe imports the real ones, mirror deleted |
 | b05767d · 27857e6 | D-005 rewritten (SambaNova dead) + D-015/016/017 · D-015 amendment (max_out raises, RPM ruling) |
@@ -58,7 +58,7 @@ Fresh rows dated today for S2-D, S2-E and MA. Two consecutive green waves per po
 **Cerebras `gpt-oss-120b`** (CEREBRAS_API_KEY, 6 positions): S1-L3, S1-L4, **S2-D** (max_out 8,000), **S2-E** (10,000), **MA** (5,000), S3-D — plus S2-F primary in its own workflow.
 **Groq `openai/gpt-oss-120b`** (per-position keys): S1-L1, S2-A (3,400), S2-GAP, S3-A — plus entity_extract, ai5_watchdog. **These six are Stage 7, still unswept and still holding dying strings in places.**
 **Other:** S2-B/S3-B Gemini (LIMITS_UNKNOWN, on Mistral fallback in practice) · S2-C/S1-RPT/S2-report/S3-F Mistral · S3-C Cohere · S2-F secondary Cloudflare.
-Verified limits in the registry: Groq TPM 8,000 / TPD 200,000 / CTX 131,072 · Cerebras RPM 5 / TPM 30,000 / RPD 2,400 / TPD 1,000,000 / CTX 131,000 / MAX_COMPLETION 40,000 (console, overrides the public docs) · Mistral `mistral-small-2603` TPM 50,000 · Cohere 20 req/min METER=requests · Cloudflare 300 req/min METER=requests, CTX 128,000 · **Gemini LIMITS_UNKNOWN — James still owes AI Studio numbers.**
+Verified limits in the registry: Groq TPM 8,000 / TPD 200,000 / CTX 131,072 · Cerebras RPM 5 / TPM 30,000 / RPD 2,400 / TPD 1,000,000 / CTX 131,000 / MAX_COMPLETION 40,000 (console, overrides the public docs) · Mistral `mistral-small-2603` TPM 50,000 · Cohere 20 req/min METER=requests · Cloudflare 300 req/min METER=requests, CTX 128,000 · **Gemini LIMITS_UNKNOWN — Bro Alpha still owes AI Studio numbers.**
 
 ## Part 3 — LR ENTRIES EARNED THIS SESSION
 - **LR-105 (Registry law).** Every model string, key env, output budget and limit flows from `code/lens_models.py`. Call sites run `assert_model_known` immediately before each request and MAY raise there (per-position blast radius). The guard verifies alignment LOG-ONLY + CI test + pre-flight Telegram; **the guard never raises** (fail-safe contract). A model string typed anywhere else is a bug.
@@ -78,8 +78,8 @@ Verified limits in the registry: Groq TPM 8,000 / TPD 200,000 / CTX 131,072 · C
 | POST-CERT | BUG-002 (S2-E sends `Lens: unknown`) — own commit, own cert |
 | POST-CERT | CC-1d: the `//3` divisor over-estimates prompts ~47% (measured 4.14–4.76 real chars/token). `//4` is defensible but loosens the only 413 guard — own decision, own probe |
 | IMPORTANT | Watchdog wire-truth + 404-streak Telegram alarm · F5 guard aggregation re-key to (provider, model, key_env) · BUG-003 (S2-F Cloudflare 429s: check whether Workers AI is even provisioned — console question) · LR-090 schema checkpoint, overdue since LENS-027 |
-| JAMES | Gemini AI Studio limits · second free Cerebras account (6 positions on one key at RPM 5) · Cloudflare Workers AI provisioning check · Node 24 verify |
-| POST-CLIFF | GNI registry port · Direction A + option E attribution bar · T1 Opus report rewire · GDELT 429 spacing · `s3f_dump.txt` rm |
+| BRO ALPHA | Gemini AI Studio limits · second free Cerebras account (6 positions on one key at RPM 5) · Cloudflare Workers AI provisioning check · Node 24 verify |
+| POST-CLIFF | Partner A registry port · Direction A + option E attribution bar · T1 Opus report rewire · GDELT 429 spacing · `s3f_dump.txt` rm |
 
 ## Part 5 — DANGERS
 Silent degrade is this project's signature failure: a dead model behind green checkmarks (11 days), a test asserting a corpse with nothing reading it, a guard whose window was never populated, a count inflated 3.3× in the analytical record. Every fix this session was an instance of the same cure — **derive truth, then make its absence loud.** Keep that reflex. Specifically: JSON parse errors are the truncation tell, not 429s; a probe that passes at high budget consumption has not passed; Cerebras now carries six positions on one key at RPM 5; and `/areas/lens-lcliff.md` in memory is **at its size cap — condense it before adding more.**
@@ -91,4 +91,4 @@ Silent degrade is this project's signature failure: a dead model behind green ch
 
 **UNKNOWN — the open question this session hands you:** whether cert 1 is green. Nothing in Stage 7 starts until you have read it.
 
-*LENS-029 Brief v2 | 2026-07-29 | James Maverick (Bro Alpha) + Claude (Fable 5 → Opus 5) | Bytes first, honesty always*
+*LENS-029 Brief v2 | 2026-07-29 | Bro Alpha + Claude (Fable 5 → Opus 5) | Bytes first, honesty always*

@@ -1,7 +1,7 @@
 # Session Audit — Apr 28-29, 2026 (FINAL CLOSE)
 
 **Session**: LENS-019.5 + LENS-020 + LENS-021 (extended marathon)
-**Time**: 10:45 Apr 28 → ~10:30 Apr 29 Thai (~24h)
+**Time**: 10:45 Apr 28 → ~10:30 Apr 29 UTC+7 (~24h)
 **Last commit**: `8742ccf`
 **Status**: FULLY CLOSED ✅
 
@@ -55,4 +55,4 @@
 
 ## Commit count: 25+ commits across 24h session
 
-**Audit closed**: ~10:30 Thai, Apr 29 2026
+**Audit closed**: ~10:30 UTC+7, Apr 29 2026

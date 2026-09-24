@@ -4,7 +4,7 @@
 
 ### Communication style
 
-**Operator (Bro Alpha) — James Maverick**:
+**Operator (Bro Alpha)**:
 - Warm informal tone ("my buddy", "fight against challenges")
 - Engineering rigor underneath the warmth
 - Explicit constraint declarations ("you are the most limit consuming model")
@@ -39,14 +39,14 @@
 
 These are referenced from session record. Tomorrow's Claude should treat as authoritative:
 
-- **GNI-R-037**: Bird-eye view first before deep dive
-- **GNI-R-076**: Read full file before patching
-- **GNI-R-080**: Write-then-verify (write code, then test it works)
-- **GNI-R-083**: Investigation discipline, not research-paper aesthetics
-- **GNI-R-193**: No `ai_engine/*.py` changes before April 10 GPVS verification (now expired but discipline pattern continues)
-- **GNI-R-220-225**: FMEA discipline (failure modes per option)
-- **GNI-R-232**: Visual Fix Protocol
-- **GNI-R-233**: Self-Awareness Protocol — Pattern Match Bias, Recency Bias, Helpfulness Anxiety, Confidence Performance
+- **a Partner A rule**: Bird-eye view first before deep dive
+- **a Partner A rule**: Read full file before patching
+- **a Partner A rule**: Write-then-verify (write code, then test it works)
+- **a Partner A rule**: Investigation discipline, not research-paper aesthetics
+- **a Partner A rule**: No `ai_engine/*.py` changes before April 10 GPVS verification (now expired but discipline pattern continues)
+- **Partner A rules**: FMEA discipline (failure modes per option)
+- **a Partner A rule**: Visual Fix Protocol
+- **a Partner A rule**: Self-Awareness Protocol — Pattern Match Bias, Recency Bias, Helpfulness Anxiety, Confidence Performance
 - **PHI-004**: Cognitive sovereignty cadence (Watch → Clarity → Verification → Direction)
 
 ### Operator's preferred work pattern
@@ -70,9 +70,7 @@ These are referenced from session record. Tomorrow's Claude should treat as auth
 
 ### Project context tomorrow's Claude needs
 
-- Operator is HD CS student at Spring University Myanmar
-- Works under Dr. Cinthia White / Team Geeks supervision
-- Two parallel projects: GNI Myanmar (production live) and Project Lens (active dev)
+- Two parallel projects: Partner A (production live) and Project Lens (active dev)
 - Project Lens is 30+ session series with 230+ rule governance system
 - Zero-cost architecture constraint ($0/month) is foundational
 - Operator operates as primary architect — Claude is full-stack developer + rule enforcer + session historian
@@ -90,4 +88,4 @@ These are referenced from session record. Tomorrow's Claude should treat as auth
 
 ---
 
-**Collaboration notes**: 15:40 Thai, Apr 28 2026
+**Collaboration notes**: 15:40 UTC+7, Apr 28 2026

@@ -39,7 +39,7 @@ lens_quota_guard.py solves this by providing a pre-flight check:
   - Returns PROCEED / PROCEED_TIGHT / DEGRADE / SKIP decision
   - Logs every decision to the ledger
 
-Imported pattern from GNI Autonomous ai_engine/quota_guard.py (GNI-R-112).
+Imported pattern from Partner A's quota guard (imported from Partner A).
 
 WHY LEDGER-FIRST (NOT PROVIDER-API POLLING)
 -------------------------------------------
@@ -122,7 +122,7 @@ LR-074(A) - Pre-Flight Quota Guard Pattern
    before expensive calls; (2) estimates current run consumption;
    (3) decides PROCEED / DEGRADE / SKIP based on headroom; (4) logs all
    decisions to a ledger table; (5) sends operator alerts at threshold
-   crossings. Imported from GNI-R-112."
+   crossings. Imported from a Partner A rule."
 
 LR-075(A) - Sacred Cron Inviolability
   "The scheduled production crons are the irreducible minimum of the
@@ -131,8 +131,8 @@ LR-075(A) - Sacred Cron Inviolability
 
 LR-076(P) - Cross-Project Learning Discipline
   "When facing an architectural problem, check if sister projects have
-   solved it already. GNI Autonomous's scar tissue is available for
-   import into Project Lens. Credit the origin (GNI-R-NNN)."
+   solved it already. Partner A's scar tissue is available for
+   import into Project Lens. Credit the origin (imported from Partner A)."
 
 WHAT LENS-014 WILL DO
 ---------------------
@@ -145,6 +145,6 @@ After observing 2-3 cron cycles of real ledger data:
 
 AUTHOR
 ------
-Team Geeks (Bro Alpha + Claude Opus 4.7)
+Bro Alpha + Claude Opus 4.7
 LENS-013 session, April 17, 2026
 Observer mode MVP committed at 9e17301 with tag v2x-daily-quota-guard-mvp.

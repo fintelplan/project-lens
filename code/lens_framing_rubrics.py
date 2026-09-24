@@ -773,7 +773,7 @@ import copy
 # CC-95 (LENS-044): the legs S2-F actually calls. Cerebras answered 402
 # payment_required on every call from about 2026-08-17 (48 of 48 on the
 # 2026-09-20 and 09-21 waves, the reason logged by CC-92) and is removed.
-# James ruled this at LENS-044 ahead of choosing a second leg: the order's
+# Bro Alpha ruled this at LENS-044 ahead of choosing a second leg: the order's
 # definition of done removes the Cerebras call in both branches, and the
 # structural profile it stood for has been absent for a month either way.
 # A second leg is one line here.

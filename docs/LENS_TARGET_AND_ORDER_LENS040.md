@@ -30,11 +30,11 @@ That is the whole of item 1.
 - **R7 — Nothing watches our external dependencies' lifecycle.** RULED IN.
 - **R8 — Certification measures mechanics, not behaviour.** RULED IN.
 - **R9 — Free-tier resources are CONSUMED, not merely rate-limited, and
-  nothing meters what we accumulate.** RULED IN by James at LENS-039.
+  nothing meters what we accumulate.** RULED IN by Bro Alpha at LENS-039.
   Confirmed: the write side was measured live at ~268 KB/row on 2026-09-11 and
   is now fixed; nothing still measures database size.
 - **R10 — A POSITION'S DECLARED STATUS IS NOT DERIVED FROM ITS OWN WORK.**
-  PROPOSED at LENS-039, **JAMES RULES.** `lens_s2e_legitimacy.py` returns
+  PROPOSED at LENS-039, **BRO ALPHA RULES.** `lens_s2e_legitimacy.py` returns
   top-level `"status": "COMPLETE"` in the same JSON object that carries
   `"reports_saved": 0` and four sub-results of `"status": "FAILED"`. The
   orchestrator's allowlist reads the top level and is correct to do so. The lie
@@ -120,7 +120,7 @@ consecutive waves.
   (C) restore per-role diversity in the fallback legs, which is D-015 partially
   reversed and needs the reasoning-starvation evidence re-read first.
   **Lean (A) now and (B) as the real fix**, because the primaries are not
-  coming back and the 429 is costing every wave's intelligence today. James
+  coming back and the 429 is costing every wave's intelligence today. Bro Alpha
   rules. Do NOT take (C) without re-reading why D-015 was made.
 - 2.4 **THE 402s IN THESE LOGS ARE CEREBRAS, NOT SUPABASE.** A bare
   `grep -c "402"` on a wave log lumps a dead-provider constant with a database
@@ -315,7 +315,7 @@ per item 2, is now every path.
   over five waves: 12m34s, 35m54s, **26 SECONDS**, 36m50s, 11m13s. On Sep 9
   evening the ordering nearly inverted. If manage-analyze ever starts before
   collect finishes, MA analyses the PREVIOUS wave's articles and reports
-  success. Cron delay itself is GitHub queue depth (James, 2026-09-11) and is
+  success. Cron delay itself is GitHub queue depth (Bro Alpha, 2026-09-11) and is
   not ours to fix; the ordering assumption is.
 
 **20. THE REFERENCE EXPORT IS PARTLY DECORATIVE** [R6, R2] — was 16
@@ -330,7 +330,7 @@ per item 2, is now every path.
   `build_excel()` against three CSVs. Decide whether it becomes a supported
   tool or is deleted now that the pipeline is restored.
 - 20.3 That tool reproduces 20.1's tier defect ON PURPOSE so its output matches
-  the workbooks James is used to; a `--fix-tier` flag produces a DIFFERENT
+  the workbooks Bro Alpha is used to; a `--fix-tier` flag produces a DIFFERENT
   workbook. Whoever fixes 20.1 must fix both together or the two stop being
   comparable.
 - 20.4 **RELEVANT TO ITEM 1:** this export is how a human would have seen S2-E
@@ -352,7 +352,7 @@ findable at all — note it as a pattern worth copying.
 - `lens_raw_articles` is efficient (~1.3 KB/row); the duplication was entirely
   in `lens_reports`.
 - **NEW:** cron delay ran 3h36m to 4h53m across five waves (Sep 8-10), against
-  33-71 min measured on Aug 19. James attributes it to GitHub queue load.
+  33-71 min measured on Aug 19. Bro Alpha attributes it to GitHub queue load.
   Banked, not acted on.
 - **NEW:** `reltuples` in `pg_class` read 3,815 for `lens_reports` while the
   live count was 3,949 — it is the last-ANALYZE snapshot, i.e. a banked number
@@ -366,8 +366,8 @@ findable at all — note it as a pattern worth copying.
 - Billing cycle is now **11 Sep – 11 Oct**. Quota is average daily size, 500 MB.
 - The LENS-037 calibration-band prediction still holds and still needs a longer
   series.
-- GNI: `grep -rn "\.delete()"` across GNI_Autonomous returns ZERO. R9 and D-022
-  belong in the next Lens-to-GNI transfer packet.
+- Partner A: `grep -rn "\.delete()"` across Partner A returns ZERO. R9 and D-022
+  belong in the next Lens-to-Partner-A transfer packet.
 
 ## STANDING BLOCKER
 $0/month. D-019 stands.
@@ -397,7 +397,7 @@ $0/month. D-019 stands.
 - CLOSED: old 1.2 (restoration), old 1.3 (CC-59 `2a9639c`, certified), old 1.5
   (answered by events), old item 2 (CC-58 certified on five waves).
 - NEW ROOT PROPOSED: **R10** — a position's declared status is not derived from
-  its own work. JAMES RULES.
+  its own work. BRO ALPHA RULES.
 - NEW at the TOP: item 1 (silent failure in S2-C and S2-E). It is the only open
   item that breaches the target's absolute rule.
 - NEW: item 2 (fallback convergence on one Mistral key) — the proximate cause
@@ -424,7 +424,7 @@ the same shape.** It is the only open item that breaches the target's absolute
 rule, and it has been live and unread for five weeks.
 
 Item 2 is the proximate cause of the failures those positions are hiding, and
-2.3 is a ruling James owes; expect to need it in the same session, because a
+2.3 is a ruling Bro Alpha owes; expect to need it in the same session, because a
 fixed S2-E will simply report FAILED until the fallback has capacity. Take the
 ruling first, ship item 1, and let the next wave certify both at once against
 the prediction banked at 1.5.
@@ -449,7 +449,7 @@ stamps are the truth:
 written as though that reading were still current. The close ran across
 roughly two and a half days. **LR-152 — a clock reading is a banked number
 the moment it is read — broken in the same session that cites it, on a rule
-James himself earned by being right when the stale clock said he was wrong.**
+Bro Alpha himself earned by being right when the stale clock said he was wrong.**
 
 **CONSEQUENCE, AND IT IS LOAD-BEARING: every figure in this file tagged
 "measured 2026-09-11" is now up to 2.5 days stale.** Specifically —
@@ -490,7 +490,7 @@ returns zero across the package.
   `saved` in `"COMPLETE" if saved else "SAVE_FAILED"` actually tracks the work
   in every one of them. That is unexamined.
 
-## R10 — EVIDENCE AGAINST, RECORDED BEFORE JAMES RULES
+## R10 — EVIDENCE AGAINST, RECORDED BEFORE BRO ALPHA RULES
 
 The sweep run after R10 was proposed weakens it. Twenty top-level status
 literals across `code/`: **eighteen already derive the status from the work**,
@@ -503,7 +503,7 @@ guides nothing.
 
 **My lean has changed and is recorded as changed: RULE R10 OUT.** It was
 proposed on two instances before the denominator was measured. The proposal
-stands for James to rule either way; the evidence against it is above, and
+stands for Bro Alpha to rule either way; the evidence against it is above, and
 the fix shipped regardless.
 
 **The one thing that survives if R10 is ruled out:** the convention was right
@@ -535,13 +535,13 @@ Order of work at the LENS-040 open:
 3. **Take the 2.3 ruling**, then work item 2. A correctly-reporting S2-E will
    now say `ANALYSIS_FAILED` honestly on every wave until the fallback has
    capacity — the fix makes the failure visible, it does not make it stop.
-4. **R10 and 2.3 are both James's to rule.** Do not work either as though it
+4. **R10 and 2.3 are both Bro Alpha's to rule.** Do not work either as though it
    were already decided.
 
 ## CLOSE DISCIPLINE NOTE
 
 Shipping code after the close docs were committed is not the normal shape and
-it happened on James's explicit call, with the reasoning recorded: the sweep
+it happened on Bro Alpha's explicit call, with the reasoning recorded: the sweep
 context (18 vs 2, S2-A's precedent, CC-58's DEGRADED vocabulary, the link to
 item 9.4) existed only inside that session and would have cost most of
 LENS-040 to rebuild. This addendum exists because that decision put the order

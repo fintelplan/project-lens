@@ -1,5 +1,5 @@
 # LENS L-CLIFF Build Plan (Claude Code task blocks)
-**2026-07-27, LENS-028. Execute IN ORDER, one block = one commit purpose. Every block: BEV the target files first, LR-078 ship-to-file patches (binary rb/wb, ASCII anchors, assert count==1, derive newline from the file's own bytes), `python -m py_compile` every touched .py (LR-092), propose the patch BEFORE editing (L2 — James approves), push with the full-URL command, `git ls-remote` verify. Companion docs: LENS_LCLIFF_DECISIONS.md (rationale), code/lens_models.py (the registry, already written and self-tested).**
+**2026-07-27, LENS-028. Execute IN ORDER, one block = one commit purpose. Every block: BEV the target files first, LR-078 ship-to-file patches (binary rb/wb, ASCII anchors, assert count==1, derive newline from the file's own bytes), `python -m py_compile` every touched .py (LR-092), propose the patch BEFORE editing (L2 — Bro Alpha approves), push with the full-URL command, `git ls-remote` verify. Companion docs: LENS_LCLIFF_DECISIONS.md (rationale), code/lens_models.py (the registry, already written and self-tested).**
 
 ## CC-0 — Land the registry
 Place `lens_models.py` at `code/lens_models.py` exactly as delivered. Run `python code/lens_models.py` (self-test prints roles/pairs/rows) + py_compile. Commit: `feat: lens_models.py registry -- L-CLIFF single source of truth (LENS-028 D-001)`.
@@ -25,7 +25,7 @@ Each: model string + MAX_TOKENS from registry (`wire(role)` + `fit_max_tokens`);
 Receipts per file: grep zero old literals, py_compile, one commit per file or per tight pair.
 
 ## CC-4 — S3 + remaining call sites
-Files: lens_s3a_patterns.py (L61 hardcode), lens_s3_orchestrator.py (docstring table), lens_s3b (2.5-flash-lite), lens_framing_rubrics.py (provider table comments), lens_manager.py, lens_compendium.py, lens_regular_report.py, analyze_lens.py (UNREFERENCED scratch — recommend `git rm` with the other three scratch files, James rules; if kept, sweep it too), lens-compendium.yml (1 hit).
+Files: lens_s3a_patterns.py (L61 hardcode), lens_s3_orchestrator.py (docstring table), lens_s3b (2.5-flash-lite), lens_framing_rubrics.py (provider table comments), lens_manager.py, lens_compendium.py, lens_regular_report.py, analyze_lens.py (UNREFERENCED scratch — recommend `git rm` with the other three scratch files, Bro Alpha rules; if kept, sweep it too), lens-compendium.yml (1 hit).
 Receipts: repo-wide grep `llama-3\.3-70b|qwen` in code/ + .github/ returns ONLY SambaNova-context lines and historical comments explicitly marked as history.
 
 ## CC-5 — Probe pack (BEFORE certs, AFTER CC-0..CC-4 compile)
@@ -35,16 +35,16 @@ Build `probe_lens_models.py` (repo root, read-only against production data):
 - Append one JSON line per trial to `probe_results.jsonl` (committed — permanent record).
 - FIRST run the llama-3.3-70b-versatile baseline (same fixtures) — unrepeatable after Aug 16.
 - SambaNova probe also records max accepted prompt size (context check, D-005).
-Gate: any role failing content-fitness on gpt-oss-120b escalates to James — options there are SambaNova-as-primary for that role or Cerebras routing; do NOT ship a censored position.
+Gate: any role failing content-fitness on gpt-oss-120b escalates to Bro Alpha — options there are SambaNova-as-primary for that role or Cerebras routing; do NOT ship a censored position.
 
 ## CC-6 — Hygiene commit (one purpose: truth-in-config)
 - S2-F: fix the "[ENSEMBLE] Running primary: qwen-3-235b" banner + any config carrying that string to match the wire (gpt-oss-120b on Cerebras).
 - Wire `GROQ_MANAGER_API_KEY` where the orchestrator/manager watchdog reads its key (D-011) — restores LR-094 isolation from MA.
-- Remove the duplicated COHERE_API_KEY line in .env (local, no commit needed — James, one line).
-- Scratch files ruling from James: `git rm` patch_add_ollama_provider.py, patch_article4_provider.py, patch_cerebras_model.py, smoke_test_ollama.py (+ analyze_lens.py if ruled dead) — LR-093 pattern.
+- Remove the duplicated COHERE_API_KEY line in .env (local, no commit needed — Bro Alpha, one line).
+- Scratch files ruling from Bro Alpha: `git rm` patch_add_ollama_provider.py, patch_article4_provider.py, patch_cerebras_model.py, smoke_test_ollama.py (+ analyze_lens.py if ruled dead) — LR-093 pattern.
 - s3f_dump.txt: confirm dead -> rm (carried Part 6 item).
 
-## CC-7 — Cert wave (James + next crons; before Aug 12)
+## CC-7 — Cert wave (Bro Alpha + next crons; before Aug 12)
 Per touched position, next scheduled cron, read logs (gh run view … --log | grep):
 - wire model string == registry string; zero 404/413/429-storm/empty; content present and sane; no refusal language.
 - LR-080 SELECT-verify any ledger writes.

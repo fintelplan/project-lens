@@ -29,7 +29,7 @@ all about instruments that reported success while discarding their own output.
    through Python's lastResort handler, with no timestamp and no tag.
 4. Lens CI now has SIX gates. Two of them are new test files.
 5. The DB constraint `lens_drift_findings_sample_size_check` was changed from
-   `sample_size >= 2` to `>= 0` (James ran the SQL, verified by
+   `sample_size >= 2` to `>= 0` (Bro Alpha ran the SQL, verified by
    `pg_get_constraintdef`).
 
 ## WHAT SHIPPED (LENS-043) — five commits
@@ -82,9 +82,9 @@ All three read from the Monday 2026-09-21 morning wave.
 Nothing is half-shipped. Every commit is complete, gated and pushed.
 
 ## RULINGS TAKEN THIS SESSION
-- James delegated the A/B/C opening choice ("A B C, your call"). Claude took
+- Bro Alpha delegated the A/B/C opening choice ("A B C, your call"). Claude took
   **A**: ship item 1.1 first so that one wave certifies several things at once.
-- James ran the `sample_size >= 0` constraint change.
+- Bro Alpha ran the `sample_size >= 0` constraint change.
 - No other ruling was asked for and none was taken.
 
 ## LIVE (verified this session by bytes, logs, a live call or a passing test)

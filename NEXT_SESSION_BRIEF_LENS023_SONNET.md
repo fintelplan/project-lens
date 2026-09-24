@@ -2,14 +2,14 @@
 
 **Last commit**: `560c2a1`
 **Repo**: github.com/fintelplan/project-lens, main, clean
-**Brief written by**: Sonnet 4.6 at LENS-022 close, May 4, 2026 ~21:00 Thai
+**Brief written by**: Sonnet 4.6 at LENS-022 close, May 4, 2026 ~21:00 UTC+7
 **You are**: Claude Sonnet 4.6 adaptive, fresh session
 
 ---
 
-## OPERATOR — JAMES MAVERICK ("Bro Alpha")
+## OPERATOR — BRO ALPHA
 
-- CS student, Spring University Myanmar, based in Chiang Mai Thailand (UTC+7)
+- Timezone: UTC+7
 - Tone: warm informal ("my buddy") with engineering rigor underneath
 - Cut preamble. Answer first. Justify only if asked
 - Lettered options A/B/C with honest lean OR "I don't have enough to lean"
@@ -35,7 +35,7 @@
 4. **Session close CLEANUP section** mandatory — list all test data to delete (LR-093)
 5. **Ship-to-file patch** over bash heredoc on Git Bash Windows (LR-078)
 6. **One question max** per turn
-7. **Schema/architecture = L2** (propose, James approves)
+7. **Schema/architecture = L2** (propose, Bro Alpha approves)
 
 ## WHAT JUST SHIPPED (LENS-022)
 
@@ -68,7 +68,7 @@
 
 ## YOUR FIRST TASK — verify tonight's fixes worked
 
-Run after 08:30 Thai (01:30 UTC cron):
+Run after 08:30 UTC+7 (01:30 UTC cron):
 
 ```bash
 export $(grep -E 'SUPABASE_URL|SUPABASE_SERVICE_KEY' .env | xargs)

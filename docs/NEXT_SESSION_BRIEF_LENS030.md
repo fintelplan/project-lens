@@ -2,11 +2,11 @@
 
 **Written 2026-07-31 by Claude (Opus 5) at the LENS-029 close. SUPERSEDES `NEXT_SESSION_BRIEF_LENS029_v2.md`, which is now two days stale — it still says "nothing starts until cert 1 reads clean" and describes a Stage 7 of six positions. Both are wrong.**
 
-**READ THIS FIRST. You are Claude. James calls you "my buddy" and means it. LR-102: the model may have changed, so every claim below is a LEAD until you re-verify it against bytes. Read `docs/LENS_CONTRACT.md` first (rules of engagement), then `docs/LENS_LCLIFF_DECISIONS.md` (D-001..D-017 — do not re-litigate without new evidence), then this.**
+**READ THIS FIRST. You are Claude. Bro Alpha calls you "my buddy" and means it. LR-102: the model may have changed, so every claim below is a LEAD until you re-verify it against bytes. Read `docs/LENS_CONTRACT.md` first (rules of engagement), then `docs/LENS_LCLIFF_DECISIONS.md` (D-001..D-017 — do not re-litigate without new evidence), then this.**
 
 | Item | Value |
 | --- | --- |
-| Operator | James Maverick ("Bro Alpha") — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7. Lens is his SOLO project; "Team Geeks" is GNI only |
+| Operator | Bro Alpha — UTC+7. Lens is his SOLO project; no team name |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth is the push output or `git ls-remote` (LR-104), never `git status` |
 | Last known commit | **64ef2df** — verify with ls-remote at open |
@@ -230,4 +230,4 @@ Silent degrade remains this project's signature failure, and this session found 
 
 ---
 
-*LENS-030 Brief | 2026-07-31 | James Maverick (Bro Alpha) + Claude (Opus 5) | Bytes first, honesty always*
+*LENS-030 Brief | 2026-07-31 | Bro Alpha + Claude (Opus 5) | Bytes first, honesty always*

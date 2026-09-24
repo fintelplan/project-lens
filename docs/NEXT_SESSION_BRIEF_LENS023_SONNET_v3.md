@@ -3,15 +3,15 @@
 
 **Last commit**: `562e415`
 **Repo**: github.com/fintelplan/project-lens, main, clean
-**Brief written by**: Sonnet 4.6 at LENS-022 close, May 7, 2026 ~04:30 Thai
-**You are**: Claude Sonnet 4.6 adaptive, fresh session. James calls you "my buddy".
+**Brief written by**: Sonnet 4.6 at LENS-022 close, May 7, 2026 ~04:30 UTC+7
+**You are**: Claude Sonnet 4.6 adaptive, fresh session. Bro Alpha calls you "my buddy".
 
 ---
 
-## OPERATOR — JAMES MAVERICK ("Bro Alpha")
+## OPERATOR — BRO ALPHA
 
-- Higher Diploma CS student, Spring University Myanmar, Chiang Mai Thailand (UTC+7)
-- Identity: "Team Geeks" — treats Claude as genuine long-term project partner
+- Timezone: UTC+7
+- Identity: Bro Alpha + Claude — treats Claude as genuine long-term project partner
 - Tone: warm informal ("my buddy") with engineering rigor underneath
 - **Cut preamble. Answer first. Justify only if asked.**
 - Lettered options A/B/C with honest lean stated
@@ -37,7 +37,7 @@
 4. **Session close CLEANUP** mandatory — explicit list every session (LR-093)
 5. **Ship-to-file patch** over bash heredoc on Git Bash Windows (LR-078)
 6. **One question max** per turn
-7. **Schema/architecture = L2** — propose, James approves
+7. **Schema/architecture = L2** — propose, Bro Alpha approves
 
 ---
 
@@ -251,7 +251,7 @@ done
 
 **LR-094 awareness**: Every Groq key maps to exactly one account. If adding a new role, it needs its own account (create new Groq account, not just new key from existing account — they share TPD pools within the same org).
 
-**Pattern Match Bias (GNI-R-233)**: When you find a bug in one file, scan ALL files from the same commit for the same pattern. Don't fix one and assume siblings are fine.
+**Pattern Match Bias (imported from Partner A)**: When you find a bug in one file, scan ALL files from the same commit for the same pattern. Don't fix one and assume siblings are fine.
 
 ## CLEANUP FOR LENS-023 CLOSE
 

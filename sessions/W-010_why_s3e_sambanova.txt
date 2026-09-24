@@ -41,4 +41,4 @@ PATTERN DEFENDED:
   Gap acknowledged and documented.
 
 Status: ACCEPTED DEVIATION — documented, monitored
-Author: James Maverick | Session: LENS-010
+Author: Bro Alpha | Session: LENS-010

@@ -1,6 +1,6 @@
 # Session Audit — Apr 29-30, 2026 (FINAL)
 
-**Session duration**: ~26 hours (Apr 28 10:45 → Apr 30 00:30 Thai)
+**Session duration**: ~26 hours (Apr 28 10:45 → Apr 30 00:30 UTC+7)
 **Last commit**: `9ab97b4`
 **Status**: CLOSED ✅
 
@@ -76,4 +76,4 @@
 3. LR update: LOCAL model testing protocol rule
 4. Direction A / web app design (when S4-B ready, July 2026)
 
-**Closed**: 00:30 Thai, Apr 30 2026
+**Closed**: 00:30 UTC+7, Apr 30 2026

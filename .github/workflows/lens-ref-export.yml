@@ -2,8 +2,8 @@ name: Lens Reference Export
 
 on:
   schedule:
-    - cron: '30 2  * * *'   # 09:30 AM Thai (UTC+7) → 1of2
-    - cron: '30 14 * * *'   # 09:30 PM Thai (UTC+7) → 2of2
+    - cron: '30 2 * * *' # 09:30 AM UTC+7 (UTC+7) → 1of2
+    - cron: '30 14 * * *' # 09:30 PM UTC+7 (UTC+7) → 2of2
   workflow_dispatch:
     inputs:
       mode:

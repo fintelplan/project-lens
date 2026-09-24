@@ -38,4 +38,4 @@ EOF
 - Direction A / web app: after S4-B
 - Forensic Report paid: re-enable when needed manually
 
-**Brief written**: 00:30 Thai, Apr 30 2026
+**Brief written**: 00:30 UTC+7, Apr 30 2026

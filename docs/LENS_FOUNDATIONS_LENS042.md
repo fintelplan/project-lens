@@ -7,21 +7,21 @@
 
 This file gathers what already exists in the repo and in the session records into one
 text file an agent can grep. It does not replace the originals. Every section names its
-source. Where the source is lost or unclear it says **UNKNOWN — James to confirm**.
-Where the canon disagrees with itself, it says **TENSION — James to rule** instead of
+source. Where the source is lost or unclear it says **UNKNOWN — Bro Alpha to confirm**.
+Where the canon disagrees with itself, it says **TENSION — Bro Alpha to rule** instead of
 choosing.
 
 | Source | Where | Date |
 |---|---|---|
 | PHI-001 Origin Story | `philosophies/lens-PHI-001_origin_story.docx` | LENS-001, Apr 11 |
-| PHI-002 Global Class Sustainable Personality | **no file in the repo** — James's words in the LENS-004 chat (Apr 12), wired into every lens prompt | Apr 12 |
+| PHI-002 Global Class Sustainable Personality | **no file in the repo** — Bro Alpha's words in the LENS-004 chat (Apr 12), wired into every lens prompt | Apr 12 |
 | PHI-003 Popular Sovereignty | `lens-PHI-003_popular_sovereignty.docx` | LENS-017, Apr 20–21 |
 | PHI-004 Cognitive Sovereignty Cadence | `lens-PHI-004_cognitive_sovereignty_cadence.docx` | LENS-019 |
 | DOC-006 Foundations | `lens-DOC-006_foundations_LENS013.docx` | LENS-013, Apr 17 |
 | DOC-007 Guard System Spec | `data/lens-DOC-007_guard_system_spec.docx` | LENS-014, Apr 18 |
 | S2-F architecture v4 | `LENS-020_S2F_architecture_decision_v4.md` | Apr 29 |
 | Canary gas-mask test | `CLAUDE.md` §0 | LENS-042 (CC-81) |
-| AI-origin guideline | James's ruling | LENS-042, Sep 17 |
+| AI-origin guideline | Bro Alpha's ruling | LENS-042, Sep 17 |
 
 ---
 
@@ -36,7 +36,7 @@ choosing.
 >
 > This is the soul of Project Lens. Every decision connects back to this.
 
-### A2. PHI-002 — Global Class Sustainable Personality (James's words, LENS-004)
+### A2. PHI-002 — Global Class Sustainable Personality (Bro Alpha's words, LENS-004)
 
 > **On Sustainability and Human Rights.** A safe environment, a law-governed society, the
 > right to grow up with an education suited to one's development, accumulated experience,
@@ -160,7 +160,7 @@ and stops being a canary.
 5. **Recursive self-injection** — stored output re-read as own reasoning; confidence rises
    without new evidence. Defence: recursive audit; rising confidence without evidence = STOP.
 
-**TENSION — James to rule:** DOC-006 lists Pattern 3's defence as "a sanitization layer
+**TENSION — Bro Alpha to rule:** DOC-006 lists Pattern 3's defence as "a sanitization layer
 strips emotional loading before lenses read." Non-negotiable #2 says S1 is never protected.
 The two cannot both hold for S1's input. Record which one governs.
 
@@ -174,7 +174,7 @@ Before any change **or any command**, ask:
    (`lens_models.canary_air_keys()`) or write with the canary's voice (Telegram "What the
    canary sees", `lens_reports`)?
 
-A "yes" is a stop: say it plainly, then ask James.
+A "yes" is a stop: say it plainly, then ask Bro Alpha.
 
 ---
 
@@ -193,11 +193,11 @@ From DOC-006 Part 11, with later rulings marked.
 5. **Free first, evidence before upgrade** (LR-068). Never upgrade on theory.
 6. **Read before edit, always** (LR-006). Check → re-check → counter-check (LR-233).
 7. **No DeepSeek anywhere** (founding). Extended by D-004 (Jul 27) and by C8.
-8. **AI engines and AI brains — origin guideline (James, LENS-042, 2026-09-17).**
+8. **AI engines and AI brains — origin guideline (Bro Alpha, LENS-042, 2026-09-17).**
    Use only engines (providers, hosts) and brains (models) from a *Freedom from Fear*
    environment. **China-related: never, no exception** — including models fine-tuned on a
    China-origin base. **Any other origin that is not clearly Freedom-from-Fear: the agent
-   stops and asks James** (case-by-case; no external index decides). Example needing a
+   stops and asks Bro Alpha** (case-by-case; no external index decides). Example needing a
    ruling before use: `allam-2-7b` on Groq.
 9. **Loud failure always beats silent success** (target since LENS-036). A position that
    fails must say so in the log, the status and the run summary.
@@ -208,7 +208,7 @@ From DOC-006 Part 11, with later rulings marked.
 
 ## Part D — Engineering principles (DOC-007 and the session record)
 
-- **"The main duty of every guard system is not to fail main system."** (James, LENS-014)
+- **"The main duty of every guard system is not to fail main system."** (Bro Alpha, LENS-014)
 - **History before assumption.** Read why a mechanism exists before redesigning it; bytes say
   what IS, history says which side is canonical.
 - **Pre-flight connects to main flight by logic, not timing.** A cron that runs broken code
@@ -296,7 +296,7 @@ verifier (month 3–6); S4-C calibration (month 6–12); S4-E upgrade-trigger mo
 | `lens-gdelt.yml` | 13:45, 01:45 | Enrich collection with GDELT | GDELT was blocked on GitHub IPs (DOC-006) — current state UNKNOWN |
 | `lens-manage-analyze.yml` | 13:28, 01:28 | S1 → S1 report → S2 → S3 | S2/S3 run `if: !cancelled()` (CC-75) |
 | `lens-s2f-scoring.yml` | 13:30, 01:30 | S2-F scoring + Watch/Clarity/Verification aggregators (PHI-004) + Direction B | See S2-F |
-| `lens-regular-report.yml` | 02:10 | Free daily report to Telegram; PART 4 references built in code (REF IDs, LR-070) | Successor to the paid Sonnet layer? **UNKNOWN — James to confirm** |
+| `lens-regular-report.yml` | 02:10 | Free daily report to Telegram; PART 4 references built in code (REF IDs, LR-070) | Successor to the paid Sonnet layer? **UNKNOWN — Bro Alpha to confirm** |
 | `lens-compendium.yml` | 02:30 | Intelligence compendium | Charter text UNKNOWN |
 | `lens-ref-export.yml` | 02:30, 14:30 | Reference export (1of2 / 2of2 pools) for source verifiability | — |
 | `lens-forensic-report.yml` | manual | Forensic report incl. Architect-Hypothesis (PHI-003, LR-083) | — |
@@ -304,11 +304,11 @@ verifier (month 3–6); S4-C calibration (month 6–12); S4-E upgrade-trigger mo
 | `lens-ci.yml` | push | Compile · registry self-test · quota tests · response-schema tests | — |
 
 **Paid layer (DOC-006 Part 8):** a Sonnet 4.6 S2+S3 report, 2×/day, earned per LR-068.
-Current status **UNKNOWN — James to confirm**.
+Current status **UNKNOWN — Bro Alpha to confirm**.
 
 ---
 
-## Part F — Rulings and tensions awaiting James
+## Part F — Rulings and tensions awaiting Bro Alpha
 
 1. **Pattern 3 sanitization vs "S1 is never protected"** (Part B5).
 2. **S2-F structural-ops detector** — Cerebras qwen is dead and barred; what replaces it?
@@ -320,7 +320,7 @@ Current status **UNKNOWN — James to confirm**.
 5. **Lens 1 input** — state-only reading vs "four perspectives on the same articles", weighed
    against its saturated Groq air.
 6. **S3-E** — which local model, from an allowed origin.
-7. **Attribution** — DOC-007 and PHI-003 carry "Team Geeks"; Lens is Bro Alpha's solo project
+7. **Attribution** — DOC-007 and PHI-003 carry a team name; Lens is Bro Alpha's solo project
    with no team name. Correct in the originals?
 8. **PHI-002 file** — commit the text in A2 as the canonical file?
 
@@ -329,7 +329,7 @@ Current status **UNKNOWN — James to confirm**.
 ## Part G — How to use this file
 
 1. Before touching a position or workflow, read its charter row and Part C.
-2. If the change moves the position away from its charter, **stop and ask James**.
+2. If the change moves the position away from its charter, **stop and ask Bro Alpha**.
 3. If the charter is wrong or out of date, propose the edit here in the same commit as the
    code, and say why.
 4. Never cite this file as the source of a philosophy — cite the original named in the table

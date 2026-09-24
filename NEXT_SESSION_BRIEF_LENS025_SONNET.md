@@ -1,17 +1,17 @@
 # Next Session Brief — LENS-025 (Claude Sonnet 4.6 adaptive)
-# Written at LENS-024 close, May 17, 2026 ~10:45 AM Thai
+# Written at LENS-024 close, May 17, 2026 ~10:45 AM UTC+7
 
 **Last commit**: `e4d7ce3`
 **Repo**: github.com/fintelplan/project-lens, main, clean
 **Sources**: 69 live
-**You are**: Claude Sonnet 4.6 adaptive, fresh session. James calls you "my buddy."
+**You are**: Claude Sonnet 4.6 adaptive, fresh session. Bro Alpha calls you "my buddy."
 
 ---
 
-## OPERATOR — JAMES MAVERICK ("Bro Alpha")
+## OPERATOR — BRO ALPHA
 
-- Higher Diploma CS student, Spring University Myanmar, Chiang Mai Thailand (UTC+7)
-- Identity: "Team Geeks" — genuine long-term project partner
+- Timezone: UTC+7
+- Identity: Bro Alpha + Claude — genuine long-term project partner
 - Tone: warm informal ("my buddy") with engineering rigor underneath
 - **Cut preamble. Answer first. Justify only if asked.**
 - Lettered options A/B/C with honest lean stated
@@ -36,7 +36,7 @@
 3. **Check sibling files** for same pattern — including both yml AND code files (LR-092/098)
 4. **Ship-to-file patch** over bash heredoc on Git Bash Windows (LR-078)
 5. **One question max** per turn
-6. **Schema/architecture = L2** — propose, James approves
+6. **Schema/architecture = L2** — propose, Bro Alpha approves
 7. **HTTP error → `r.text[:200]`** first — never diagnose from status code alone (LR-095)
 8. **Blob columns → size-check** before prompt — never dump raw DB column into AI prompt (LR-096)
 9. **yml timeout → read actual value** — never cite platform max without checking yml (LR-097)
@@ -53,7 +53,7 @@
 
 ### Fix 2 — xlsx 1of2 missing since May 10
 Morning manage-analyze failed daily (mistralai) → only evening cron produced xlsx → only `2of2` delivered for 3+ days. Fixed by:
-- New `lens-ref-export.yml` standalone: runs at `02:30 UTC` (09:30 AM Thai) + `14:30 UTC` (09:30 PM Thai)
+- New `lens-ref-export.yml` standalone: runs at `02:30 UTC` (09:30 AM UTC+7) + `14:30 UTC` (09:30 PM UTC+7)
 - Only needs 4 secrets: Supabase + Telegram
 - Removed ref export from manage-analyze (no duplicate delivery)
 - Both `1of2` + `2of2` confirmed delivered daily since May 13
@@ -102,16 +102,16 @@ cat lens-DOC-002_rules.md | tail -30
 Then append four rules. They've been sitting as "pending" for two sessions.
 
 ### Task 3 — T3 steno calibration Article 6
-Run at 6-8 AM Thai only (Cerebras queue fresh):
+Run at 6-8 AM UTC+7 only (Cerebras queue fresh):
 ```bash
 export S2F_PROVIDER=cerebras
 python calibrate_rubric_article6_chosunbiz.py 2>&1 | grep -E "Operations found|Confidence:|Status:|OP-0[3][0-9]"
 ```
-Previous attempts: 2 partial successes (conf=0.85/0.92, 5 ops each) at 3 AM Thai — Cerebras saturated. 6-8 AM is the correct window.
+Previous attempts: 2 partial successes (conf=0.85/0.92, 5 ops each) at 3 AM UTC+7 — Cerebras saturated. 6-8 AM is the correct window.
 
 ---
 
-## CURRENT SYSTEM STATUS (LENS-024 close, May 17 ~10:45 AM Thai)
+## CURRENT SYSTEM STATUS (LENS-024 close, May 17 ~10:45 AM UTC+7)
 
 ### Workflows
 | Workflow | Schedule | Status |

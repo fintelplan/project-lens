@@ -1,8 +1,8 @@
 # LENS-019.5 Session Audit — Apr 28-29, 2026 (COMPLETE FINAL)
 
 **Session ID**: lens-019.5-day3-extended
-**Operator**: James Maverick (Bro Alpha)
-**Time**: 10:45 Apr 28 → ~02:00 Apr 29 Thai (~15h elapsed wall)
+**Operator**: Bro Alpha
+**Time**: 10:45 Apr 28 → ~02:00 Apr 29 UTC+7 (~15h elapsed wall)
 **Repo**: github.com/fintelplan/project-lens, branch `main`
 **Commits landed**: 4 (68c132c, 64c4af4, 556f802, 3d27f6e)
 **Session type**: Model evaluation + architecture decision + implementation
@@ -83,7 +83,7 @@
 ## Two Pattern Match Bias incidents — documented
 
 **Incident 1** (Apr 27): "qwen-3 China bias" — refuted by cross-lab data.
-**Incident 2** (Apr 28 ~17:00): "Local Ollama not viable" — overgeneralized from one model. Operator corrected. Per GNI-R-233.
+**Incident 2** (Apr 28 ~17:00): "Local Ollama not viable" — overgeneralized from one model. Operator corrected. Per a Partner A rule.
 
 ---
 
@@ -95,4 +95,4 @@
 
 ---
 
-**Audit closed**: ~02:00 Thai, Apr 29 2026
+**Audit closed**: ~02:00 UTC+7, Apr 29 2026

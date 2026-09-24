@@ -47,7 +47,7 @@ yet introspected, related files not yet read), the correct response is:
 
 **Origin**: LENS-021 Pattern Match Bias incident. Opus 4.7 jumped to ALTER TABLE
 recommendation on first sight of "TODO comment + NOT NULL violation" without
-reading the 2 other affected aggregators or verifying entity infrastructure. James
+reading the 2 other affected aggregators or verifying entity infrastructure. Bro Alpha
 escalated correction twice. Recovery only after second push-back.
 
 **Reference**: previous Claude protocol from LENS-007/014 (`lens-DOC-005_collab.md`
@@ -85,4 +85,4 @@ and project completion velocity favored split assignment.
 
 ---
 
-**Rules update**: 16:30 Thai, Apr 30 2026
+**Rules update**: 16:30 UTC+7, Apr 30 2026

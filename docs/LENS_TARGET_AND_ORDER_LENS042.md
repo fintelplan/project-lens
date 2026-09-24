@@ -15,7 +15,7 @@ Loud failure always beats silent success.
   38 of 38`, `sent=True`, 1,806 words. First delivery since 2026-09-03.
 - **`All positions complete`** on wave `35063596665`, 2026-09-16 06:47Z.
   First time in five weeks. Seven of seven S2 positions.
-- **R11 RULED IN** (James, 2026-09-15): "we never ask providers for the
+- **R11 RULED IN** (Bro Alpha, 2026-09-15): "we never ask providers for the
   guarantees they offer" is a ROOT, not an item.
 - **Item 2.2 ruled D**; item 21.3 ruled C and discharged; repoint scope
   ruled A then A1.

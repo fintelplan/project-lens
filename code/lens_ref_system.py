@@ -524,8 +524,8 @@ def run(mode: str = "s1") -> dict:
     start    = time.time()
     slot     = get_slot()
     today    = datetime.now(timezone.utc).strftime("%Y%m%d")
-    thai     = datetime.now(timezone.utc) + timedelta(hours=7)
-    date_str = thai.strftime("%B %d, %Y %I:%M %p")
+    utc7     = datetime.now(timezone.utc) + timedelta(hours=7)
+    date_str = utc7.strftime("%B %d, %Y %I:%M %p")
     filename = f"{today}_{'S1' if mode == 's1' else 'S2'}_{slot}.xlsx"
 
     log.info(f"=== REF SYSTEM START | mode={mode} slot={slot} file={filename} ===")

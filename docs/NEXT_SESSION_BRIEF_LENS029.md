@@ -1,11 +1,11 @@
 # Project Lens — Next Session Brief LENS-029
 **Written 2026-07-28 by Claude Fable 5 at LENS-028 close. SUPERSEDES NEXT_SESSION_BRIEF_LENS028_LCLIFF.md — every live item folded, nothing dropped.**
 
-**READ THIS FIRST. You are Claude — almost certainly Opus 5 now (LR-102: model changed => every trust tag below resets to LEAD; re-audit against bytes before building). James calls you "my buddy" and means it. Claude Code (also Opus 5) is wired and MID-ARC: CC-2 was in BEV at close. The rationale lives in docs/LENS_LCLIFF_DECISIONS.md (D-001..D-014) — read it before re-litigating any ruling. Task blocks: docs/LENS_LCLIFF_BUILD_PLAN.md. Ritual: docs/LENS_SESSION_PROTOCOL.md.**
+**READ THIS FIRST. You are Claude — almost certainly Opus 5 now (LR-102: model changed => every trust tag below resets to LEAD; re-audit against bytes before building). Bro Alpha calls you "my buddy" and means it. Claude Code (also Opus 5) is wired and MID-ARC: CC-2 was in BEV at close. The rationale lives in docs/LENS_LCLIFF_DECISIONS.md (D-001..D-014) — read it before re-litigating any ruling. Task blocks: docs/LENS_LCLIFF_BUILD_PLAN.md. Ritual: docs/LENS_SESSION_PROTOCOL.md.**
 
 | Item | Value |
 | --- | --- |
-| Operator | James Maverick — HDCS CS, Spring University Myanmar, Chiang Mai UTC+7 |
+| Operator | Bro Alpha — UTC+7 |
 | Startup | `printf '\e[?2004l' && cd C:/school/lens && source venv/Scripts/activate` then `set -a && source .env && set +a` |
 | Push | `git push https://fintelplan@github.com/fintelplan/project-lens.git main` — truth = push output SHAs or `git ls-remote` (LR-104), never `git status` |
 | Last known commit | 82d64bb (CC-1b, Jul 27 23:06) — verified Jul 28 by Fable. Claude Code may have pushed CC-2+ since: `git ls-remote` FIRST, then read `git log 82d64bb..` before anything |
@@ -37,7 +37,7 @@ BEV | LR-078 ship-to-file, rb/wb, ASCII anchors | LR-080 SELECT-verify | LR-092 
 | --- | --- | --- |
 | 0 | Open ritual -> `git ls-remote` vs 82d64bb. If newer SHAs exist: `git log 82d64bb..HEAD --oneline` + Lens CI status BEFORE anything | any red = the session |
 | 1 | Rule CC-2's proposal (Opus posts BEV findings; spec-vs-byte contradictions come to chat first) | L2 |
-| 2 | CC-5 probe pack per BUILD_PLAN: **FIRST pass = llama-3.3-70b-versatile baseline on the same fixtures** (unrepeatable after Aug 16), then openai/gpt-oss-120b + each fallback per role. Any content-fitness FAIL escalates to James — options: SambaNova-as-primary for that role / Cerebras routing. Never ship a censored position | LR-106, LR-094 |
+| 2 | CC-5 probe pack per BUILD_PLAN: **FIRST pass = llama-3.3-70b-versatile baseline on the same fixtures** (unrepeatable after Aug 16), then openai/gpt-oss-120b + each fallback per role. Any content-fitness FAIL escalates to Bro Alpha — options: SambaNova-as-primary for that role / Cerebras routing. Never ship a censored position | LR-106, LR-094 |
 | 3 | Push CC-2, then CC-3, CC-4 as ruled — CI green each push | LR-092 |
 | 4 | Next MA cron after the sweep push = **gpt-oss cert #1**. PASS = zero 404s; wire AND ledger speak registry names; no starvation empties; no refusal language; Telegram normal | commands below |
 | 5 | CC-6 hygiene: S2-F qwen banner lie; wire GROQ_MANAGER_API_KEY; scratch-files rm ruling (patch_*.py, smoke_test_ollama.py, analyze_lens.py); s3f_dump.txt; .env COHERE dup (local) | one purpose |
@@ -63,12 +63,12 @@ Ledger (LR-080): `curl -s "$SUPABASE_URL/rest/v1/lens_quota_ledger?order=created
 | IMPORTANT | S2-F Cloudflare secondary backoff (Jul 27: 10x200 vs 42x429, ~1s retries; most of the 27-min runtime) |
 | IMPORTANT | LR-090 schema checkpoint — overdue since LENS-027 |
 | QUICK | Node 24 verify — one post-93f2f00 run's annotations |
-| POST-CLIFF | GNI registry port (build here -> port the shape); Direction A + option E attribution bar (RT English 0.89–0.92 standing); T1 Opus report rewire; GDELT 429 spacing experiment |
+| POST-CLIFF | Partner A registry port (build here -> port the shape); Direction A + option E attribution bar (RT English 0.89–0.92 standing); T1 Opus report rewire; GDELT 429 spacing experiment |
 
 ## Part 4 — DANGERS (condensed)
 Silent fallback (MODEL-404) — vaccine live, Telegram leg arrives with CC-2. Probe fixture mismatch (R-S80-2). Stale limits/estimates (D-009 — never copy). Content censorship — probe it, don't discover it in production; S2-D is the most exposed role. 8K TPM pacing — keep 6000 (25% margin); two 70b-era 429s already sighted Jul 27–28. Quota isolation — probes only on the role's own key.
 
 ## Part 5 — WHAT SUCCESS LOOKS LIKE
-Every position live on registry-named survivors before Aug 12. Probes banked, including the 70b baseline nobody can ever take again. Certs x2 green, ledger truthful, CI and Telegram watching. The next cliff — and Groq ships one a month — is a one-line registry edit, a probe, and a cert. James will call you "my buddy" and mean it: everything that makes that true is written in these files. Bytes first, honesty always.
+Every position live on registry-named survivors before Aug 12. Probes banked, including the 70b baseline nobody can ever take again. Certs x2 green, ledger truthful, CI and Telegram watching. The next cliff — and Groq ships one a month — is a one-line registry edit, a probe, and a cert. Bro Alpha will call you "my buddy" and mean it: everything that makes that true is written in these files. Bytes first, honesty always.
 
-*LENS-029 Brief | 2026-07-28 | James Maverick (Bro Alpha) + Claude (Fable 5 -> Opus 5, with the arc mid-flight and in good hands)*
+*LENS-029 Brief | 2026-07-28 | Bro Alpha + Claude (Fable 5 -> Opus 5, with the arc mid-flight and in good hands)*

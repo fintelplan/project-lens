@@ -93,7 +93,7 @@ on a wave.
   43,498-49,566 and 10,678-10,740. Over-predicted tokens by ~26% because the
   mix shifted toward prose (ratio 4.064, above the whole prior range).
 - Used the Cerebras 30,000 while calling it a context window. It is TPM.
-  Right number, wrong reason -- and James caught it.
+  Right number, wrong reason -- and Bro Alpha caught it.
 - ESTIMATES THAT HELD: the 149-char undercount, predicted at "~150+" before
   measuring, exact on all 19 waves; and the S1 entry-size bound derived by
   exclusion, which put four lenses at 16,000-20,800 against an actual

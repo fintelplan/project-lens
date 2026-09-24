@@ -93,7 +93,7 @@ class TPMGuard:
     """
     Rolling 60-second token window guard. Prevents 429 cascades.
     Waits intelligently before each API call. Never crashes — just waits.
-    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    Adapted from Partner A multi-agent pipeline pattern for Project Lens S2.
     """
     def __init__(self, tpm_limit: int = 6000):
         self.tpm_limit = tpm_limit

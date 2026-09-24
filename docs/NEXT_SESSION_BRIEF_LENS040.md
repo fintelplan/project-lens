@@ -50,9 +50,9 @@ message.
   of R9.
 
 ## IN FLIGHT
-Item 2.3 is a ruling James owes and item 1 will need it in the same session --
+Item 2.3 is a ruling Bro Alpha owes and item 1 will need it in the same session --
 a fixed S2-E will report FAILED honestly until the fallback has capacity.
-Items 7.3 and 7.4 are also rulings. R10 is PROPOSED and James rules.
+Items 7.3 and 7.4 are also rulings. R10 is PROPOSED and Bro Alpha rules.
 Item 3 is designed (D-022) with no code written. Item 5 is a decide-then-do.
 
 ## HAZARDS FOUND THIS SESSION (these are now LRs)

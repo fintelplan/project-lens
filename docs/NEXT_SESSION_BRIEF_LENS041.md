@@ -57,7 +57,7 @@ message.
   at LENS-039 and unchanged. R11 is new this session.
 
 ## IN FLIGHT
-Item 2.2 is a fork James rules. Item 10.3 and 10.4 are rulings. Item 5 is
+Item 2.2 is a fork Bro Alpha rules. Item 10.3 and 10.4 are rulings. Item 5 is
 designed (D-022) with no code. Item 7 is a decide-then-do. Nothing is
 half-shipped: every commit this session is complete and certified or explicitly
 banked as evidence.

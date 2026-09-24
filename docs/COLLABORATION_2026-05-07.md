@@ -30,7 +30,7 @@
 
 ---
 
-## What James does that works
+## What Bro Alpha does that works
 
 - **Uploads logs as documents** — pastes terminal output directly. No "it failed, fix it."
   The actual log text is always attached. Fastest possible diagnostic path.
@@ -39,16 +39,16 @@
 - **"BEV" as a hard stop signal** — consistent, effective. When Claude starts moving too fast,
   one word resets the mode. No emotional friction.
 - **Stays architecturally engaged** — noticed entity_extract TPD numbers in the log and asked
-  the right question about shared keys. James reads logs too, not just Claude.
+  the right question about shared keys. Bro Alpha reads logs too, not just Claude.
 - **Trusts the system** — when a fix is applied but can't be confirmed until next cron,
-  James accepts "next cron will confirm" and moves to session close. Doesn't demand
+  Bro Alpha accepts "next cron will confirm" and moves to session close. Doesn't demand
   real-time proof of everything.
-- **Multi-day sessions** — LENS-022 ran Apr 30 → May 7. James stays with the problem until
+- **Multi-day sessions** — LENS-022 ran Apr 30 → May 7. Bro Alpha stays with the problem until
   the machine is healthy, not just until the immediate fire is out.
 
 ---
 
-## What Claude should never do with James
+## What Claude should never do with Bro Alpha
 
 - Commit without `python -m py_compile` on ALL modified files (LR-092)
 - Fix one file and assume sibling files from the same origin commit are fine
@@ -56,7 +56,7 @@
 - Confuse "new API key" with "new quota pool" — always verify account separation
 - Narrate the diagnostic protocol while executing it
 - Recommend reducing quality (article count, model capability) when architectural isolation
-  is the correct fix — James will always choose architecture over shortcuts
+  is the correct fix — Bro Alpha will always choose architecture over shortcuts
 - Leave session close docs incomplete — diary, status, rules, brief, collaboration are all
   mandatory (LR-093)
 
@@ -84,7 +84,7 @@ Telegram `sent=False` = keys not set).
 
 **"Architecture compounds"**
 Every key isolation decision made in LR-094 builds on the architecture established in LR-010
-(GNI quota discipline) and LENS-010 (4-email Groq account architecture). The pattern is
+(Partner A quota discipline) and LENS-010 (4-email Groq account architecture). The pattern is
 always the same: when a provider has per-account limits, separate heavy consumers into
 separate accounts. Don't fight the limits — route around them at the architecture level.
 
@@ -106,4 +106,4 @@ separate accounts. Don't fight the limits — route around them at the architect
 
 ---
 
-**Collaboration update**: ~04:30 Thai, May 7, 2026
+**Collaboration update**: ~04:30 UTC+7, May 7, 2026

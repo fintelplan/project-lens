@@ -20,13 +20,13 @@ Philosophy (DOC-006):
 
 Rules referenced:
   LR-068 Evidence before upgrade
-  LR-074 Pre-Flight Quota Guard Pattern (GNI-R-112 import)
-  LR-075 Sacred Cron Inviolability (GNI-R-121 import)
+  LR-074 Pre-Flight Quota Guard Pattern (imported from Partner A)
+  LR-075 Sacred Cron Inviolability (imported from Partner A)
 
-Imported from GNI Autonomous ai_engine/quota_guard.py pattern, adapted for
+Imported from Partner A's quota guard pattern, adapted for
 Project Lens multi-position architecture.
 
-Author: James Maverick (Bro Alpha) + Claude Opus 4.7
+Author: Bro Alpha + Claude Opus 4.7
 Date:   2026-04-17
 """
 from __future__ import annotations

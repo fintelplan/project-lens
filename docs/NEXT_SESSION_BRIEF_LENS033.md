@@ -127,7 +127,7 @@ SUPERSEDES `NEXT_SESSION_BRIEF_LENS032.md` entirely.
 
 ---
 
-## RULINGS JAMES OWES
+## RULINGS BRO ALPHA OWES
 
 > **RULED 2026-08-05 in `928d1f8` (CC-40) — these two are NO LONGER OWED.** LR-136
 > (a spec must not state a number its reader can derive; write the COMMAND, not the

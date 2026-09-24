@@ -930,9 +930,9 @@ async def call_cerebras(lens, system_prompt, user_prompt):
 class LensProviderGuard:
     """
     Pre-flight + retry guard for each lens provider.
-    Inspired by GNI MAD preflight + GroqGuardian pattern.
+    Inspired by Partner A multi-agent preflight + GroqGuardian pattern.
 
-    Principles (from GNI lessons):
+    Principles (from Partner A lessons):
     - Pre-check before firing — never assume provider is ready
     - Exponential backoff on 429 — never hammer a rate-limited provider
     - Graceful degradation — one lens failing never kills the pipeline

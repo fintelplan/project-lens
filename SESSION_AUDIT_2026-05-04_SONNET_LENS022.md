@@ -2,8 +2,8 @@
 # Multi-day session: Apr 30 → May 4, 2026
 
 **Session model**: Claude Sonnet 4.6 adaptive
-**Operator**: James Maverick (Bro Alpha)
-**Time**: Apr 30 ~00:00 → May 4 ~21:00 Thai (~5 days)
+**Operator**: Bro Alpha
+**Time**: Apr 30 ~00:00 → May 4 ~21:00 UTC+7 (~5 days)
 **Last commit**: `639e3d9`
 **Status**: CLOSED ✅
 
@@ -120,7 +120,7 @@ manage-analyze failures caused refs step to never run → lens_article_refs empt
 
 ---
 
-**Session closed**: May 4, 2026 ~21:00 Thai. Next session: LENS-023, Claude Sonnet 4.6 adaptive.
+**Session closed**: May 4, 2026 ~21:00 UTC+7. Next session: LENS-023, Claude Sonnet 4.6 adaptive.
 
 
 ---
@@ -152,7 +152,7 @@ Root cause chain:
 ### Lessons (why we couldn't estimate this)
 1. Guard ledger tracks what our code logged, not actual Groq consumption
 2. Shared-key quota depletion is invisible until it fails in production
-3. LR-058/LR-094: same lesson learned 3 times (GNI S30, LENS-010, LENS-022)
+3. LR-058/LR-094: same lesson learned 3 times (Partner A, LENS-010, LENS-022)
    — must be checked at architecture design time, not after failure
 
 ### Updated rules count: LR-088 to LR-094 (7 new rules this session)
@@ -160,7 +160,7 @@ Root cause chain:
 
 ---
 
-## ADDENDUM 2 — Quota isolation complete (May 5, 2026 ~02:30 Thai)
+## ADDENDUM 2 — Quota isolation complete (May 5, 2026 ~02:30 UTC+7)
 
 ### Full key distribution locked
 - GROQ_API_KEY (mail a): S1-L1 only
@@ -180,7 +180,7 @@ Root cause chain:
 
 ---
 
-## ADDENDUM 3 — Final session additions (May 5, 2026 ~05:00 Thai)
+## ADDENDUM 3 — Final session additions (May 5, 2026 ~05:00 UTC+7)
 
 ### S1/S2/S3 Intelligence Docx Reports (3 new files)
 - code/lens_s1_report.py — S1 Canary Intelligence Report (Mistral-small)

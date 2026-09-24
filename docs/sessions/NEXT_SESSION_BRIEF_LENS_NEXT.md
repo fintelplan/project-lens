@@ -18,4 +18,4 @@
 - Direction A: operator decision
 - Dashboard: after Direction A
 
-**Brief written**: ~10:30 Thai, Apr 29 2026
+**Brief written**: ~10:30 UTC+7, Apr 29 2026

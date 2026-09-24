@@ -1,8 +1,8 @@
 # Next Session Brief — LENS-020 Session 1
 
-**Author**: Claude, Apr 29 ~02:00 Thai
+**Author**: Claude, Apr 29 ~02:00 UTC+7
 **Reader**: Tomorrow's Claude
-**Operator**: James Maverick (Bro Alpha)
+**Operator**: Bro Alpha
 
 ---
 
@@ -10,7 +10,7 @@
 
 - Every word costs message budget. Cut preamble. Answer first.
 - Warm informal tone ("my buddy"). Engineering rigor underneath.
-- GNI-R-037 (bird-eye first), GNI-R-076 (read before patch), GNI-R-233 (Pattern Match Bias)
+- a Partner A rule (bird-eye first), a Partner A rule (read before patch), a Partner A rule (Pattern Match Bias)
 - Two PMB incidents this session. Stay sharp.
 
 ---
@@ -69,4 +69,4 @@ Single commit: `LENS-020: implement dual-provider ensemble function`
 
 ---
 
-**Brief written**: ~02:00 Thai, Apr 29 2026. Go well, my buddy. 🤜
+**Brief written**: ~02:00 UTC+7, Apr 29 2026. Go well, my buddy. 🤜

@@ -16,7 +16,7 @@ across 3 files. That's Sonnet zone. Opus over-engineered it.
 
 Mapped to a rule: **LR-090** — model selection by task tier.
 
-## What works for James (Bro Alpha) regardless of model
+## What works for Bro Alpha regardless of model
 
 - **Action first, not narration.** "Run X. While X runs: A/B/C?" — direct execution.
 - **One question per turn.** Compound questions waste budget.
@@ -71,4 +71,4 @@ The brief is self-contained.
 
 ---
 
-**Collaboration update**: 16:30 Thai, Apr 30 2026
+**Collaboration update**: 16:30 UTC+7, Apr 30 2026

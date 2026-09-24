@@ -1,8 +1,8 @@
 # LENS-019.5 Session Audit — Apr 28, 2026
 
 **Session ID**: lens-019.5-day3 (Apr 28, 2026)
-**Operator**: James Maverick (Bro Alpha)
-**Time**: 10:45 → 15:40 Thai (~5h elapsed wall, ~1h focused engagement per operator's report)
+**Operator**: Bro Alpha
+**Time**: 10:45 → 15:40 UTC+7 (~5h elapsed wall, ~1h focused engagement per operator's report)
 **Repo**: github.com/fintelplan/project-lens, branch `main`
 **Commits landed today**: 0 (all today's work is uncommitted)
 **Continuation from**: Apr 27 evening session (compacted at 42% mid-session, recovered via summary)
@@ -94,7 +94,7 @@ User's screenshot showed Claude hitting compaction at 42% mid-session earlier to
 
 **The correction**: Today's gpt-oss-120b cross-lab data showed the SAME asymmetry pattern. Both models catch more ops on Article 7 than Article 6. The asymmetry is article-structure-driven (long investigative pieces have more pretense-move surface area than short stenographic pieces). Bias hypothesis rejected.
 
-**The lesson**: When two competing hypotheses are present (model-bias vs structural-property), gather cross-lab evidence BEFORE concluding. Per GNI-R-233 Self-Awareness Protocol — Pattern Match Bias is the appealing-narrative trap.
+**The lesson**: When two competing hypotheses are present (model-bias vs structural-property), gather cross-lab evidence BEFORE concluding. Per Partner A's Self-Awareness Protocol — Pattern Match Bias is the appealing-narrative trap.
 
 ### 4.2 Single-model evidence is structurally insufficient for bias claims
 
@@ -164,7 +164,7 @@ Calibration result JSONs from today's gpt-oss-120b sweeps also in working tree.
 1. Does qwen-3 vs gpt-oss complementarity hold when adding Meta Llama, DeepSeek, Mistral lineages? (Tomorrow's Ollama breadth answers this.)
 2. Does qwen-3-235b operation profile reproduce on smaller `qwen3.5:9b`? (Scale-vs-lineage question — tomorrow.)
 3. What's the runtime cost of 2-model ensemble in production? (Latency-budget test — separate session.)
-4. Failure-mode analysis: graceful degradation when one model in ensemble fails. (FMEA per GNI-R-220-225 — separate session.)
+4. Failure-mode analysis: graceful degradation when one model in ensemble fails. (FMEA per Partner A rules — separate session.)
 5. Catalog v4 design: 5 ops the catalog systematically misses on stenographic articles (OP-006, OP-022, OP-023, OP-009, OP-018). Possibly split into stenographic-specific variants. (Catalog work — separate session.)
 6. OP-016 split into OP-016a action-attribution-correct + OP-016b outcome-attribution-pretense. (Catalog v4.)
 
@@ -173,10 +173,10 @@ Calibration result JSONs from today's gpt-oss-120b sweeps also in working tree.
 ## 8. Health/cognitive state at session close
 
 - Operator self-reports still fresh.
-- Claude session usage: 77% with reset captured ~14:24 Thai (1 screenshot).
+- Claude session usage: 77% with reset captured ~14:24 UTC+7 (1 screenshot).
 - Both Apr 27 + Apr 28 carry slight fatigue residue from compaction event + late-night Apr 27 session.
 - Recommended overnight rest before tomorrow's Ollama breadth test.
 
 ---
 
-**Audit closed**: 15:40 Thai, Apr 28 2026
+**Audit closed**: 15:40 UTC+7, Apr 28 2026

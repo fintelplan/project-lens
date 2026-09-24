@@ -2,7 +2,7 @@
 
 ## Three new candidate rules from today's session
 
-These are LR-085, LR-086, LR-087 candidates. Need operator review and ratification before adding to canonical rule set. (Per session record, GNI rules use LR-XXX numbering and require operator confirmation.)
+These are LR-085, LR-086, LR-087 candidates. Need operator review and ratification before adding to canonical rule set. (Per session record, Partner A rules use LR-XXX numbering and require operator confirmation.)
 
 ---
 
@@ -20,7 +20,7 @@ These are LR-085, LR-086, LR-087 candidates. Need operator review and ratificati
 - If asymmetry persists across labs → structural property of catalog/articles, not bias
 - If asymmetry differs across labs → genuine model-specific signal, candidate for bias claim
 
-**Linked to**: GNI-R-233 (Self-Awareness Protocol — Pattern Match Bias)
+**Linked to**: a Partner A rule (Self-Awareness Protocol — Pattern Match Bias)
 
 ---
 
@@ -46,7 +46,7 @@ Plus historical:
 - Required for primary: either paid provider with SLA, or local Ollama with controlled hardware
 - Document failure modes when discovered (today's data is the canonical record)
 
-**Linked to**: GNI-R-220-225 (FMEA discipline), zero-cost architecture constraint (creates tension to manage)
+**Linked to**: Partner A rules (FMEA discipline), zero-cost architecture constraint (creates tension to manage)
 
 ---
 
@@ -68,14 +68,14 @@ Plus historical:
 - Verification tier: optimize for precision + ensemble agreement (most accurate single model OR ensemble)
 - Documented per-tier model selection becomes part of LENS-020 architectural decision
 
-**Linked to**: PHI-004 (cognitive sovereignty cadence), GNI-R-220-225 (FMEA — different failure cost profiles per tier)
+**Linked to**: PHI-004 (cognitive sovereignty cadence), Partner A rules (FMEA — different failure cost profiles per tier)
 
 ---
 
 ## Notes on rule-promotion process
 
-These are CANDIDATES, not yet ratified. Operator review needed. Per session record, GNI uses two patterns:
-- Numbered rule documents (e.g., GNI-R-232 Visual Fix Protocol)
+These are CANDIDATES, not yet ratified. Operator review needed. Per session record, Partner A uses two patterns:
+- Numbered rule documents (e.g., a Partner A rule Visual Fix Protocol)
 - LR-XXX (Lens Rules) for Project Lens specifically
 
 These three should be reviewed with operator on Apr 29 or later session and either:
@@ -87,14 +87,14 @@ These three should be reviewed with operator on Apr 29 or later session and eith
 
 ## Existing rules confirmed in active use today
 
-- **GNI-R-037** (Bird-eye view first): used when operator asked for "deep analysis" — produced bird-eye-view document
-- **GNI-R-076** (Read before patch): not directly invoked but principle held
-- **GNI-R-080** (Write-then-verify): used in smoke_test_ollama after patch_add_ollama_provider
-- **GNI-R-083** (Investigation not research-paper): held — kept work focused on production-readiness frame
-- **GNI-R-220-225** (FMEA): explicitly invoked when discussing free-tier reliability
-- **GNI-R-233** (Self-Awareness Protocol — Pattern Match Bias): central to today's hand-annotation correction work
+- **a Partner A rule** (Bird-eye view first): used when operator asked for "deep analysis" — produced bird-eye-view document
+- **a Partner A rule** (Read before patch): not directly invoked but principle held
+- **a Partner A rule** (Write-then-verify): used in smoke_test_ollama after patch_add_ollama_provider
+- **a Partner A rule** (Investigation not research-paper): held — kept work focused on production-readiness frame
+- **Partner A rules** (FMEA): explicitly invoked when discussing free-tier reliability
+- **a Partner A rule** (Self-Awareness Protocol — Pattern Match Bias): central to today's hand-annotation correction work
 - **PHI-004** (Cognitive sovereignty cadence): architectural framing for LENS-020 decision
 
 ---
 
-**Rule update**: 15:40 Thai, Apr 28 2026
+**Rule update**: 15:40 UTC+7, Apr 28 2026

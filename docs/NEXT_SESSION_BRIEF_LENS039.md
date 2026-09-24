@@ -43,18 +43,18 @@ in advance, ls-remote verified, `git log --stat` checked against the message.
   carries the falsifiable prediction; read it BEFORE reading the first wave,
   not after, or the prediction is worthless.
 - **The scheduled workflows were NOT disabled** -- the block was written and
-  James did not run it. Roughly thirteen runs a day are still firing into 402.
+  Bro Alpha did not run it. Roughly thirteen runs a day are still firing into 402.
   Item 1.5.
 
 ## IN FLIGHT
-Item 1.5 is a ruling James owes; item 1.4 is the declared next mission.
+Item 1.5 is a ruling Bro Alpha owes; item 1.4 is the declared next mission.
 Items 4.3 and 4.4 are also rulings, not build work. Item 5.1 (CC-57) stays
 BLOCKED on the prompt-change finding and has gained a new argument for option
 (B). Item 1.3 is designed in prose but cannot be written or tested yet.
 
 ## HAZARDS FOUND THIS SESSION (promote or drop -- these are now LRs)
 - **A clock reading is a banked number the moment it is read.** A step-0
-  `date -u` was reused hours later to contradict James about whether a wave had
+  `date -u` was reused hours later to contradict Bro Alpha about whether a wave had
   run. He was right. Now LR-152.
 - **A measurement that lumps two quantities under one label cannot indict
   either.** `total - relation_size` reported as "idx_toast" could not
@@ -87,10 +87,10 @@ BLOCKED on the prompt-change finding and has gained a new argument for option
   45884`. 19 `payment_required`. All three wired legs fired.
 - **`get_s1_selected()` and `lens_s1_report.py` read a SIX-HOUR window only**
   -- which is why rewriting historical `articles_used` was safe.
-- **GNI is ALIVE** (runs green through 2026-08-24 01:13Z) and in a DIFFERENT
-  Supabase org. `grep -rn "\.delete()"` across GNI_Autonomous returns ZERO --
-  it has no retention policy either. The 365-day cleanup James remembered is
-  in the GNI_Myanmar repo, frozen at `9d1a6e5`.
+- **Partner A is ALIVE** (runs green through 2026-08-24 01:13Z) and in a DIFFERENT
+  Supabase org. `grep -rn "\.delete()"` across Partner A returns ZERO --
+  it has no retention policy either. The 365-day cleanup Bro Alpha remembered is
+  in the Partner A repo.
 
 ## BANKED (not verified this session)
 - Item 9 (Groq TPD) is from Aug 10 and fourteen days stale.
@@ -99,7 +99,7 @@ BLOCKED on the prompt-change finding and has gained a new argument for option
   there may be a short delay after the reset; that is their word, not measured.
 
 ## CLAIMS THIS SESSION THAT WERE WRONG (close step 7)
-- **Told James the run list contradicted him about the evening wave.** It did
+- **Told Bro Alpha the run list contradicted him about the evening wave.** It did
   not. I read `date -u` once at step 0 and kept reasoning from it hours later.
   The commit stamp settled it: the session ran ~16 hours and the 14:05Z wave
   had landed. He was right; I was wrong and said so. Now LR-152.
@@ -119,9 +119,9 @@ BLOCKED on the prompt-change finding and has gained a new argument for option
 - **Warned that the UPDATE would temporarily double the database.** Wrong in
   magnitude -- the replacement values are tiny, so the peak was about +60 MB.
 - **Wrote the first CC-58 patch with three labels**, mapping the MA arrival
-  statuses to FAIL. Caught and rewritten to four labels BEFORE James ran
+  statuses to FAIL. Caught and rewritten to four labels BEFORE Bro Alpha ran
   anything; the three-label script was discarded, not shipped.
-- **Said GNI's low run frequency made it safe** -- heartbeat and selfcheck are
+- **Said Partner A's low run frequency made it safe** -- heartbeat and selfcheck are
   both `*/30`, i.e. 48 runs a day each. Only pipeline and MAD are the sacred 2.
 - **Asserted the register's byte delta did not reconcile** and treated it as a
   loose thread. The banked 36,771 was the weak term; the gap check settled it
@@ -135,6 +135,6 @@ BLOCKED on the prompt-change finding and has gained a new argument for option
 ## WHAT I DELIBERATELY DID NOT DO
 Did not fix item 16.1's tier defect while inside `lens_ref_system.py`. The
 offline Excel tool reproduces the bug on purpose so its output matches the
-file James is used to; a `--fix-tier` flag exists and is documented as
+file Bro Alpha is used to; a `--fix-tier` flag exists and is documented as
 producing a DIFFERENT workbook. Fixing it silently would have made two days'
 exports incomparable during an outage, which is the worst possible moment.

@@ -108,7 +108,7 @@ intact as the LENS-031 snapshot it is -- a close record is not rewritten.
 
 ---
 
-## RULINGS JAMES OWES BEFORE THE NEXT BUILD
+## RULINGS BRO ALPHA OWES BEFORE THE NEXT BUILD
 
 - [V] **Gemini project question** — do `GEMINI_S2B_API_KEY` / `GEMINI_S3B_API_KEY` sit on
   a *different Google project* than lens2's `GEMINI_API_KEY`? RPD 20/day is **per
@@ -214,8 +214,8 @@ intact as the LENS-031 snapshot it is -- a close record is not rewritten.
 
 - [V] Both certs green, tree clean, no half-finished work, and the next block (Tier 1 in the
   TODO) starts from a clean ledger.
-- [V] James is ~20 hours in and the remaining big item — `analyze_lens_multi.py` — is the
+- [V] Bro Alpha is ~20 hours in and the remaining big item — `analyze_lens_multi.py` — is the
   hardest file in the repo and touches the canary directly. **Doing it tired is how S1-001
   happened.**
-- [V] Twelve days of slack remain to Aug 16, and GNI is next. The migration is done and
+- [V] Twelve days of slack remain to Aug 16, and Partner A is next. The migration is done and
   certified; everything left makes it *safe*, not *finished*.

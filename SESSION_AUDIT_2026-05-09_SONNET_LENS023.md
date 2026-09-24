@@ -2,8 +2,8 @@
 # Date: May 7–9, 2026
 
 **Session model**: Claude Sonnet 4.6 adaptive
-**Operator**: James Maverick (Bro Alpha)
-**Time**: May 7, 2026 ~13:30 → May 9, 2026 ~03:30 Thai (~38 hours)
+**Operator**: Bro Alpha
+**Time**: May 7, 2026 ~13:30 → May 9, 2026 ~03:30 UTC+7 (~38 hours)
 **Last commit**: `828ac37`
 **Schema change**: lens_drift_findings_sample_size_check relaxed >= 15 → >= 2
 **Status**: CLOSED ✅
@@ -109,10 +109,10 @@ Manual checkpoint resume workflow. Accepts `run_id` input → passes `LENS_RUN_I
 S1 report called with `|| true` → any failure shows green. articles_used bug ran silently for unknown days. No fix applied to `|| true` — removing it would cascade failures. Operator must watch Telegram for docx presence, not just GitHub Actions green.
 
 ### "BEV violated mid-session"
-Jumped to A/B options for S3-E before reading full file. James caught it. After reading: SambaNova correctly rejected (PHI-002). Rule: BEV is blocking even when fix seems obvious from grep.
+Jumped to A/B options for S3-E before reading full file. Bro Alpha caught it. After reading: SambaNova correctly rejected (PHI-002). Rule: BEV is blocking even when fix seems obvious from grep.
 
 ### "Pattern Match Bias on 400"
-Assumed MISTRAL_API_KEY not in GitHub before checking. James showed screenshot — wrong. Always get `r.text` before diagnosing HTTP errors.
+Assumed MISTRAL_API_KEY not in GitHub before checking. Bro Alpha showed screenshot — wrong. Always get `r.text` before diagnosing HTTP errors.
 
 ### "Arbitrary timeout is always wrong"
 manage-analyze #71 cancelled at 30m26s. LR-097: check yml before dismissing operator concern. Principle: never set time ceilings on pipelines that need to complete naturally.
@@ -157,7 +157,7 @@ Watch/Clarity/Verification ran 2x/day without dedup → 88 duplicate rows in 3 d
 - S3-F: SKIPPED_INSUFFICIENT_DATA (expected — data gate not met yet)
 
 ### IMPORTANT
-- T3 steno calibration Article 6 — run at 6-8 AM Thai (Cerebras queue fresh)
+- T3 steno calibration Article 6 — run at 6-8 AM UTC+7 (Cerebras queue fresh)
 - LR-095/096/097 — add to lens-DOC-002_rules.md
 
 ### DEFERRED
@@ -167,5 +167,5 @@ Watch/Clarity/Verification ran 2x/day without dedup → 88 duplicate rows in 3 d
 
 ---
 
-**Session closed**: May 9, 2026 ~03:30 Thai by Sonnet 4.6
+**Session closed**: May 9, 2026 ~03:30 UTC+7 by Sonnet 4.6
 **Next session**: LENS-024, Claude Sonnet 4.6 adaptive

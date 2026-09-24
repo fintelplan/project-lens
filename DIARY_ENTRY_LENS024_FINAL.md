@@ -1,7 +1,7 @@
 # Project Lens Diary — LENS-024 (May 12–17, 2026)
 
 ## LENS-024 — The Pip-and-Code Session
-*(May 12, 2026 ~18:00 → May 17, 2026 ~10:45 Thai)*
+*(May 12, 2026 ~18:00 → May 17, 2026 ~10:45 UTC+7)*
 
 **Session window**: May 12–17, 2026
 **Commits**: 6 (`8081cf4` → `e4d7ce3`)
@@ -12,7 +12,7 @@
 
 ### Session origin
 
-Opened with screenshots showing manage-analyze #81 failing at 9s, #82 failing at 24m 48s with different errors. James uploaded GitHub Actions and Telegram screenshots. Two distinct bugs presenting together made this an interesting diagnostic session.
+Opened with screenshots showing manage-analyze #81 failing at 9s, #82 failing at 24m 48s with different errors. Bro Alpha uploaded GitHub Actions and Telegram screenshots. Two distinct bugs presenting together made this an interesting diagnostic session.
 
 ### The mistralai double failure
 
@@ -28,21 +28,21 @@ S2-C was completely rewritten as `93cc0b7` — replaced the SDK client pattern w
 
 From Telegram screenshots, `1of2` files were missing since May 10. Only `2of2` delivered each day. Investigation:
 
-The morning cron (`28 1 UTC` = 8:28 AM Thai) had been failing at 9s (mistralai) since May 10. It never reached `lens_ref_system.py`. The evening cron kept producing `2of2`. `get_slot()` uses UTC hour: morning run (hour=1) → `1of2`, evening run (hour=13) → `2of2`.
+The morning cron (`28 1 UTC` = 8:28 AM UTC+7) had been failing at 9s (mistralai) since May 10. It never reached `lens_ref_system.py`. The evening cron kept producing `2of2`. `get_slot` uses UTC hour: morning run (hour=1) → `1of2`, evening run (hour=13) → `2of2`.
 
-First proposed fix: shift crons earlier. James: "i think this is not smart way, my buddy." Correct. Shifting crons is symptom chasing — if GitHub's delay changes, we're wrong again.
+First proposed fix: shift crons earlier. Bro Alpha: "i think this is not smart way, my buddy." Correct. Shifting crons is symptom chasing — if GitHub's delay changes, we're wrong again.
 
-Real fix: separate `lens-ref-export.yml` with own schedule. Runs at `02:30 UTC` (09:30 AM Thai) and `14:30 UTC` (09:30 PM Thai). Only 4 secrets needed. pip install takes 15s vs 2min. Fully independent of manage-analyze health.
+Real fix: separate `lens-ref-export.yml` with own schedule. Runs at `02:30 UTC` (09:30 AM UTC+7) and `14:30 UTC` (09:30 PM UTC+7). Only 4 secrets needed. pip install takes 15s vs 2min. Fully independent of manage-analyze health.
 
-Results: both `1of2` and `2of2` delivered daily since May 13. May 16: `1of2` at 12:38 PM Thai, `2of2` at 10:34 PM Thai. Still 1-3h GitHub delay but at least never missing.
+Results: both `1of2` and `2of2` delivered daily since May 13. May 16: `1of2` at 12:38 PM UTC+7, `2of2` at 10:34 PM UTC+7. Still 1-3h GitHub delay but at least never missing.
 
 ### CNN and NDTV — filling the coverage gap
 
-"Why telegram output are not within expected time?" led to examining sources. James asked about NDTV. Zero India sources in Project Lens — significant gap for a global OSINT system.
+"Why telegram output are not within expected time?" led to examining sources. Bro Alpha asked about NDTV. Zero India sources in Project Lens — significant gap for a global OSINT system.
 
 NDTV World confirmed live (20 entries). Added as SRC-081 TIER1 India actor. PHI-003 requires non-Western democratic voices as counterbalance to apparatus analysis. NDTV fills this. Confirmed appearing in Telegram May 16 with Starbucks article preview card.
 
-CNN World and CNN Business were added earlier in session (SRC-079/080) after James noticed CNN was arriving only through Google News indirect feeds. Direct RSS: 29 and 20 entries respectively.
+CNN World and CNN Business were added earlier in session (SRC-079/080) after Bro Alpha noticed CNN was arriving only through Google News indirect feeds. Direct RSS: 29 and 20 entries respectively.
 
 ### Session character
 
@@ -52,5 +52,5 @@ LR-098 is the most important rule born from this session. The pip-vs-code incons
 
 ---
 
-**LENS-024 closed**: May 17, 2026 ~10:45 AM Thai by Sonnet 4.6
+**LENS-024 closed**: May 17, 2026 ~10:45 AM UTC+7 by Sonnet 4.6
 **Next**: LENS-025 — rules.md update, T3 calibration, S3-F data gate progress

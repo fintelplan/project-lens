@@ -96,5 +96,5 @@ Expected: both fields populated with structured JSON / text content.
 
 AUTHOR
 ------
-Team Geeks (Bro Alpha + Claude Opus 4.7)
+Bro Alpha + Claude Opus 4.7
 LENS-013 session, April 17, 2026

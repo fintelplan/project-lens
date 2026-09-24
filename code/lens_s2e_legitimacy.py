@@ -46,7 +46,7 @@ log = logging.getLogger("s2e")
 # D-016: moved to Cerebras 2026-07-28. On Groq this position returned ZERO
 # characters 3/3 at a 2400 budget: gpt-oss spends ~2,000 tokens reasoning and
 # Groq's 8,000 TPM ceiling left nothing for output. Read carelessly that looks
-# exactly like a content refusal, which is how April's GNI evidence was
+# exactly like a content refusal, which is how April's Partner A evidence was
 # misread. max_out 10,000 set by D-017 (5,612 observed / 0.60).
 PROVIDER, MODEL, KEY_ENV, MAX_OUT = wire("s2e_legitimacy")
 # CC-55: the registry declared this leg since the cliff and no call site
@@ -149,7 +149,7 @@ class TPMGuard:
     """
     Rolling 60-second token window guard. Prevents 429 cascades.
     Waits intelligently before each API call. Never crashes — just waits.
-    Adapted from GNI MAD pipeline pattern for Project Lens S2.
+    Adapted from Partner A multi-agent pipeline pattern for Project Lens S2.
     """
     def __init__(self, tpm_limit: int = None, provider: str = None,
                  model: str = None):

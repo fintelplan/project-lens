@@ -18,7 +18,7 @@ b = b.replace(old, new, 1)
 
 vold = b"## VERSION LOG\n"
 vnew = (b"## VERSION LOG\n"
-        b"- v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after James named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.\n")
+        b"- v2 -- 2026-08-06, LENS-033. Added MISSION AND SCOPE and DISCOVERY POLICY after Bro Alpha named the loop: each session found a weak point, fixed it, ran out of context, and the next agent found another. Cause: the Aug-16 target was achieved and never formally closed, so the working target drifted undeclared and the item list grew 13 -> 15 inside one session. Rank is now target-relative; freshness confers no priority.\n")
 n = b.count(vold); assert n == 1, "version anchor %d != 1 -- STOP" % n
 p.write_bytes(b.replace(vold, vnew, 1))
 d = p.read_bytes()

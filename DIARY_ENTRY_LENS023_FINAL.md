@@ -1,7 +1,7 @@
 # Project Lens Diary — LENS-023 (May 7–9, 2026)
 
 ## LENS-023 — The Great Machine Repair Marathon
-*(May 7, 2026 ~13:30 → May 9, 2026 ~03:30 Thai, ~38 hours)*
+*(May 7, 2026 ~13:30 → May 9, 2026 ~03:30 UTC+7, ~38 hours)*
 
 **Session window**: May 7–9, 2026
 **Commits**: 10 commits (`9812330` → `828ac37`)
@@ -30,7 +30,7 @@ New rule: LR-096 — never dump raw DB column into AI prompt without size check 
 ### The timeout marathon
 
 manage-analyze #71 cancelled at 30m26s. Root cause: `timeout-minutes: 30` too tight.
-James flagged this concern earlier — Claude dismissed it citing "GitHub supports 6 hours"
+Bro Alpha flagged this concern earlier — Claude dismissed it citing "GitHub supports 6 hours"
 without checking the yml. LR-097: always check yml before dismissing operator timeout concerns.
 
 Principle locked: never set arbitrary time ceilings on pipelines that complete naturally.
@@ -97,8 +97,8 @@ until gate met. Provider: Mistral-small (already wired, reliable). Cadence: Mon/
 
 ### T3 steno calibration — deferred
 
-Attempted at 3AM Thai. Cerebras: queue saturated (2 partial successes at conf=0.85/0.92).
-Groq: 413 prompt too large. Deferred to LENS-024 at 6-8AM Thai when Cerebras queue fresh.
+Attempted at 3AM UTC+7. Cerebras: queue saturated (2 partial successes at conf=0.85/0.92).
+Groq: 413 prompt too large. Deferred to LENS-024 at 6-8AM UTC+7 when Cerebras queue fresh.
 
 ### Lessons
 
@@ -109,5 +109,5 @@ Every bug was solved by reading the actual source of truth, not by assuming.
 
 ---
 
-**LENS-023 closed**: May 9, 2026 ~03:30 Thai by Sonnet 4.6
+**LENS-023 closed**: May 9, 2026 ~03:30 UTC+7 by Sonnet 4.6
 **Next**: LENS-024 — verify cron results, T3 calibration if quota fresh, LR-095/096/097 to rules

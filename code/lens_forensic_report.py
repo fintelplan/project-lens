@@ -4,7 +4,7 @@ Project Lens — Opus 4.7 Forensic Research Report
 
 Built per LENS-016 4-decision spec + LENS-017 operator decisions:
   - Model: claude-opus-4-7 (adaptive)
-  - Frequency: 1x/day via cron '0 2 * * *' UTC (= 09:00 Thai)
+  - Frequency: 1x/day via cron '0 2 * * *' UTC (= 09:00 UTC+7)
   - Length: 4-5 pages, ~2500 words
   - Detection depth: exhaustive (every pattern, not top-N)
   - Structure: Detection / Recovery / Food for Thought / References
@@ -287,8 +287,8 @@ def fetch_reference_pool(sb) -> list:
 
     LENS-018 I7b fix: use a two-day window (today + yesterday, by UTC date)
     instead of "today only." The Forensic Report cron fires at 02:00 UTC
-    (09:00 Thai), but lens_ref_system.py writes collected_date=today_utc only
-    at 16:24 Thai (free tier) / 17:22 Thai (sonnet). So today's refs don't
+    (09:00 UTC+7), but lens_ref_system.py writes collected_date=today_utc only
+    at 16:24 UTC+7 (free tier) / 17:22 UTC+7 (sonnet). So today's refs don't
     exist yet when the forensic cron runs. The refs that SHOULD be cited are
     the ones covering the 24h MA/S2/S3 evidence window — which live at
     collected_date = today_utc - 1 after the ref-system's prior-day runs.

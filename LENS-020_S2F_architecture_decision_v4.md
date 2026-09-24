@@ -1,6 +1,6 @@
 # LENS-020 S2-F Architecture Decision — v4 (FINAL)
 
-**Updated**: Apr 29 2026, ~11:30 Thai
+**Updated**: Apr 29 2026, ~11:30 UTC+7
 **Status**: RATIFIED pending Mistral Article 1+3 confirmation
 
 ---
@@ -71,4 +71,4 @@
 
 ---
 
-**v4**: Apr 29 2026, ~11:30 Thai
+**v4**: Apr 29 2026, ~11:30 UTC+7

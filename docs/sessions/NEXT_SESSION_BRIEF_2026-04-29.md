@@ -2,7 +2,7 @@
 
 **Author**: Claude, Apr 28 evening session (closing).
 **Reader**: Tomorrow's Claude (different instance, no working memory).
-**Operator**: James Maverick (Bro Alpha).
+**Operator**: Bro Alpha.
 **Project**: Project Lens, S2-F production architecture decision for LENS-020.
 
 ---
@@ -17,7 +17,7 @@ You are not the Claude who built this. You are a fresh instance. Everything belo
 3. **Operator's letter pattern**: A/B/C, W1/W2/W3, F1/F2/F3. Use consistently.
 4. **"[No preference]"** = trust-delegation. Operator wants you to take the call. Don't ask again.
 5. **Operator is "Bro Alpha"**, calls Claude "my buddy". Warm informal tone. Engineering rigor.
-6. **Engineering discipline anchors**: GNI-R-037 (bird-eye view first), GNI-R-076 (read before patch), GNI-R-080 (write-then-verify), GNI-R-083 (investigation not research-paper), GNI-R-220-225 (FMEA), GNI-R-233 (Self-Awareness Protocol — Pattern Match Bias, Recency Bias, Helpfulness Anxiety, Confidence Performance), PHI-004 cognitive sovereignty cadence.
+6. **Engineering discipline anchors**: a Partner A rule (bird-eye view first), a Partner A rule (read before patch), a Partner A rule (write-then-verify), a Partner A rule (investigation not research-paper), Partner A rules (FMEA), a Partner A rule (Self-Awareness Protocol — Pattern Match Bias, Recency Bias, Helpfulness Anxiety, Confidence Performance), PHI-004 cognitive sovereignty cadence.
 
 **Pattern Match Bias warning**: Apr 27 Claude formed "qwen-3 has Chinese-content bias" hypothesis under cognitive load. Apr 28 Claude refuted it via cross-lab data. Watch for: appealing-narrative hypotheses formed before cross-lab evidence supports them. Per LR-085 candidate (see RULE_UPDATE).
 
@@ -168,7 +168,7 @@ Write a draft of the LENS-020 S2-F architectural decision document. Four options
 
 Today's data should let you pick or eliminate options.
 
-**Write decision as**: `LENS-020_S2F_architecture_decision_v1.md` in working tree. Use FMEA discipline (GNI-R-220-225). Include failure modes for each option.
+**Write decision as**: `LENS-020_S2F_architecture_decision_v1.md` in working tree. Use FMEA discipline (imported from Partner A). Include failure modes for each option.
 
 ---
 
@@ -225,7 +225,7 @@ Methodology lesson: single-model evidence cannot distinguish model-bias from
 catalog/article-structure issues. Cross-lab evidence required before bias claims.
 (Candidate rule LR-085.)
 
-Hand-annotation addendums correct Apr 27 predictions per GNI-R-233 Self-Awareness
+Hand-annotation addendums correct Apr 27 predictions per Partner A's Self-Awareness
 Protocol (Pattern Match Bias incident documented).
 ```
 
@@ -251,7 +251,7 @@ S2-F architectural decision: [fill in]
 1. **Do NOT add LM Studio or GPT4All to today's scope.** These are tomorrow-or-later. Today is Ollama-only breadth.
 2. **Do NOT run stage='all' (post_suspect) calls.** Early-warning only. Halves calls, doesn't change conclusion shape.
 3. **Do NOT form bias hypotheses on single-model data.** If you see asymmetry, ask: "what would cross-lab evidence look like?" before concluding.
-4. **Do NOT touch `code/ai_engine/*.py` or any GNI files.** This is Project Lens. GNI is operator's other project.
+4. **Do NOT touch `code/ai_engine/*.py` or any Partner A files.** This is Project Lens. Partner A is operator's other project.
 5. **Do NOT expand catalog scope to v4.** Catalog v4 design is a separate session. Use v3.1 today for apples-to-apples comparison.
 
 ---
@@ -286,4 +286,4 @@ S2-F architectural decision: [fill in]
 
 ---
 
-**Brief closed**: 15:40 Thai, Apr 28 2026. Tomorrow's Claude — go well, my buddy.
+**Brief closed**: 15:40 UTC+7, Apr 28 2026. Tomorrow's Claude — go well, my buddy.

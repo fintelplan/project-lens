@@ -22,7 +22,7 @@ A change that moves a position away from its charter is a STOP-and-ask.
   repeated windows). Do not treat it as degenerate generation.
 - **S3-D reads its whole window**, evenly IN TIME, past the 1000-row cap; a gap
   lends its place to the nearest real row; the 90-day prompt fits (item 3).
-- **Cerebras is gone from S2-F** (James's ruling, LENS-044).
+- **Cerebras is gone from S2-F** (Bro Alpha's ruling, LENS-044).
 - **Mistral is $0/month** on the Free plan with a $10 included allowance.
 - **Gemini is out as S2-F's second leg on the evidence**: RPD 20 per project,
   Lens 2 already at 16/20, and no 2.5-flash-lite row exists for this project.
@@ -44,7 +44,7 @@ structural profile (LENS-020's two complementary detectors).
 - Every article calls every leg (`ENSEMBLE_LEGS`), so **adding a leg does NOT
   reduce Cloudflare's load**. The LENS044 order said it would; it was wrong.
 
-### 1.2 RULING NEEDED FIRST — how the legs are called (James)
+### 1.2 RULING NEEDED FIRST — how the legs are called (Bro Alpha)
 Before any matrix. Four shapes:
 - **(i) every leg, every article** (today's shape) — Cloudflare still asks 48.
 - **(ii) Mistral first, Cloudflare only when Mistral fails** — Cloudflare near
@@ -68,7 +68,7 @@ request that is ~$2 of the $10. Standards applied at LENS-044:
   it as a known cost, and see item 11 (exit detector).
 - `MISTRAL_API_KEY` is Lens 4's key. Arm 4 applies to the probe and, if (i) or
   (iii) is chosen, to production: S2-F would share Lens 4's per-model rate.
-  Consider a separate Mistral organisation (LR-094 isolation) — James's call.
+  Consider a separate Mistral organisation (LR-094 isolation) — Bro Alpha's call.
 
 ### 1.4 The matrix, when the ruling exists
 LENS-020's fixtures are articles 1, 3, 6, 7 with a cross-lab matrix — **find
@@ -128,7 +128,7 @@ the second cert (`30 sampled`, ~10 in the newest third).
 - The pacing guard still logs usage only on success, so a run where every call
   fails has no pacing at all (Sep 20 evening: zero TPMGuard lines).
 
-## 6. S3-D STORES 6 OF THE 14 FIELDS IT WRITES — RULING (James)
+## 6. S3-D STORES 6 OF THE 14 FIELDS IT WRITES — RULING (Bro Alpha)
 Not stored: `structural_accumulation`, `closing_windows`, `silent_builders`,
 `injection_drift`, `convergence_signals`, `capability_2`, `ach_check`,
 `sectarian_trap_30d`. The file's own docstring states its purpose as three

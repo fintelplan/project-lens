@@ -2,7 +2,7 @@
 
 **Status:** Correction to original hand-annotation predictions made April 27, 2026.
 
-**Reason for addendum:** Today's cross-lab calibration on gpt-oss-120b (OpenAI lineage) refutes the "qwen-3 has Chinese-content blindspot" hypothesis from yesterday. The original predictions were shaped by Pattern Match Bias (GNI-R-233) — the appealing narrative of "Chinese-trained model has Chinese-content blindspot" anchored interpretation before evidence.
+**Reason for addendum:** Today's cross-lab calibration on gpt-oss-120b (OpenAI lineage) refutes the "qwen-3 has Chinese-content blindspot" hypothesis from yesterday. The original predictions were shaped by Pattern Match Bias (imported from Partner A) — the appealing narrative of "Chinese-trained model has Chinese-content blindspot" anchored interpretation before evidence.
 
 ---
 
@@ -75,6 +75,6 @@ The specific operations gpt-oss-120b caught that qwen-3 missed on Article 6 (OP-
 
 ## Note on Pattern Match Bias
 
-Per GNI-R-233 Self-Awareness Protocol, this is documented as a real Pattern Match Bias incident. The narrative "Chinese-trained model has Chinese-content blindspot" is intuitively appealing and matches a documented pattern in the LLM literature. It was therefore weighted higher than the alternative hypothesis (article-structure asymmetry) without sufficient evidence. The original Apr 27 hand-annotation explicitly flagged both hypotheses but leaned toward the bias one. The cross-lab data refuted it.
+Per Partner A's Self-Awareness Protocol, this is documented as a real Pattern Match Bias incident. The narrative "Chinese-trained model has Chinese-content blindspot" is intuitively appealing and matches a documented pattern in the LLM literature. It was therefore weighted higher than the alternative hypothesis (article-structure asymmetry) without sufficient evidence. The original Apr 27 hand-annotation explicitly flagged both hypotheses but leaned toward the bias one. The cross-lab data refuted it.
 
 **Lesson for future calibration work:** when two competing hypotheses are present, gather cross-lab evidence BEFORE concluding. Single-model evidence cannot distinguish model-bias from catalog/article-structure issues.

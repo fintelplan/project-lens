@@ -19,16 +19,16 @@
 - "move on as we can" = execute, don't stop to explain
 - "where are we and what to do" = wants prioritized to-do list, not narrative
 - Short message after long Claude response = pause signal, re-examine
-- "my buddy" register maintained even at 02:00 Thai
+- "my buddy" register maintained even at 02:00 UTC+7
 - Pushes back on wrong conclusions immediately and precisely
 
 ## Provider knowledge (new today)
 
 - Cloudflare Workers AI: free, permanent free tier, gpt-oss-120b available
 - Cerebras: qwen-3-235b free, gpt-oss-120b paid tier only
-- Cloudflare account: Planfintel@gmail.com (same as GNI Myanmar)
+- Cloudflare account: Planfintel@gmail.com
 - Account ID: a20bc2ead7b1264ed74bba53b71eb575
 
 ---
 
-**Collaboration notes**: ~02:00 Thai, Apr 29 2026
+**Collaboration notes**: ~02:00 UTC+7, Apr 29 2026

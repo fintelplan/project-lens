@@ -3,7 +3,7 @@ lens_response_guard.py — Response Schema Validator
 Project Lens | LENS-014 I2
 
 Purpose: detect malformed, incomplete, or silently-filtered LLM responses
-BEFORE they propagate downstream. Inspired by GNI-R-234 (silent content
+BEFORE they propagate downstream. Inspired by a Partner A rule (silent content
 filtering defense).
 
 Design: pure post-parse validator. Callers continue to use their existing
@@ -26,7 +26,7 @@ What this does NOT do:
 Rules applied:
   LR-068 — evidence before action (schemas reflect actual produced shapes)
   LR-074 — guard pattern (fail-safe, never crash caller)
-  GNI-R-234 — silent-filtering defense
+  a Partner A rule — silent-filtering defense
 """
 
 from __future__ import annotations

@@ -17,14 +17,14 @@
 
 ### What went wrong — watch for in LENS-024
 
-- **BEV violation on S3-E**: Jumped to A/B options before reading full file. James: "please remember error fighting, bird-eye view..." After reading: SambaNova correctly rejected.
+- **BEV violation on S3-E**: Jumped to A/B options before reading full file. Bro Alpha: "please remember error fighting, bird-eye view..." After reading: SambaNova correctly rejected.
 - **Wrong diagnosis on MISTRAL_API_KEY**: Claimed not in GitHub before verifying. Always check evidence before claiming.
 - **Pattern Match Bias on 400**: Assumed key issue before getting response body.
-- **LR-097 origin**: Dismissed James's concern about 30-minute limit citing "GitHub supports 6 hours." Never checked the actual yml. James was right — `timeout-minutes: 30` was there. Always read the yml.
+- **LR-097 origin**: Dismissed Bro Alpha's concern about 30-minute limit citing "GitHub supports 6 hours." Never checked the actual yml. Bro Alpha was right — `timeout-minutes: 30` was there. Always read the yml.
 
 ---
 
-## What James does that works
+## What Bro Alpha does that works
 
 - **Uploads logs as documents** — full terminal output every time. Fastest diagnostic path.
 - **Screenshots for Actions and Telegram** — visual evidence saves entire diagnostic rounds.
@@ -33,11 +33,11 @@
 - **"Our yml, not my yml"** — catches ownership framing errors immediately.
 - **Checks past session docs** — "please see in past session if needed" maintains continuity.
 - **Reads philosophies before building** — insisted on reading PHI-002/003/004 before S3-F. Result was architecturally correct.
-- **Patient with large sessions** — LENS-023 ran 38 hours. James stayed with every issue until resolved.
-- **Approves L2 before execution** — every schema and architecture change went through James.
+- **Patient with large sessions** — LENS-023 ran 38 hours. Bro Alpha stayed with every issue until resolved.
+- **Approves L2 before execution** — every schema and architecture change went through Bro Alpha.
 - **Trusts ground truth** — "please give command like cat or others" — always wants to verify, not assume.
 
-## What Claude should never do with James
+## What Claude should never do with Bro Alpha
 
 - Jump to options before reading the full file (BEV gate, always blocking)
 - Claim a secret/config is wrong without checking evidence first
@@ -89,7 +89,7 @@ cadence, alternative hypotheses, and data gating. Shortcuts would have violated 
 
 - **Default model**: Sonnet 4.6 adaptive (LR-090, no change)
 - **First task**: Verify cron results. Check Forensic Report auto-fired. Check drift findings count.
-- **T3 calibration**: Run at 6-8 AM Thai if quota fresh — Cerebras best window.
+- **T3 calibration**: Run at 6-8 AM UTC+7 if quota fresh — Cerebras best window.
 - **Blob rule (LR-096)**: `len(str(value))` before ANY DB column in AI prompt.
 - **400 rule (LR-095)**: `r.text[:200]` before any diagnosis.
 - **Timeout rule (LR-097)**: Read yml before dismissing operator timeout concerns.
@@ -98,4 +98,4 @@ cadence, alternative hypotheses, and data gating. Shortcuts would have violated 
 
 ---
 
-**Collaboration update**: ~03:30 Thai, May 9, 2026
+**Collaboration update**: ~03:30 UTC+7, May 9, 2026
