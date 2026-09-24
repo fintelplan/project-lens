@@ -29,23 +29,59 @@ logging.basicConfig(
 log = logging.getLogger("s2f_cron")
 
 
-def get_recent_articles(client, lookback_hours: int, max_articles: int) -> list:
-    """Fetch articles collected in the last N hours, not yet scored by S2-F."""
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=lookback_hours)).isoformat()
+def _paged(make_query, page=1000):
+    """All rows of a query, page by page (PostgREST returns at most 1000 per call)."""
+    out, start = [], 0
+    while True:
+        rows = make_query().range(start, start + page - 1).execute().data or []
+        out += rows
+        if len(rows) < page:
+            return out
+        start += page
+
+
+def get_recent_articles(client, lookback_hours: int, max_articles: int):
+    """Pick up to max_articles articles from the last N hours to score (CC-122).
+
+    Before CC-122 this took the newest max_articles rows by collected_at and the scoring loop
+    dropped the short ones afterwards. The collector writes each batch from parallel threads
+    within about a second, so the newest rows were whichever source finished last: 975 of
+    1,093 detections in 45 days were RT, 4 voices in all, while 200-285 long articles per
+    window went unread; on Sep 24 the newest eight were TASS teasers and nothing was scored
+    under a green run. LENS-020 v4 gives the Watch tier "every article, every cron run".
+    Now lens_s2f_selection.select_articles: long enough first, not yet scored, one article per
+    source per round, the source scored longest ago first -- S2-D's LENS-017 B-2 round-robin,
+    carried across runs. max_articles still bounds the provider calls; the lookback can be
+    wide because scored articles are excluded. Returns None when the database read fails.
+    """
+    from lens_s2f_selection import (select_articles, report_line, last_scored_by,
+                                    MIN_BODY_CHARS, RECENT_DAYS)
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(hours=lookback_hours)).isoformat()
+    since = (now - timedelta(days=RECENT_DAYS)).isoformat()
     try:
-        # Get recent articles
-        response = client.table("lens_raw_articles") \
-            .select("id, title, content, source_name, author, collected_at") \
-            .gte("collected_at", cutoff) \
-            .order("collected_at", desc=True) \
-            .limit(max_articles) \
-            .execute()
-        articles = response.data or []
-        log.info(f"Fetched {len(articles)} articles from last {lookback_hours}h")
-        return articles
+        rows = _paged(lambda: client.table("lens_raw_articles")
+                      .select("id, title, content, source_name, author, collected_at")
+                      .gte("collected_at", cutoff).order("collected_at", desc=True))
+        recent = _paged(lambda: client.table("lens_operation_detections")
+                        .select("voice_name, scored_at").gte("scored_at", since))
+        last = last_scored_by(recent)
+        long_ids = [r["id"] for r in rows if len(r.get("content") or "") >= MIN_BODY_CHARS]
+        scored_ids = set()
+        for k in range(0, len(long_ids), 100):
+            got = client.table("lens_operation_detections").select("raw_article_id") \
+                .in_("raw_article_id", long_ids[k:k + 100]).eq("stage_filter", "early_warning") \
+                .execute().data or []
+            scored_ids.update(g["raw_article_id"] for g in got)
     except Exception as e:
-        log.error(f"Article fetch failed: {str(e)[:200]}")
-        return []
+        log.error(f"Article selection failed: {str(e)[:200]}")
+        return None
+    picked, report = select_articles(rows, last, max_articles, exclude_ids=scored_ids)
+    log.info(report_line(report, lookback_hours))
+    if rows and not picked:
+        log.warning(f"S2-F: nothing to score -- {report['window']} articles in the window, "
+                    f"{report['long']} long enough, {report['already_scored']} of those already scored")
+    return picked
 
 
 def already_scored(client, article_id: str, lens: str, stage: str) -> bool:
@@ -104,6 +140,9 @@ def main():
 
     # ── Fetch articles ──
     articles = get_recent_articles(client, lookback_hours, max_articles)
+    if articles is None:                      # CC-122: a failed read is not 'nothing new'
+        log.error("S2-F: article selection failed -- exiting 1")
+        sys.exit(1)
     if not articles:
         log.info("No articles to score — exiting")
         return

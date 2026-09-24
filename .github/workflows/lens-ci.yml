@@ -70,6 +70,8 @@ jobs:
         run: python tests/test_s2f_quota_breaker.py
       - name: CC-120 S2-F Direction B sends a finding once until it changes (L3.4)
         run: python tests/test_s2f_delivery_rules.py
+      - name: CC-122 S2-F Stage 1 picks long articles, one per source, oldest turn first
+        run: python tests/test_s2f_selection.py
 
       - name: S3-A window tests (CC-99)
         run: python tests/test_s3a_window.py
