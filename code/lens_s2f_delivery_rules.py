@@ -162,7 +162,10 @@ def s2f_brief_lines(s2f, now):
         err = s2f.get("scoring_error")
         out.append("Scoring: status unavailable" + (" (%s)" % html.escape(err) if err else ""))
     elif s2f["scored_24h"]:
-        out.append("Scoring (24 h): %d articles scored, %d with operations (%d operations)" % (
+        # CC-124: a row is one article scored for one lens; "23 articles" was 8 articles x 3 lenses.
+        arts = s2f.get("articles_24h")
+        out.append("Scoring (24 h): %s%d scorings (article x lens), %d with operations (%d operations)" % (
+            ("%d articles, " % arts) if isinstance(arts, int) else "",
             s2f["scored_24h"], s2f.get("applicable_24h", 0), s2f.get("ops_24h", 0)))
     elif s2f.get("newest_scored_at"):
         hours = int((now - _utc(s2f["newest_scored_at"])).total_seconds() // 3600)

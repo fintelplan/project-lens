@@ -30,6 +30,7 @@ fail-safe defaults to 'manual' rather than misclassifying).
 """
 
 from __future__ import annotations
+import os   # CC-124
 
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -117,6 +118,13 @@ def get_cycle(now: Optional[datetime] = None) -> str:
         return "2of1"
     if _within_tolerance(current_minutes, anchor_2of2):
         return "2of2"
+    # CC-124 (L2.4): GitHub starts scheduled runs hours late (observed 3-5 h), which put
+    # every scheduled wave outside the +-15 min window and labelled it 'manual'. A scheduled
+    # run is still its cycle: take the nearer anchor. Only a hand-started run is 'manual'.
+    if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+        d1 = abs(current_minutes - anchor_2of1); d1 = min(d1, 1440 - d1)
+        d2 = abs(current_minutes - anchor_2of2); d2 = min(d2, 1440 - d2)
+        return "2of1" if d1 <= d2 else "2of2"
     return "manual"
 
 

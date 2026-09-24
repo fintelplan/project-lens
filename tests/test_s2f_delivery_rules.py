@@ -131,10 +131,13 @@ check("stopped_scorer_says_how_long",
 check("open_finding_named", {"kind": "X", "v": stale[1]}, "X",
       v="Verification: 1 open, unchanged since last told \u2014 RT \u00d7 trump_office: "
         "2 ops, told 2026-09-24 (NEW)")
-live = R.s2f_brief_lines({"scored_24h": 44, "applicable_24h": 3, "ops_24h": 13, "open": []}, NOW)
+live = R.s2f_brief_lines({"scored_24h": 23, "articles_24h": 8, "applicable_24h": 2, "ops_24h": 5,
+                          "open": []}, NOW)
 check("scored_counts_and_none_open", {"kind": "X", "v": live}, "X",
-      v=["Scoring (24 h): 44 articles scored, 3 with operations (13 operations)",
+      v=["Scoring (24 h): 8 articles, 23 scorings (article x lens), 2 with operations (5 operations)",
          "Verification: no open findings"])
+check("scorings_are_not_called_articles",
+      {"kind": "X", "v": "23 articles" in " ".join(live)}, "X", v=False)
 bad = R.s2f_brief_lines({"scoring_error": "boom <x>", "ledger_error": "gone"}, NOW)
 check("errors_are_said_not_hidden", {"kind": "X", "v": bad}, "X",
       v=["Scoring: status unavailable (boom &lt;x&gt;)", "Verification: status unavailable (gone)"])

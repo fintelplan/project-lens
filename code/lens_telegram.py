@@ -10,7 +10,37 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [TELEGRAM] %(levelna
 log = logging.getLogger("telegram")
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 
+def _clip(text, n):
+    """CC-124 (L2.5): cut at a word boundary and mark the cut; a hard slice cut words in half."""
+    t = str(text or "")
+    if len(t) <= n:
+        return t
+    cut = t[:n]
+    if (t[n:n + 1].isalnum() or t[n:n + 1] in "-'") and " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" ,;:-") + "\u2026"
+
+
+def _presentable(text):
+    """CC-124 (L2.5): every message this module sends passes here once. Model markdown does
+    not render in Telegram HTML -- '**x**' and '## x' reached readers as raw marks -- and a
+    stored JSON wrapper ({"text": ...}) reached them as JSON."""
+    import re as _re
+    out = []
+    for line in str(text or "").split("\n"):
+        m = _re.match(r'^\s*\{\s*"text"\s*:\s*"(.*)$', line)
+        if m:
+            line = _re.sub(r'"\s*\}\s*$', "", m.group(1))
+        line = _re.sub(r"^(\s*)#{1,6}\s+", r"\1", line)
+        line = line.replace("**", "").replace("__", "")
+        line = _re.sub(r"(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])", r"\1", line)
+        out.append(line)
+    return "\n".join(out)
+
+
+
 def send_message(text, parse_mode="HTML"):
+    text = _presentable(text)   # CC-124 (L2.5)
     token   = os.environ.get("TELEGRAM_BOT_TOKEN","")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID","")
     if not token or not chat_id:
@@ -40,6 +70,7 @@ def fetch_latest(run_id=None):
     s2f = {}
     try:
         s2f["scored_24h"] = sb.table("lens_operation_detections").select("scored_at", count="exact").gte("scored_at",cutoff_24h).limit(1).execute().count or 0
+        s2f["articles_24h"] = len({r.get("raw_article_id") for r in (sb.table("lens_operation_detections").select("raw_article_id").gte("scored_at",cutoff_24h).limit(1000).execute().data or [])})   # CC-124
         app = sb.table("lens_operation_detections").select("operation_count").gte("scored_at",cutoff_24h).eq("not_applicable",False).limit(1000).execute().data or []
         s2f["applicable_24h"] = len(app)
         s2f["ops_24h"] = sum(r.get("operation_count") or 0 for r in app)
@@ -91,10 +122,10 @@ def format_daily_brief(data):
         f"Top injection: <code>{top_s2.get('injection_type','none')}</code> ({top_s2.get('analyst','?')}, conf={top_s2.get('confidence_score',0):.2f})","",
         "<b>━━ SYSTEM 3 ━━</b>",
         f"Patterns: {pcnt} detected",
-        (s3.get("summary") or "No pattern report yet")[:200],
+        _clip((s3.get("summary") or "No pattern report yet"), 200),
     ]
     if s3.get("first_domino"):
-        lines += ["", f"⚠️ <b>First Domino:</b> {s3['first_domino'][:150]}"]
+        lines += ["", f"⚠️ <b>First Domino:</b> {_clip(s3['first_domino'], 150)}"]
     # S2-F: Stage 1 scoring and Verification told apart; a stopped scorer says how long
     # (CC-121, completion test L2.3 -- was "No detections yet (pipeline accumulating)")
     from lens_s2f_delivery_rules import s2f_brief_lines
@@ -105,12 +136,12 @@ def format_daily_brief(data):
     # 7-day trend
     trend = data.get("trend", [])
     if trend:
-        levels = [t.get("threat_level","?") for t in trend[:3]]
-        trend_str = " → ".join(levels)
+        levels = [t.get("threat_level","?") for t in trend[:3]][::-1]   # CC-124 (L2.4): oldest first, as the arrow reads
+        trend_str = " \u2192 ".join(levels) + "  (oldest \u2192 newest)"
     else:
         trend_str = "Accumulating..."
     lines += ["","<b>━━ MISSION ANALYST ━━</b>",
-        (ma.get("executive_summary") or "No macro report yet")[:300],"",
+        _clip((ma.get("executive_summary") or "No macro report yet"), 300),"",
         f"<i>Quality: {ma.get('quality_score',0):.2f} | Run: {ma.get('run_id','?')}</i>","",
         "<b>━━ S2-F ━━</b>",
         s2f_line,"",
@@ -126,7 +157,7 @@ def format_critical_alert(reason, signal, threat):
         "🚨 <b>PROJECT LENS — CRITICAL ALERT</b>",
         f"<code>{now}</code>","",
         f"<b>Threat: {threat}</b>",f"Reason: {reason}","",
-        "<b>Signal:</b>",f"{signal[:400]}","",
+        "<b>Signal:</b>",f"{_clip(signal, 400)}","",
         "<i>Immediate action may be required.</i>"])
 
 
@@ -161,7 +192,7 @@ def send_s1_intelligence(run_id=None):
             focus   = (r.get("domain_focus", "") or "").strip()
             summary = (r.get("summary", "") or "").strip()
             if summary:
-                lines += [f"<b>{focus}</b>", summary[:350], ""]
+                lines += ([f"<b>{focus}</b>"] if focus and focus != "ALL" else []) + [_clip(summary, 350), ""]   # CC-124 (L2.4): ALL is a stored value, not a heading
         try:
             cutoff = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
             arts = sb.table("lens_raw_articles") \
@@ -171,7 +202,7 @@ def send_s1_intelligence(run_id=None):
                 lines.append("<b>What the canary read:</b>")
                 seen_urls, seen_src, count = set(), set(), 0
                 for a in arts:
-                    url, title, src = a.get("url",""), (a.get("title","") or "")[:80], a.get("source_name","")
+                    url, title, src = a.get("url",""), _clip((a.get("title","") or ""), 80), a.get("source_name","")
                     if url and title and url not in seen_urls and src not in seen_src:
                         lines.append(f"  🔗 <a href=\"{url}\">{title}</a> <i>[{src}]</i>")
                         seen_urls.add(url); seen_src.add(src); count += 1
@@ -220,8 +251,8 @@ def send_s2_intelligence(run_id=None):
             desc  = e.get("description","") or e.get("q1","") or e.get("raw","")
             ph    = " · ".join(str(p) for p in phrases(s2a.get("flagged_phrases"))[:4] if p)
             lines += [f"<b>Injection method:</b> {itype} ({conf:.0%})"]
-            if desc: lines.append(str(desc)[:250])
-            if ph:   lines.append(f"<b>Trigger language:</b> <code>{ph[:150]}</code>")
+            if desc: lines.append(_clip(str(desc), 250))
+            if ph:   lines.append(f"<b>Trigger language:</b> <code>{_clip(ph, 150)}</code>")
             lines.append("")
 
         s2c = next((i for i in inj if i.get("analyst") == "S2-C"), None)
@@ -229,14 +260,14 @@ def send_s2_intelligence(run_id=None):
             e = ev(s2c.get("evidence"))
             frame = e.get("dominant_emotion","") or e.get("q3","") or e.get("frame","")
             if frame:
-                lines += [f"<b>Emotional frame deployed:</b>", str(frame)[:200], ""]
+                lines += [f"<b>Emotional frame deployed:</b>", _clip(str(frame), 200), ""]
 
         s2d = next((i for i in inj if i.get("analyst") == "S2-D"), None)
         if s2d:
             e = ev(s2d.get("evidence"))
             nar = e.get("primary_narrative","") or e.get("q1","") or e.get("narrative","")
             if nar:
-                lines += ["<b>What the adversary wants you to believe:</b>", str(nar)[:280], ""]
+                lines += ["<b>What the adversary wants you to believe:</b>", _clip(str(nar), 280), ""]
 
         s2b = next((i for i in inj if i.get("analyst") == "S2-B"), None)
         if s2b:
@@ -246,7 +277,7 @@ def send_s2_intelligence(run_id=None):
                 e = ev(s2b.get("evidence"))
                 detail = e.get("description","") or e.get("raw","")
                 lines += [f"<b>Coordination detected:</b> {itype} ({conf:.0%})"]
-                if detail: lines.append(str(detail)[:180])
+                if detail: lines.append(_clip(str(detail), 180))
                 lines.append("")
 
         gap = next((i for i in inj if i.get("analyst") == "S2-GAP"), None)
@@ -255,14 +286,14 @@ def send_s2_intelligence(run_id=None):
             key = e.get("key_gap_finding","")
             missed = e.get("missed_by_s1",[]) or []
             if key:
-                lines += ["<b>What the canary missed (Broken Window):</b>", str(key)[:250]]
+                lines += ["<b>What the canary missed (Broken Window):</b>", _clip(str(key), 250)]
             for m in (missed[:2] if isinstance(missed, list) else []):
                 if isinstance(m, dict):
                     story = m.get("story","")
                     why   = m.get("why_significant","")
                     if story:
-                        lines.append(f"  → {story[:120]}")
-                        if why: lines.append(f"    <i>{why[:100]}</i>")
+                        lines.append(f"  → {_clip(story, 120)}")
+                        if why: lines.append(f"    <i>{_clip(why, 100)}</i>")
             lines.append("")
 
         s2e = next((i for i in inj if i.get("analyst") == "S2-E"), None)
@@ -271,7 +302,7 @@ def send_s2_intelligence(run_id=None):
             verdict = e.get("verdict","") or e.get("legitimacy_verdict","") or e.get("q6","")
             if verdict:
                 lines += ["<b>Cui Bono — who benefits from today's information environment:</b>",
-                          str(verdict)[:220], ""]
+                          _clip(str(verdict), 220), ""]
 
         try:
             cutoff = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
@@ -283,7 +314,7 @@ def send_s2_intelligence(run_id=None):
                 lines.append("<b>Physical ground truth (cannot be narratively distorted):</b>")
                 for t in high[:3]:
                     url   = t.get("url","")
-                    title = (t.get("title","") or "")[:80]
+                    title = _clip((t.get("title","") or ""), 80)
                     icon  = "🏛" if t.get("tier") == "TIER_D" else "📊"
                     lines.append(f"  {icon} <a href=\"{url}\">{title}</a>" if url else f"  {icon} {title}")
         except Exception:
@@ -319,29 +350,29 @@ def send_s3_intelligence(run_id=None):
         if s3a:
             summary = (s3a.get("summary","") or "").strip()
             if summary:
-                lines += ["<b>The pattern forming over 7 days:</b>", summary[:400], ""]
+                lines += ["<b>The pattern forming over 7 days:</b>", _clip(summary, 400), ""]
             dom = (s3a.get("first_domino","") or "").strip()
             if dom:
                 lines += ["⚠️ <b>Already in motion -- a hypothesis to watch, not a forecast:</b>",
-                          _certainty_note(dom[:300]), ""]
+                          _certainty_note(_clip(dom, 300)), ""]
 
         if s3b:
             hist = _plain_summary(s3b.get("summary",""))   # CC-118: S3-B sometimes stores raw JSON
             if hist:
-                lines += ["📖 <b>We have seen this before:</b>", hist[:280], ""]
+                lines += ["📖 <b>We have seen this before:</b>", _clip(hist, 280), ""]
 
         if s3d:
             struct = (s3d.get("summary","") or "").strip()
             s3d_dom = (s3d.get("first_domino","") or "").strip()
             if struct:
-                lines += ["🏗 <b>What has changed structurally (S3-D long window, 30-90 days):</b>", struct[:280]]
-                if s3d_dom: lines.append(f"<b>Structural first domino:</b> {s3d_dom[:150]}")
+                lines += ["🏗 <b>What has changed structurally (S3-D long window, 30-90 days):</b>", _clip(struct, 280)]
+                if s3d_dom: lines.append(f"<b>Structural first domino:</b> {_clip(s3d_dom, 150)}")
                 lines.append("")
 
         if s3c:
             drift = (s3c.get("summary","") or "").strip()
             if drift:
-                lines += ["📊 <b>Analytical drift check (weekly):</b>", drift[:200], ""]
+                lines += ["📊 <b>Analytical drift check (weekly):</b>", _clip(drift, 200), ""]
 
         try:
             pred = sb.table("lens_predictions") \
@@ -353,7 +384,7 @@ def send_s3_intelligence(run_id=None):
                 if pt:
                     lines += [
                         "🌱 <b>Hypothesis on record — to recheck, not a forecast:</b>",
-                        _certainty_note(pt[:200]),
+                        _certainty_note(_clip(pt, 400)),
                         f"<i>Recheck on {p.get('verification_date','?')} · {_checked_line(sb)}</i>"
                     ]
         except Exception:
