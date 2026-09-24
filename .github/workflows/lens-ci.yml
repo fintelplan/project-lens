@@ -128,3 +128,6 @@ jobs:
 
       - name: The S3 message holds hypotheses, not forecasts (CC-118)
         run: python tests/test_s3_hypothesis_voice.py
+
+      - name: The S3 prompts ask for causes in motion, not forecasts (CC-119)
+        run: python tests/test_s3_no_forecast.py

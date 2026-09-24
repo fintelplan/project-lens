@@ -159,10 +159,10 @@ MA Verdict: {ma.get('executive_summary', 'Not available')[:400]}
         prompt += "S3-C data not available (runs weekly on Thursdays).\n"
 
     if pred:
-        prompt += "\n=== RECORDED PREDICTIONS ===\n"
+        prompt += "\n=== HYPOTHESES ON RECORD (none has been checked yet) ===\n"
         for p in pred[:3]:
-            prompt += f"Prediction: {p.get('prediction','')[:300]}\n"
-            prompt += f"Confidence: {p.get('confidence',0):.0%} | Verify by: {p.get('verification_date','?')}\n\n"
+            prompt += f"Hypothesis: {p.get('prediction','')[:300]}\n"
+            prompt += f"Recheck on: {p.get('verification_date','?')}\n\n"   # CC-119: no confidence percent fed to the writer
 
     prompt += """
 
@@ -174,7 +174,7 @@ PART A — THE 7-DAY PATTERN LANDSCAPE
 Analyze the patterns S3-A detected over the past 7 days. What structural trends are forming? What do these patterns reveal about the trajectory of the geopolitical information environment? How do the individual patterns interconnect into a larger picture?
 
 PART B — THE FIRST DOMINO CHAIN ANALYSIS
-What is the "first domino" identified by System 3? If current patterns continue, what sequence of events becomes increasingly inevitable? Walk through the causal chain analytically. What are the trigger conditions? What would accelerate or slow this chain?
+What is the "first domino" identified by System 3 -- the cause already in motion? Walk through the causal chain analytically, from that cause to what it is already producing. Which signs would confirm the chain, which would disconfirm it, and what would accelerate or slow it? Do not state that anything is inevitable or will happen.
 
 PART C — HISTORICAL PARALLEL AND PRECEDENT
 What historical precedent does S3-B identify for current patterns? How closely does the current situation mirror historical cases? What does history tell us about probable outcomes? Where does the historical parallel break down and why does that matter?
@@ -185,8 +185,8 @@ What has fundamentally changed in the geopolitical information environment over 
 PART E — ANALYTICAL DRIFT AND BIAS CHECK
 What does the S3-C weekly bias monitor reveal? Are the analytical positions of the system drifting in any direction? Is the framing of certain actors becoming systematically skewed? What corrections should GCSP educators apply to their reading of this system's outputs?
 
-PART F — STRATEGIC VERDICT AND PREDICTIONS
-Synthesize all S3 findings into a strategic verdict. What is Project Lens's current assessment of the long-term trajectory? What predictions have been recorded and what evidence would confirm or deny them? What should GCSP educators watch for in the coming week?
+PART F — STRATEGIC VERDICT AND HYPOTHESES TO WATCH
+Synthesize all S3 findings into a strategic verdict. What is Project Lens's current assessment of the structures already in motion? Which hypotheses are on record, what evidence would confirm or disconfirm each, and how many have actually been checked? Offer the reader questions to watch, not forecasts. What should GCSP educators watch for in the coming week?
 
 Write in formal strategic intelligence briefing style. Use PART A, PART B format exactly for headings."""
 
@@ -396,7 +396,7 @@ def run_s3_report() -> dict:
         f"📚 <b>S3 Strategic Pattern Report — {date_str}</b>\n"
         f"{pat_count} patterns detected | 7-day + 30-day horizon\n"
         f"<i>Full strategic analysis attached — patterns, historical parallels, "
-        f"first domino chain, and predictions</i>"
+        f"first domino chain, and hypotheses to watch</i>"
     )
     send_telegram_text(intro)
     time.sleep(1)

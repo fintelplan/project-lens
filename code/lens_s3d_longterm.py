@@ -77,7 +77,8 @@ FIVE RESEARCH QUESTIONS:
 
 5. CONVERGENCE SIGNALS:
    Where are multiple slow-moving trends converging toward the same pressure point?
-   What structural collision is becoming inevitable?
+   Where could these trends collide? Name the pressure point as a hypothesis, with the sign that
+   would confirm it and the sign that would disconfirm it. Never call a collision inevitable.
 6. CAPABILITY 2 — MANUFACTURED CAUSALITY (30-day verification):
    Was the claimed cause actually followed by the claimed effect over the last 30 days?
    Is a causal chain being repeated and cited as established fact without verification?
@@ -90,7 +91,7 @@ FIVE RESEARCH QUESTIONS:
 8. SECTARIAN TRAP 30-DAY TRACKING:
    What was the baseline level of ethnic/religious/political tension 30 days ago vs today?
    Is escalation organic (proportional to actual events) or manufactured (disproportionate)?
-   What historical analog predicts what happens next if the current trajectory continues?
+   Which historical analog does this trajectory resemble, and where does the analogy break?
 
 OUTPUT FORMAT — valid JSON only:
 {
@@ -130,7 +131,7 @@ OUTPUT FORMAT — valid JSON only:
     "current_tension": "LOW|MODERATE|HIGH — today",
     "escalation_type": "ORGANIC|MANUFACTURED|UNCLEAR",
     "historical_analog": "which historical precedent matches this trajectory, or null",
-    "predicted_next": "what the analog suggests happens next"
+    "predicted_next": "what followed in the analog THEN (history, not a forecast for now)"
   }
 }
 Rules: Ground EVERYTHING in specific evidence spanning the full 30-day window.

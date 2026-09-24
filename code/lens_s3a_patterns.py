@@ -79,7 +79,9 @@ FIVE ANALYTICAL QUESTIONS:
 2. DISTRACTION: What loud visible event is consuming analytical bandwidth? What quiet structural 
    event is happening while everyone looks at the distraction?
 3. ACCELERATION: Which trends are speeding up? Which are quietly ending?
-4. FIRST DOMINO: If current patterns continue, what event becomes inevitable in 30-90 days?
+4. FIRST DOMINO: What cause, already in motion, starts the chain you see? Name the cause, not the
+   ending. Hold it as a hypothesis to watch: give one observable sign that would confirm it within
+   30-90 days and one that would disconfirm it. Never say it will happen or is inevitable.
 5. HIDDEN BUILDER: Who is consistently building structural advantage while appearing passive?
 6. ACH CHECK (adversarial hardening):
    What is the strongest evidence that CONTRADICTS the pattern you found?
@@ -98,7 +100,7 @@ OUTPUT FORMAT — valid JSON only:
   "structural_event": "the quiet structural development being missed",
   "accelerating_trends": ["trend1", "trend2"],
   "decelerating_trends": ["trend1"],
-  "first_domino": "what becomes inevitable if patterns continue",
+  "first_domino": "the cause already in motion (a hypothesis, not a forecast) -- confirmed if: <sign>; disconfirmed if: <sign>",
   "hidden_builder": "actor building structural advantage quietly",
   "patterns_found": [
     {"pattern": "name", "evidence": "specific events", "confidence": 0.0, "time_horizon": "30d/90d/180d"}
