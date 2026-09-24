@@ -309,11 +309,11 @@ def send_s3_intelligence(run_id=None):
                 lines += ["<b>The pattern forming over 7 days:</b>", summary[:400], ""]
             dom = (s3a.get("first_domino","") or "").strip()
             if dom:
-                lines += ["⚠️ <b>If current patterns continue, this becomes inevitable:</b>",
-                          dom[:300], ""]
+                lines += ["⚠️ <b>Already in motion -- a hypothesis to watch, not a forecast:</b>",
+                          _certainty_note(dom[:300]), ""]
 
         if s3b:
-            hist = (s3b.get("summary","") or "").strip()
+            hist = _plain_summary(s3b.get("summary",""))   # CC-118: S3-B sometimes stores raw JSON
             if hist:
                 lines += ["📖 <b>We have seen this before:</b>", hist[:280], ""]
 
@@ -321,7 +321,7 @@ def send_s3_intelligence(run_id=None):
             struct = (s3d.get("summary","") or "").strip()
             s3d_dom = (s3d.get("first_domino","") or "").strip()
             if struct:
-                lines += ["🏗 <b>What has changed structurally in 30 days:</b>", struct[:280]]
+                lines += ["🏗 <b>What has changed structurally (S3-D long window, 30-90 days):</b>", struct[:280]]
                 if s3d_dom: lines.append(f"<b>Structural first domino:</b> {s3d_dom[:150]}")
                 lines.append("")
 
@@ -339,9 +339,9 @@ def send_s3_intelligence(run_id=None):
                 pt = (p.get("prediction","") or "").strip()
                 if pt:
                     lines += [
-                        "🌱 <b>Prediction recorded — System 4 will verify this:</b>",
-                        pt[:200],
-                        f"<i>Confidence {(p.get('confidence',0) or 0):.0%} · Verify by {p.get('verification_date','?')}</i>"
+                        "🌱 <b>Hypothesis on record — to recheck, not a forecast:</b>",
+                        _certainty_note(pt[:200]),
+                        f"<i>Recheck on {p.get('verification_date','?')} · {_checked_line(sb)}</i>"
                     ]
         except Exception:
             pass
@@ -349,6 +349,58 @@ def send_s3_intelligence(run_id=None):
         return send_message("\n".join(lines))
     except Exception as e:
         log.error(f"send_s3_intelligence failed: {e}"); return False
+
+# --- CC-118 helpers (LENS-046) ---
+import re as _re_cc118
+import json as _json_cc118
+
+_CERTAINTY = _re_cc118.compile(
+    r"\b(inevitabl\w*|unavoidabl\w*|certainly|guaranteed|will happen|bound to happen)\b",
+    _re_cc118.IGNORECASE)
+
+
+def _plain_summary(text):
+    """S3-B sometimes stores its whole JSON answer as the summary; show its prose."""
+    t = (text or "").strip()
+    if not t.startswith("{"):
+        return t
+    try:
+        d = _json_cc118.loads(t)
+        for k in ("plain_english", "summary"):
+            v = d.get(k) if isinstance(d, dict) else None
+            if isinstance(v, str) and v.strip():
+                return v.strip()
+    except Exception:
+        m = _re_cc118.search(r'"plain_english"\s*:\s*"((?:[^"\\]|\\.)*)', t)
+        if m:
+            return m.group(1).replace('\\"', '"').strip()
+    return t
+
+
+def _certainty_note(text):
+    """A hypothesis worded as certain is shown as written -- the record is not edited --
+    but marked for the reader and logged. Freedom from Fear: no closed door (LENS-046)."""
+    t = (text or "").strip()
+    m = _CERTAINTY.search(t)
+    if not m:
+        return t
+    log.warning(f"CERTAINTY_LANGUAGE in an S3 hypothesis shown to the reader: {m.group(0)!r}")
+    return t + "\n<i>(worded as certain by the model; Lens holds this as an open hypothesis)</i>"
+
+
+def _checked_line(sb):
+    """How many recorded hypotheses have ever been checked. 0 of 112 on 2026-09-24:
+    System 4's checker was never built, so the reader is told so, not promised a check."""
+    try:
+        total = sb.table("lens_predictions").select("id", count="exact").limit(1).execute().count or 0
+        done = sb.table("lens_predictions").select("id", count="exact") \
+            .not_.is_("outcome", "null").limit(1).execute().count or 0
+        return f"{done} of {total} recorded hypotheses have been checked so far"
+    except Exception as e:
+        log.warning(f"S3 message: check count unavailable: {e}")
+        return "check count unavailable"
+# --- end CC-118 ---
+
 
 def send_daily_brief(run_id=None):
     try:
