@@ -49,6 +49,8 @@ MIN_BODY_FOR_LLM = 300     # skip LLM call for stubs
 MAX_EXPERTS_PER_ARTICLE = 8
 REQUEST_TIMEOUT_SEC = 25
 
+_TPD_TRIPPED = {"on": False, "skipped": 0}   # CC-126 (D7): see _tpd_trip
+
 
 # ── Entry point used by fetch_text.py ─────────────────────────────────────────
 def extract_entities_for_article(article_dict: dict, article_id: str) -> dict:
@@ -192,8 +194,22 @@ def build_user_msg(title: str, body: str, source_name: str) -> str:
     )
 
 
+def _tpd_trip(exc, provider, model):
+    """CC-126 (D7): Groq's daily token cap. Once refused for the day, every further call is
+    refused too -- Sep 24 collect: 197 answered, 233 refused, 246 'tokens per day' -- so the rest
+    of the process stops asking and says so once. Same idea as the S2-F breaker (CC-97). Called
+    on the warning's own line: tests/test_provider_refusal_sites.py reads that block by bytes."""
+    if "tokens per day" in str(exc).lower() and not _TPD_TRIPPED["on"]:
+        _TPD_TRIPPED["on"] = True
+        log.error("ENTITY_EXTRACT_TPD_BREAKER: %s/%s refused for the day; the rest of this "
+                  "run skips expert extraction (bylines are still read)" % (provider, model))
+
+
 def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[dict]:
     """Extract quoted experts on the registry-wired model. Returns list, never None."""
+    if _TPD_TRIPPED["on"]:                     # CC-126 (D7): refused for the day already
+        _TPD_TRIPPED["skipped"] += 1
+        return []
     try:
         from groq import Groq
     except ImportError:
@@ -247,7 +263,7 @@ def _extract_experts_via_llm(title: str, body: str, source_name: str) -> list[di
         )
         raw = resp.choices[0].message.content.strip()
     except Exception as e:
-        log.warning(f"Groq call failed: {e}")
+        log.warning(f"Groq call failed: {e}"); _tpd_trip(e, provider, model)
         try:   # CC-104 (item 11): lazy and wrapped -- this is the canary's air supply (arm 2); the record must
                # never be able to stop Collection, and it writes nothing here.
             from lens_provider_refusal import record_refusal

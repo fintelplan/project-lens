@@ -281,6 +281,17 @@ def _add_runs(p, text: str) -> None:
                 run.bold = True
 
 
+_MARKING = re.compile(r"\b(CLASSIFIED|UNCLASSIFIED|TOP SECRET|SECRET//|NOFORN|FOUO|DISSEMINATE|DISTRIBUTION)\b", re.I)
+
+
+def _is_marking(line: str) -> bool:
+    """CC-126: ministral headed the Sep 24 report "CLASSIFIED // DISSEMINATE TO GCSP EDUCATORS
+    ONLY". Lens is not classified, and in Phase 1 nothing goes beyond the operator (Direction B).
+    A short line that IS a marking is dropped; a sentence that mentions one is kept."""
+    s = _plain(line)
+    return len(s) <= 90 and bool(_MARKING.search(s)) and not s.endswith(".")
+
+
 def render_docx(report_text: str, date_str: str, ma: dict) -> str:
     try:
         from docx import Document
@@ -322,6 +333,8 @@ def render_docx(report_text: str, date_str: str, ma: dict) -> str:
         line = line.strip()
         if not line:
             doc.add_paragraph(); continue
+        if _is_marking(line):   # CC-126: no invented classification or dissemination marking
+            continue
         head = _plain(line)   # CC-117
         if head.startswith("PART ") and "—" in head:
             doc.add_heading(head, level=1)

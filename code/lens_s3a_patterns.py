@@ -355,6 +355,7 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             "hidden_builder": analysis.get("hidden_builder", ""),
         }),
         "summary":          analysis.get("summary", ""),
+        "first_domino":     analysis.get("first_domino", ""),   # CC-126: the column was never written; the Brief and the S3 message read it
         "signals_to_watch": json.dumps(analysis.get("signals_to_watch", [])),
         "corrections_to_s2": json.dumps(analysis.get("corrections_to_s2", [])),
         "model_used":       used_model,
