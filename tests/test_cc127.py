@@ -36,7 +36,37 @@ s3a = read("lens_s3a_patterns.py")
 a = s3a.index("# Save to lens_system3_reports")
 check("S3-A strips <sign> before saving", 'analysis["first_domino"] = __import__("re").sub(r"</?sign>"' in s3a[:a], True)
 
-import lens_mission_analyst as MA  # noqa: E402
+
+
+def _import_with_absent_sdks(name, tries=6):
+    """CI installs no provider SDKs (cerebras, groq, ...); the analyst imports them at module top.
+    Put a placeholder in for each one that is missing, then import. Present packages are untouched."""
+    import importlib
+    for _ in range(tries):
+        try:
+            return importlib.import_module(name)
+        except ModuleNotFoundError as e:
+            missing = e.name or ""
+            if not missing or missing == name:
+                raise
+            parts = missing.split(".")
+            for k in range(1, len(parts) + 1):
+                mod = ".".join(parts[:k])
+                if mod not in sys.modules:
+                    stub = types.ModuleType(mod)
+                    stub.__path__ = []          # a package, so its submodules can be stubbed too
+
+                    def _attr(attr):
+                        if attr.startswith("__"):
+                            raise AttributeError(attr)
+                        return type(attr, (), {"__init__": lambda self, *a, **k: None})
+                    stub.__getattr__ = _attr
+                    sys.modules[mod] = stub
+                    print("stub for absent SDK:", mod)
+    return importlib.import_module(name)
+
+
+MA = _import_with_absent_sdks("lens_mission_analyst")
 os.environ.setdefault(MA.FB_KEY_ENV, "test-key")
 answers, calls = [], []
 
