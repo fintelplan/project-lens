@@ -336,6 +336,10 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
         log.error("S3-A failed — no analysis produced")
         return {"status": "ANALYSIS_FAILED", "run_id": run_id}
 
+    # CC-127: the prompt's template says 'confirmed if: <sign>'; the model copies the tags. Strip them
+    # before anything stores or sends first_domino (Telegram HTML refused them on Sep 25).
+    analysis["first_domino"] = __import__("re").sub(r"</?sign>", "", str(analysis.get("first_domino") or "")).strip()
+
     # Save to lens_system3_reports
     record = {
         "run_id":           run_id,

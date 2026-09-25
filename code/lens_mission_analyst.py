@@ -560,7 +560,7 @@ def build_synthesis_prompt(
 
 
 # ── Core analysis ─────────────────────────────────────────────────────────────
-def _call_fallback_leg(user_message: str, max_tokens: int) -> Optional[dict]:
+def _call_fallback_leg(user_message: str, max_tokens: int, _retry: bool = False) -> Optional[dict]:
     """CC-54: the registry fb leg, via plain requests (the S2-C pattern).
 
     Returns a parsed dict, or None so the caller's ANALYSIS_FAILED path is
@@ -620,6 +620,9 @@ def _call_fallback_leg(user_message: str, max_tokens: int) -> Optional[dict]:
         return parsed
     except Exception as e:
         log.error(f"MA fallback failed: {e}")
+        if isinstance(e, json.JSONDecodeError) and not _retry:   # CC-127: Sep 25 lost the wave to one bad comma
+            log.warning("MA fallback: the answer was not valid JSON -- asking once more")
+            return _call_fallback_leg(user_message, max_tokens, _retry=True)
         return None
 
 
@@ -851,6 +854,12 @@ def run_mission_analyst(
 
     analysis = call_mission_analyst(client, prompt, cycle)
     if analysis is None:
+        try:   # CC-127: no macro report means no Daily Brief -- the operator hears it, not silence
+            from lens_telegram import send_message
+            send_message("\u26a0\ufe0f <b>MISSION ANALYST FAILED</b> this wave (run %s): no macro report, "
+                         "so no Daily Brief. The run log says why." % run_id)
+        except Exception as _te:
+            log.warning(f"MA failure notice not sent: {_te}")
         return {"status": "ANALYSIS_FAILED"}
 
     s1_ids = [r.get("id") for r in s1_reports if r.get("id")]

@@ -78,6 +78,8 @@ jobs:
         run: python tests/test_cc125_small_truths.py
       - name: CC-126 S3-A first_domino column, entity TPD breaker, no invented markings
         run: python tests/test_cc126.py
+      - name: CC-127 Telegram escapes unknown tags, S3-A strips sign tags, MA retries bad JSON once
+        run: python tests/test_cc127.py
 
       - name: S3-A window tests (CC-99)
         run: python tests/test_s3a_window.py

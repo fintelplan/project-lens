@@ -34,6 +34,11 @@ def _presentable(text):
         line = _re.sub(r"^(\s*)#{1,6}\s+", r"\1", line)
         line = line.replace("**", "").replace("__", "")
         line = _re.sub(r"(?<![\w*])\*(?=\S)([^*\n]+?)(?<=\S)\*(?![\w*])", r"\1", line)
+        # CC-127: model text inside an HTML message -- Telegram refuses the WHOLE message on an unknown
+        # tag (Sep 25: 'Unsupported start tag "sign"' lost the S3 message). Escape a bare '&' and any '<'
+        # that does not open a tag Telegram knows.
+        line = _re.sub(r"&(?!(?:[a-zA-Z]+|#[0-9]+|#x[0-9a-fA-F]+);)", "&amp;", line)
+        line = _re.sub(r"<(?!/?(?:b|strong|i|em|u|ins|s|strike|del|a|code|pre|blockquote|span|tg-spoiler|tg-emoji)\b)", "&lt;", line)
         out.append(line)
     return "\n".join(out)
 
