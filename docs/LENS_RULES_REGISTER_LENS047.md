@@ -70,6 +70,8 @@ a hole is indistinguishable from a lost rule, so numbers are never skipped from 
 | LR-282 | A probe that passes on mechanics can fail on truth: read the model's reasons, not only its label (CC-123 invented a previous basis). | LENS-047 | this register |
 | LR-283 | A label must count what it says: 23 rows were 8 articles x 3 lenses. | LENS-047 | this register |
 | LR-284 | A finding rests on its sample: before calling a voice's pattern confirmed, check how that voice came to be sampled (RT was 89% of S2-F's detections because it was the collector's last thread). | LENS-047 | this register |
+| LR-285 | Model text entering an HTML message is escaped at the one sender, always: Telegram refuses the whole message on one unknown tag (Sep 25: `<sign>` lost the S3 message). | LENS-047 (post-close) | this register |
+| LR-286 | A fix for CI is proved in CI's shape before it ships: run the gate with the packages CI lacks hidden, not only in a venv that has them all (CC-127's gate went red on `No module named 'cerebras'`). | LENS-047 (post-close) | this register |
 
-Ranges: LENS-043 LR-234..LR-236; LENS-044 LR-237..LR-245; LENS-045 LR-246..LR-259; LENS-046 LR-260..LR-268; LENS-047 LR-269..LR-284.
-Next free number: **LR-285**.
+Ranges: LENS-043 LR-234..LR-236; LENS-044 LR-237..LR-245; LENS-045 LR-246..LR-259; LENS-046 LR-260..LR-268; LENS-047 LR-269..LR-284; LENS-047 post-close LR-285..LR-286.
+Next free number: **LR-287**.
