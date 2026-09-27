@@ -50,7 +50,8 @@ jobs:
           GITHUB_ACTIONS:           "true"
           S2F_LENSES:               "xi_office,trump_office,khamenei_office"
           S2F_LOOKBACK_HOURS:       "24"   # CC-122: scored articles are excluded, so a wide window re-scores nothing
-          S2F_MAX_ARTICLES:         "8"
+          S2F_MAX_ARTICLES:         "24"   # CC-129: articles about a lens; calls cap below
+          S2F_MAX_CALLS:            "24"   # CC-129: provider calls per run (was 8 x 3)
 
       - name: Stage 1 — Watch aggregator
         if: ${{ !cancelled() }}   # CC-91: Stage 1 failing must not skip this

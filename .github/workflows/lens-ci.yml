@@ -146,3 +146,6 @@ jobs:
 
       - name: CC-128 -- S3 says when it did not deliver
         run: python tests/test_s3_report_loud.py
+
+      - name: CC-129/130 -- S2-F scores only lenses an article is about
+        run: python tests/test_s2f_relevance_gate.py

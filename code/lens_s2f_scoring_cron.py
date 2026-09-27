@@ -40,7 +40,7 @@ def _paged(make_query, page=1000):
         start += page
 
 
-def get_recent_articles(client, lookback_hours: int, max_articles: int):
+def get_recent_articles(client, lookback_hours: int, max_articles: int, lenses=None):
     """Pick up to max_articles articles from the last N hours to score (CC-122).
 
     Before CC-122 this took the newest max_articles rows by collected_at and the scoring loop
@@ -76,6 +76,15 @@ def get_recent_articles(client, lookback_hours: int, max_articles: int):
     except Exception as e:
         log.error(f"Article selection failed: {str(e)[:200]}")
         return None
+    if lenses:
+        # CC-129: filter first, cap last (LR-269) -- only articles about a watched lens reach
+        # the rotation, so the call budget is not spent on not_applicable answers (92% of
+        # 737 scorings in 30 days).
+        from lens_s2f_relevance import relevant_lenses
+        n_window = len(rows)
+        rows = [r for r in rows if relevant_lenses(r.get("title"), r.get("content"), lenses)]
+        log.info(f"S2F_RELEVANCE {len(rows)} of {n_window} articles in the window name a "
+                 f"watched lens; the selection below reads only those")
     picked, report = select_articles(rows, last, max_articles, exclude_ids=scored_ids)
     log.info(report_line(report, lookback_hours))
     if rows and not picked:
@@ -139,7 +148,7 @@ def main():
     from lens_s2f_writer import write_detection_result
 
     # ── Fetch articles ──
-    articles = get_recent_articles(client, lookback_hours, max_articles)
+    articles = get_recent_articles(client, lookback_hours, max_articles, lenses)   # CC-129
     if articles is None:                      # CC-122: a failed read is not 'nothing new'
         log.error("S2-F: article selection failed -- exiting 1")
         sys.exit(1)
@@ -152,8 +161,14 @@ def main():
     skipped = 0
     failed = 0
     quota_skipped = 0   # CC-97: the provider refused for the day; no call was made
+    gated = 0           # CC-129: lens pairs not about the lens -- no call, no row
+    calls = 0
+    max_calls = int(os.environ.get("S2F_MAX_CALLS", "24"))   # CC-129: the budget is calls
+    from lens_s2f_relevance import relevant_lenses
 
     for article in articles:
+        if calls >= max_calls:
+            break
         article_id = article["id"]
         title = article.get("title", "")
         body = article.get("content", "")
@@ -166,7 +181,13 @@ def main():
             skipped += 1
             continue
 
+        rel = relevant_lenses(title, body, lenses)   # CC-129
         for lens in lenses:
+            if lens not in rel:
+                gated += 1
+                continue
+            if calls >= max_calls:
+                break
             # Check if already scored
             if already_scored(client, article_id, lens, "early_warning"):
                 log.info(f"Skip (already scored): {title[:40]} × {lens}")
@@ -174,6 +195,7 @@ def main():
                 continue
 
             log.info(f"Scoring: {title[:60]} × {lens}")
+            calls += 1   # CC-129
             try:
                 result = detect_operations_ensemble(
                     article_title=title,
@@ -212,6 +234,8 @@ def main():
                 log.error(f"  → Error: {str(e)[:200]}")
                 failed += 1
 
+    log.info(f"S2F_RELEVANCE gated={gated} lens pairs not about the lens (no call); "
+             f"calls={calls} of cap {max_calls}")   # CC-129
     log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed} "
              f"quota_skipped={quota_skipped}")
     _attempted = scored + failed + quota_skipped   # CC-125 (D6, ruled A at LENS-045): say the coverage

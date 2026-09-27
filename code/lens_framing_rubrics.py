@@ -741,9 +741,11 @@ def detect_operations_in_article(
     # ── Build DetectionResult ──
     return DetectionResult(
         status="OK",
-        state_actor_lens=parsed.get("state_actor_lens", state_actor_lens),
-        stage_filter=parsed.get("stage_filter", stage_filter),
-        catalog_version=parsed.get("catalog_version", catalog["catalog_version"]),
+        # CC-130: the caller's keys, never the model's echo -- it wrote "Xi Office" for
+        # xi_office on 64 rows in 30 days, a second name for one lens.
+        state_actor_lens=state_actor_lens,
+        stage_filter=stage_filter,
+        catalog_version=catalog["catalog_version"],
         rubric_version=parsed.get("rubric_version", "v2-operations"),
         operations_detected=valid_ops,
         operations_not_present=parsed.get("operations_not_present", []),
