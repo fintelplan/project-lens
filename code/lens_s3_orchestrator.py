@@ -101,6 +101,19 @@ def _run(position, fn, **kwargs):
         return False, {}
 
 
+def _say_s3_failed(text):
+    """CC-128: a missing S3 product is said to the operator, never left to silence.
+
+    Operator status, plain text, apart from the reader's messages (CC-117's rule)."""
+    print(f"[S3-ORC] S3 FAILED: {text}")
+    try:
+        from lens_s3_step_report import send_telegram_text
+        return bool(send_telegram_text(text))
+    except Exception as e:
+        print(f"[S3-ORC] the failure notice itself could not be sent: {e}")
+        return False
+
+
 def main():
     print("\n" + "=" * 60)
     print("Project Lens — System 3 Orchestrator")
@@ -115,7 +128,11 @@ def main():
     _PF_TPM = (limits_for('groq', GROQ_GPT_OSS_120B) or {}).get('TPM')
     _PF_MIN = max(1000, int(_PF_TPM * 0.25)) if _PF_TPM else 2000
     if not check_groq_tpm("GROQ_S3_API_KEY", _PF_MIN, "S3"):
-        sys.exit(0)
+        # CC-128: skipping System 3 is a missing product (L1.2, L1.3) -- say it, turn red.
+        # When to skip is unchanged; only the silence is.
+        _say_s3_failed("System 3 did not run this wave: the Groq S3 pre-flight found too "
+                       "little per-minute quota. No S3 message and no S3 report were sent.")
+        sys.exit(1)   # CC-128: skipped
 
 
     from lens_s3a_patterns    import run_s3a
@@ -152,19 +169,35 @@ def main():
     # CC-77: the strategic report is a deliverable, not a side effect. Its
     # result used to be discarded, so AI_FAILED since 2026-09-04 never reached
     # this list; and it only ran if the Telegram step above it did not raise.
+    # CC-128: the message's outcome is read, not discarded (Sep 25: a Telegram 400
+    # lost it and the step stayed green). send_s3_intelligence returns False on a
+    # refused send, on a missing S3-A row, and on an exception inside it.
+    msg_ok = False
     try:
         from lens_telegram import send_s3_intelligence
-        send_s3_intelligence(run_id=RUN_ID)
+        msg_ok = bool(send_s3_intelligence(run_id=RUN_ID))
     except Exception as _te:
-        print(f"[S3-ORC] Telegram step report failed (non-fatal): {_te}")
+        print(f"[S3-ORC] S3 message raised: {_te}")
+    results["S3-MSG"] = msg_ok
+    print(f"[S3-ORC] S3 message: {'SENT' if msg_ok else 'FAILED'}")
+    if not msg_ok:
+        _say_s3_failed("S3 Message FAILED today: 'What is actually being built' was not "
+                       "delivered (the M+A log says why). The S3 report is sent separately.")
     try:
         from lens_s3_step_report import run_s3_report
         _rpt = run_s3_report() or {}
     except Exception as _s3r:
         print(f"[S3-ORC] S3 step report raised: {_s3r}")
         _rpt = {"status": "EXCEPTION"}
-    results["S3-RPT"] = _rpt.get("status") == "COMPLETE"
-    print(f"[S3-ORC] S3 strategic report: {_rpt.get('status')}")
+    report_status = _rpt.get("status") or "NO_STATUS"
+    results["S3-RPT"] = report_status == "COMPLETE"
+    print(f"[S3-ORC] S3 strategic report: {report_status}")
+    if report_status != "COMPLETE":
+        try:
+            import lens_s3_step_report as _S3R
+            _S3R.announce_failure({"status": report_status})
+        except Exception as _an:
+            print(f"[S3-ORC] the failure notice itself could not be sent: {_an}")
     failed = [k for k, v in results.items() if not v]
 
     if failed:
@@ -175,6 +208,11 @@ def main():
     else:
         print("\n[S3-ORC] All positions complete.")
     print("=" * 60 + "\n")
+    if not (msg_ok and results["S3-RPT"]):
+        # CC-128: only a delivered S3 message and S3 report make a green step (CC-100's
+        # rule, as CC-117 gave S2). The health step runs under `if: !cancelled()`:
+        # red skips nothing.
+        sys.exit(1)   # CC-128: red
 
 
 if __name__ == "__main__":

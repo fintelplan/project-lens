@@ -143,3 +143,6 @@ jobs:
 
       - name: The S3 prompts ask for causes in motion, not forecasts (CC-119)
         run: python tests/test_s3_no_forecast.py
+
+      - name: CC-128 -- S3 says when it did not deliver
+        run: python tests/test_s3_report_loud.py

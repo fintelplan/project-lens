@@ -414,7 +414,24 @@ def run_s3_report() -> dict:
     return {"status": "COMPLETE" if sent else "SEND_FAILED", "elapsed": elapsed}
 
 
+def announce_failure(result: dict) -> bool:
+    """CC-128: a report that did not arrive is said, not left to silence (CC-117's
+    rule for S2, copied to S3).
+
+    Operator status, plain text, apart from the report. Returns True when
+    it announced a failure."""
+    status = (result or {}).get("status") or "NO_STATUS"
+    if status == "COMPLETE":
+        return False
+    log.error(f"S3 STRATEGIC REPORT FAILED: {status}")
+    send_telegram_text(f"S3 Strategic Report FAILED today: {status} "
+                       f"(model {MODEL}). No report was sent.")
+    return True
+
+
 if __name__ == "__main__":
     from dotenv import load_dotenv; load_dotenv()
     result = run_s3_report()
     print(result)
+    announce_failure(result)
+    raise SystemExit(0 if result.get("status") == "COMPLETE" else 1)   # CC-128
