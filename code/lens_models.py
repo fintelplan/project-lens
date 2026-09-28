@@ -40,8 +40,9 @@ SAMBANOVA_LLAMA_33_70B = "Meta-Llama-3.3-70B-Instruct"  # SambaNova format, LR-0
 # TOMBSTONE (CC-31): provider dead 2026-07-28 (HTTP 402, balance_units 0).
 # No ROLES row references it. Kept as a corpse marker so the id cannot be
 # silently re-wired; deleting it is provider retirement, a separate purpose.
-GEMINI_25_FLASH = "gemini-2.5-flash"            # dies 2026-10-16 (Google page)
+GEMINI_25_FLASH = "gemini-2.5-flash"            # no shutdown date announced (Google page, 2026-09-24); 2.5 served to existing users only
 GEMINI_25_FLASH_LITE = "gemini-2.5-flash-lite"
+GEMINI_35_FLASH_LITE = "gemini-3.5-flash-lite"  # CC-131: S2-B / S3-B primary, probed 4/4 on the production prompts (LENS-048)
 # Dated id, never an alias (D-015). No `mistral-small-latest` model card exists,
 # and -latest aliases carry far lower limits than dated ids (medium-latest
 # 25,000 TPM vs medium-2508 356,250). An alias is an unpinned wire id.
@@ -144,7 +145,7 @@ ROLES = {
         "note": "was MAX_TOKENS=1800; fallback was sambanova/Meta-Llama-3.3-70B-Instruct, dead since 2026-07-28 (HTTP 402, balance_units 0); moved to mistral-small-2603, completing the all-fallbacks-to-mistral direction recorded as D-015. Row now matches the Mistral fallback CC-14 already gave the call site.",
     },
     "s2b_coordination": {
-        "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
+        "provider": "gemini", "model": GEMINI_35_FLASH_LITE,   # CC-131: the call site's model
         "key_env": "GEMINI_S2B_API_KEY", "max_out": 2400,
         "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
@@ -259,7 +260,7 @@ ROLES = {
                 " first probed on this prompt at the CC-74 gate.",
     },
     "s3b_history": {
-        "provider": "gemini", "model": GEMINI_25_FLASH_LITE,
+        "provider": "gemini", "model": GEMINI_35_FLASH_LITE,   # CC-131: the call site's model
         "key_env": "GEMINI_S3B_API_KEY", "max_out": 2400,
         "fb_provider": "mistral", "fb_model": MINISTRAL_8B,
         "fb_key_env": "MISTRAL_API_KEY",
@@ -341,6 +342,7 @@ LIMITS = {
     #   compute unit with no honest token conversion -- so no TPM, by design.
     ("gemini", GEMINI_25_FLASH): None,               # LIMITS_UNKNOWN -> AI Studio
     ("gemini", GEMINI_25_FLASH_LITE): None,          # LIMITS_UNKNOWN -> AI Studio
+    ("gemini", GEMINI_35_FLASH_LITE): None,          # LIMITS_UNKNOWN -> AI Studio (CC-131)
     ("mistral", MISTRAL_SMALL): {"METER": "tokens", "TPM": 50_000, "RPD": 2_000,
                                  "CTX": 128_000},
     # ^ TPM/RPS VERIFIED-console 2026-07-28 (RPS 0.83). CTX is VERIFY, not

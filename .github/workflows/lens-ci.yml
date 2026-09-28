@@ -152,3 +152,6 @@ jobs:
 
       - name: CC-133 -- reader labels count what they say
         run: python tests/test_cc133_labels.py
+
+      - name: CC-131 -- S2-B and S3-B call a live Gemini model
+        run: python tests/test_cc131_gemini_primary.py

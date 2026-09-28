@@ -1,8 +1,9 @@
 """
 lens_s3b_truehistory.py — System 3 Position B: True History Researcher
 Project Lens | LENS-010
-Model: gemini-2.0-flash (Google — GEMINI_S3B_API_KEY, large context), fallback ministral-8b-2512
-NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
+Model: gemini-3.5-flash-lite (Google — GEMINI_S3B_API_KEY, large context), fallback ministral-8b-2512
+NOTE: CC-131 (LENS-048): gemini-2.0-flash was shut down 2026-06-01 and every wave fell back to Mistral;
+the primary is gemini-3.5-flash-lite, probed on this position's production prompt.
 Reads: lens_reports (last 30 days) + True History database (built-in)
 Output: lens_system3_reports (position=S3-B, report_type=TYPE_B)
 
@@ -28,7 +29,7 @@ log = logging.getLogger("S3-B")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 GEMINI_KEY   = os.environ.get("GEMINI_S3B_API_KEY", "")
-MODEL        = "gemini-2.0-flash"
+MODEL        = "gemini-3.5-flash-lite"   # CC-131: was gemini-2.0-flash (shut down 2026-06-01)
 # CC-101 (LENS-045): this comment used to say the fallback posts
 # mistral-small-latest. It has not since CC-70: MISTRAL_FALLBACK_MODEL below
 # is ministral-8b-2512, the registry's own. Rows record what RAN.

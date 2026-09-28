@@ -1,8 +1,9 @@
 """
 lens_s2b_coordination.py — System 2 Position B: Coordination Analyzer
 Project Lens | LENS-009
-Model: gemini-2.0-flash (Google — GEMINI_S2B_API_KEY), fallback ministral-8b-2512
-NOTE: gemini-2.0-flash is decommissioned, so in practice the Mistral fallback does the work.
+Model: gemini-3.5-flash-lite (Google — GEMINI_S2B_API_KEY), fallback ministral-8b-2512
+NOTE: CC-131 (LENS-048): gemini-2.0-flash was shut down 2026-06-01 and every wave fell back to Mistral;
+the primary is gemini-3.5-flash-lite, probed on this position's production prompt.
 Context: 1,000,000 tokens — holds ALL reports simultaneously
 Guard: GeminiRPMGuard (15 RPM free tier) + AFC disabled
 Architecture doc Table 4 specified gemini-1.5-flash; the code has called gemini-2.0-flash
@@ -29,7 +30,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("s2b")
 
-MODEL            = "gemini-2.0-flash"
+MODEL            = "gemini-3.5-flash-lite"   # CC-131: was gemini-2.0-flash (shut down 2026-06-01)
 # CC-101 (LENS-045): this comment used to say the fallback posts
 # mistral-small-latest. It has not since CC-70: MISTRAL_FALLBACK_MODEL below
 # is ministral-8b-2512, the registry's own. Rows record what RAN.
@@ -444,7 +445,7 @@ def save_coordination_report(
     try:
         result = sb.table("injection_reports").insert(rows).execute()
         saved  = len(result.data) if result.data else 0
-        log.info(f"Saved {saved} S2-B rows ({model_used}, 1M context)")
+        log.info(f"Saved {saved} S2-B rows ({model_used})")   # CC-131: "1M context" was a literal, not the model's
         return True
     except Exception as e:
         log.error(f"Failed to save S2-B results: {e}")
