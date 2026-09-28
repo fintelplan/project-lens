@@ -70,7 +70,7 @@ data["trend"] = [{"threat_level": "CRITICAL"}] * 7
 check("7+ when the window is full", "(7+ waves in a row)" in T.format_daily_brief(data), True)
 
 print("== Mission Analyst decides, and no longer alerts on every CRITICAL ==")
-ma = open(os.path.join(CODE, "lens_mission_analyst.py"), "rb").read()
+ma = open(os.path.join(CODE, "lens_mission_analyst.py"), "rb").read().replace(b"\r\n", b"\n")   # CC-132, LR-277
 check("the old rule is gone", b'if summary.get("threat_level") in ("CRITICAL", "HIGH"):' in ma, False)
 check("the decision gates the send", b"if _send:\n            send_critical_alert(" in ma, True)
 
