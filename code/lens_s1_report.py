@@ -326,7 +326,7 @@ def run_s1_report(run_id: Optional[str] = None) -> dict:
     intro = (
         f"📡 <b>S1 Canary Intelligence Report — {date_str}</b>\n"
         f"{len(s1)}/4 lenses{' -- MISSING: ' + ', '.join(data.get('missing') or []) if data.get('missing') else ''} "
-        f"| {total_arts} articles | Avg quality {avg_q}/10\n"   # CC-114: was a fixed \"4 lenses\"
+        f"| {total_arts} articles collected (12 h) | Avg quality {avg_q}/10\n"   # CC-114: was a fixed \"4 lenses\"
         f"<i>Full analytical report attached — compare with S2 to see manipulation delta</i>"
     )
     send_telegram_text(intro)
@@ -335,7 +335,7 @@ def run_s1_report(run_id: Optional[str] = None) -> dict:
     # Full docx caption
     caption = (
         f"📡 S1 Canary Intelligence Report — {date_str}\n"
-        f"System 1 | 4-Lens Canary | {total_arts} articles analyzed\n"
+        f"System 1 | 4-Lens Canary | {total_arts} articles collected (12 h)\n"   # CC-133: the canary reads a subset
         f"Avg quality: {avg_q}/10\n"
         f"Parts: Collection Landscape | Lens Findings | Convergence | Entities | Verdict"
     )[:TELEGRAM_CAPTION_CAP]

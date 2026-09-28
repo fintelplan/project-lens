@@ -149,3 +149,6 @@ jobs:
 
       - name: CC-129/130 -- S2-F scores only lenses an article is about
         run: python tests/test_s2f_relevance_gate.py
+
+      - name: CC-133 -- reader labels count what they say
+        run: python tests/test_cc133_labels.py

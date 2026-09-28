@@ -497,6 +497,24 @@ def render_docx(report_text: str, date_str: str, references: list,
 
 
 # ── Telegram sender ───────────────────────────────────────────────────────────
+# CC-133 (L2.5): the caption is sent without a parse mode, so markdown shows raw; and the model
+# opens each part with the prompt's own "Objective:" line, which is not a finding.
+import re as _re_cc133
+
+
+def _plain_caption_line(line: str) -> str:
+    s = _re_cc133.sub(r"(\*\*|__|`)", "", line).strip()
+    return _re_cc133.sub(r"^(#+\s*|[-*]\s+)", "", s).strip()
+
+
+def _is_boilerplate(s: str) -> bool:
+    return s.lower().startswith(("objective", "purpose", "scope", "method"))
+
+
+def _clip_words(s: str, n: int) -> str:
+    return s if len(s) <= n else s[:n].rsplit(" ", 1)[0]
+
+
 def build_caption(report_text: str, citation_stats: dict) -> str:
     """Build Telegram caption from report text."""
     lines = [l.strip() for l in report_text.split("\n") if l.strip()]
@@ -519,10 +537,11 @@ def build_caption(report_text: str, citation_stats: dict) -> str:
         if "PART 3" in line or "PART 4" in line:
             in_part1 = False
             in_part2 = False
-        if in_part1 and not part1_text and len(line) > 40:
-            part1_text = line[:200]
-        if in_part2 and not part2_text and len(line) > 40:
-            part2_text = line[:200]
+        s = _plain_caption_line(line)   # CC-133
+        if in_part1 and not part1_text and len(s) > 40 and not _is_boilerplate(s):
+            part1_text = _clip_words(s, 200)
+        if in_part2 and not part2_text and len(s) > 40 and not _is_boilerplate(s):
+            part2_text = _clip_words(s, 200)
 
     valid = citation_stats.get("valid_citations", 0)
     caption = f"📋 Project Lens Regular Report — {datetime.now(timezone.utc).strftime('%Y%m%d')}\n"

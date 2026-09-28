@@ -339,6 +339,7 @@ def run_s3a(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
     # CC-127: the prompt's template says 'confirmed if: <sign>'; the model copies the tags. Strip them
     # before anything stores or sends first_domino (Telegram HTML refused them on Sep 25).
     analysis["first_domino"] = __import__("re").sub(r"</?sign>", "", str(analysis.get("first_domino") or "")).strip()
+    analysis["first_domino"] = __import__("re").sub(r"[ \t]{2,}", " ", analysis["first_domino"])   # CC-133: the strip left two spaces
 
     # Save to lens_system3_reports
     record = {

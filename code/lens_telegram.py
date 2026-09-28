@@ -152,7 +152,7 @@ def format_daily_brief(data):
         s2f_line,"",
         "<b>━━ ENTITIES ━━</b>",
         f"Most active: {entity_line}","",
-        "<b>━━ 7-DAY TREND ━━</b>",
+        "<b>━━ LAST 3 REPORTS ━━</b>",
         f"Threat: {trend_str}"]
     return "\n".join(lines)
 
