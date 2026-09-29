@@ -155,3 +155,6 @@ jobs:
 
       - name: CC-131 -- S2-B and S3-B call a live Gemini model
         run: python tests/test_cc131_gemini_primary.py
+
+      - name: CC-134 -- S2-F's two daily runs fit Cloudflare's window
+        run: python tests/test_cc134_s2f_budget.py
