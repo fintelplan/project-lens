@@ -158,3 +158,6 @@ jobs:
 
       - name: CC-134 -- S2-F's runs fit Cloudflare's rolling 24 h window
         run: python tests/test_cc134_s2f_budget.py
+
+      - name: CC-135 -- no reader ranks, caps or maxes the six-measure confidence_score
+        run: python tests/test_cc135_measures.py

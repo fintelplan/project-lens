@@ -254,10 +254,12 @@ def get_s2_selected(sb, all_refs: list, tier_map: dict, hours_back: int = 6) -> 
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours_back)).isoformat()
 
     try:
+        # CC-135: oldest first, so analyst_map below (a dict keeps the last row) holds each
+        # analyst's NEWEST row; ordered by confidence_score desc it held the lowest-scored one.
         r = sb.table("injection_reports") \
             .select("analyst,injection_type,confidence_score,flagged_phrases,evidence,created_at") \
             .gte("created_at", cutoff) \
-            .order("confidence_score", desc=True).execute()
+            .order("created_at", desc=False).execute()
         injections = r.data or []
     except Exception as e:
         log.warning(f"injection_reports fetch failed: {e}")

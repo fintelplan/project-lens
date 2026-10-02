@@ -101,8 +101,8 @@ def fetch_injection_reports(sb, hours: int = LOOKBACK_HOURS) -> list:
               .select("analyst,injection_type,evidence,confidence_score,"
                       "flagged_phrases,cycle,run_id,created_at")
               .gte("created_at", cutoff)
-              .order("confidence_score", desc=True)
-              .limit(80)
+              .order("created_at", desc=True)   # CC-135: not by confidence_score, a column of six measures
+              .limit(500)                       # CC-135: the whole 24 h (~70 rows); was 80, near the edge
               .execute()
         )
         rows = r.data or []

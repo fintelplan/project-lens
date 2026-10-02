@@ -97,11 +97,13 @@ def fetch_s2_injection_detail(sb) -> list:
     """All injection reports last 24h."""
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)).isoformat()
     try:
+        # CC-135: newest first, the whole 24 h (~70 rows). The old order on confidence_score -- a
+        # column of six measures -- then limit 30 kept 0 of S2-E's 8 rows on Oct 2 (item 3).
         r = sb.table("injection_reports") \
             .select("analyst,injection_type,evidence,confidence_score,flagged_phrases,cycle,created_at") \
             .gte("created_at", cutoff) \
-            .order("confidence_score", desc=True) \
-            .limit(30) \
+            .order("created_at", desc=True) \
+            .limit(500) \
             .execute()
         log.info(f"S2 injections: {len(r.data or [])} findings")
         return r.data or []
@@ -132,8 +134,7 @@ def build_section1(injections: list) -> str:
 
     # Top injection type
     top_type = max(by_type, key=lambda k: len(by_type[k]))
-    top_conf = max((i.get("confidence_score", 0) for i in injections), default=0)
-    lines.append(f"Dominant injection method: {top_type} ({len(by_type[top_type])} findings, max conf {top_conf:.2f})")
+    lines.append(f"Dominant injection method: {top_type} ({len(by_type[top_type])} findings)")   # CC-135: no max over six measures
     lines.append("")
 
     for itype, items in sorted(by_type.items(), key=lambda x: -len(x[1])):

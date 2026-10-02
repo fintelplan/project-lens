@@ -184,10 +184,12 @@ def fetch_all_reports(sb: Client) -> tuple[list, list, dict]:
         .select("domain_focus,summary,cycle,generated_at,quality_score,food_for_thought") \
         .gte("generated_at", cutoff).order("generated_at", desc=False) \
         .limit(MAX_REPORTS).execute().data or []
-    s2 = sb.table("injection_reports") \
-        .select("analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at") \
-        .gte("created_at", cutoff).order("confidence_score", desc=True) \
-        .limit(MAX_REPORTS).execute().data or []
+    # CC-135: sampled evenly in time like S3-A/C/D (CC-94/99). The old order on confidence_score,
+    # a column of six measures, handed S3-E the 5 highest numbers of whichever measures ran high.
+    from lens_window_sample import sample_window
+    s2, _s2_total = sample_window(sb, "injection_reports",
+                                  "analyst,injection_type,evidence,confidence_score,flagged_phrases,created_at",
+                                  "created_at", cutoff, MAX_REPORTS)
     s3 = {}
     for pos in ("S3-A", "S3-B", "S3-D"):
         try:

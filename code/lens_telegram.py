@@ -63,7 +63,8 @@ def fetch_latest(run_id=None):
     sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
     ma = (sb.table("lens_macro_reports").select("threat_level,executive_summary,key_findings,quality_score,run_id,created_at").order("created_at",desc=True).limit(1).execute().data or [{}])[0]
     rid = run_id or ma.get("run_id","")
-    s2  = sb.table("injection_reports").select("analyst,injection_type,confidence_score").eq("run_id",rid).order("confidence_score",desc=True).limit(5).execute().data or []
+    # CC-135: all of this run's rows, no order on confidence_score -- that column holds six measures (item 3)
+    s2  = sb.table("injection_reports").select("analyst,injection_type").eq("run_id",rid).limit(500).execute().data or []
     s3  = (sb.table("lens_system3_reports").select("summary,first_domino,patterns_found,position,generated_at").eq("position","S3-A").order("generated_at",desc=True).limit(1).execute().data or [{}])[0]
     from lens_canary_wave import fetch_wave   # CC-114: this wave only, and who is missing
     s1, s1_missing = fetch_wave(sb, "summary,quality_score,cycle,generated_at")
@@ -96,6 +97,7 @@ def fetch_latest(run_id=None):
     return {"ma":ma,"s2":s2,"s3":s3,"s1":s1,"s1_missing":s1_missing,"s2f":s2f,"top_entity":top_entity,"trend":trend}
 
 from lens_canary_wave import missing_note   # CC-114
+from lens_s2_measures import top_finding    # CC-135
 
 
 def format_daily_brief(data):
@@ -112,7 +114,7 @@ def format_daily_brief(data):
     held = (f" ({streak}{'+' if streak >= 7 else ''} waves in a row)" if streak > 1 else "")
     emoji  = {"CRITICAL":"🔴","HIGH":"🟠","ELEVATED":"🟡","MODERATE":"🟢","LOW":"⚪"}.get(threat,"❓")
     avg_q  = round(sum(r.get("quality_score") or 0 for r in s1)/len(s1),1) if s1 else 0
-    top_s2 = s2[0] if s2 else {}
+    top_s2 = top_finding(s2)   # CC-135: the most frequent finding type -- a count, one quantity
     try:
         pats = json.loads(s3.get("patterns_found","[]")) if isinstance(s3.get("patterns_found","[]"),str) else s3.get("patterns_found",[])
         pcnt = len(pats)
@@ -124,7 +126,7 @@ def format_daily_brief(data):
         "<b>━━ SYSTEM 1 ━━</b>",
         f"Lenses: {len(s1)}/4{missing_note(data.get('s1_missing') or [])} | Avg quality: {avg_q}/10","",   # CC-114
         "<b>━━ SYSTEM 2 ━━</b>",
-        f"Top injection: <code>{top_s2.get('injection_type','none')}</code> ({top_s2.get('analyst','?')}, conf={top_s2.get('confidence_score',0):.2f})","",
+        (f"Most frequent finding: <code>{top_s2['injection_type']}</code> ({', '.join(top_s2['analysts'])}; {top_s2['n']} of {top_s2['n_findings']} findings)" if top_s2.get("n_findings") else "Findings: none this run"),"",
         "<b>━━ SYSTEM 3 ━━</b>",
         f"Patterns: {pcnt} detected",
         _clip((s3.get("summary") or "No pattern report yet"), 200),
