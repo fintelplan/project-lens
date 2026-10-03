@@ -173,3 +173,6 @@ jobs:
 
       - name: CC-139/140 -- Regular Report docx has Word structure and a true model; logs mask the database host
         run: python tests/test_cc139_140.py
+
+      - name: CC-141 -- the Brief says when its SYSTEM 3 row was written
+        run: python tests/test_cc141_s3_when.py

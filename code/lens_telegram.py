@@ -106,6 +106,16 @@ from lens_canary_wave import missing_note   # CC-114
 from lens_s2_measures import top_finding, measure_label    # CC-135, CC-136
 
 
+def _s3_when(s3):
+    """CC-141 (item 11, L2.4): the SYSTEM 3 lines come from the newest S3-A row, which can be the
+    previous wave's -- the Brief can go out before S3-A writes. Say when that row was written."""
+    import re as _re
+    m = _re.match(r"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})", str((s3 or {}).get("generated_at") or ""))
+    if not m:
+        return " -- S3-A row time unknown"
+    return " -- S3-A row written %s %s UTC" % m.groups()   # a regex, not a slice (CC-124's ratchet)
+
+
 def format_daily_brief(data):
     ma,s2,s3,s1 = data["ma"],data["s2"],data["s3"],data["s1"]
     now    = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -134,7 +144,7 @@ def format_daily_brief(data):
         "<b>━━ SYSTEM 2 ━━</b>",
         (f"Most frequent finding: <code>{top_s2['injection_type']}</code> ({', '.join(top_s2['analysts'])}; {top_s2['n']} of {top_s2['n_findings']} findings)" if top_s2.get("n_findings") else "Findings: none this run"),"",
         "<b>━━ SYSTEM 3 ━━</b>",
-        f"Patterns: {pcnt} detected",
+        f"Patterns: {pcnt} detected" + _s3_when(s3),   # CC-141
         _clip((s3.get("summary") or "No pattern report yet"), 200),
     ]
     if s3.get("first_domino"):
