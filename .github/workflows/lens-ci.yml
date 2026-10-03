@@ -164,3 +164,6 @@ jobs:
 
       - name: CC-136 -- every S2 number is shown under its own measure's name
         run: python tests/test_cc136_labels.py
+
+      - name: CC-137 -- S2-F scores an article whole and asks once more on invalid JSON
+        run: python tests/test_cc137_s2f_whole_and_retry.py

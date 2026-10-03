@@ -121,6 +121,25 @@ def scoring_exit_code(scored: int, failed: int) -> int:
     return 1 if (scored == 0 and failed > 0) else 0
 
 
+def article_fits(calls: int, need: int, max_calls: int) -> bool:
+    """CC-137 (item 2): an article is scored whole or not started. Cut between two relevant
+    lenses, the rest was never scored -- the selection excludes an article with any row."""
+    return calls + need <= max_calls
+
+
+def retry_budget(max_calls: int) -> int:
+    """CC-137: Google SRE's retry budget -- retries stay near 10% of calls, at least one."""
+    return max(1, max_calls // 10)
+
+
+def may_retry(status: str, retries: int, allowed: int, calls: int, cost_to_finish: int,
+              max_calls: int) -> bool:
+    """CC-137 (CC-127's sibling, LR-252): invalid JSON is asked once more, inside the call cap.
+    cost_to_finish = the retry plus the article's lenses still to come. A quota refusal is never
+    retried (SRE: do not retry on out of quota)."""
+    return status == "PARSE_FAILED" and retries < allowed and calls + cost_to_finish <= max_calls
+
+
 def main():
     # ── Config ──
     lenses = os.environ.get("S2F_LENSES", "xi_office,trump_office,khamenei_office").split(",")
@@ -164,6 +183,9 @@ def main():
     gated = 0           # CC-129: lens pairs not about the lens -- no call, no row
     calls = 0
     max_calls = int(os.environ.get("S2F_MAX_CALLS", "24"))   # CC-129: the budget is calls
+    retries_allowed = retry_budget(max_calls)   # CC-137: one retry in ten calls
+    retries = 0
+    deferred = 0
     from lens_s2f_relevance import relevant_lenses
 
     for article in articles:
@@ -182,6 +204,13 @@ def main():
             continue
 
         rel = relevant_lenses(title, body, lenses)   # CC-129
+        need = [l for l in lenses if l in rel]
+        if not article_fits(calls, len(need), max_calls):
+            # CC-137: whole or not at all -- it stays first in the rotation for the next run
+            # (its source was not scored; LR-280, LR-294).
+            deferred += 1
+            log.info(f"S2F_DEFER {title[:40]}: {len(need)} relevant lenses, {max_calls - calls} calls left")
+            continue
         for lens in lenses:
             if lens not in rel:
                 gated += 1
@@ -197,15 +226,26 @@ def main():
             log.info(f"Scoring: {title[:60]} × {lens}")
             calls += 1   # CC-129
             try:
-                result = detect_operations_ensemble(
-                    article_title=title,
-                    article_body=body,
-                    article_source=source,
-                    voice_name=voice_name,
-                    voice_type=voice_type,
-                    state_actor_lens=lens,
-                    stage_filter="early_warning",
-                )
+                def _detect():
+                    return detect_operations_ensemble(
+                        article_title=title,
+                        article_body=body,
+                        article_source=source,
+                        voice_name=voice_name,
+                        voice_type=voice_type,
+                        state_actor_lens=lens,
+                        stage_filter="early_warning",
+                    )
+                result = _detect()
+                # CC-137 (item 2; LR-252): invalid JSON is asked once more -- inside the call cap,
+                # only while the article's remaining lenses still fit, at most one retry in ten
+                # calls (SRE retry budget). A quota refusal (SKIP_QUOTA) is never retried.
+                if may_retry(result.status, retries, retries_allowed, calls,
+                             len(need) - need.index(lens), max_calls):
+                    calls += 1
+                    retries += 1
+                    log.info(f"  -> PARSE_FAILED, asked once more (retry {retries} of {retries_allowed})")
+                    result = _detect()
 
                 if result.status == "SKIP_QUOTA":
                     # CC-97: not scored, not written, and not a new failure --
@@ -236,6 +276,8 @@ def main():
 
     log.info(f"S2F_RELEVANCE gated={gated} lens pairs not about the lens (no call); "
              f"calls={calls} of cap {max_calls}")   # CC-129
+    log.info(f"S2F_BUDGET deferred={deferred} whole articles to the next run; "
+             f"retries={retries} of {retries_allowed}")   # CC-137
     log.info(f"S2-F cron complete: scored={scored} skipped={skipped} failed={failed} "
              f"quota_skipped={quota_skipped}")
     _attempted = scored + failed + quota_skipped   # CC-125 (D6, ruled A at LENS-045): say the coverage
@@ -243,7 +285,8 @@ def main():
         _cov = 100 * scored // _attempted
         (log.warning if _cov < 50 else log.info)(
             f"S2F_COVERAGE scored {scored} of {_attempted} attempted scorings ({_cov}%)"
-            + (" -- under half; the exit stays green until D2 sets the RED threshold" if _cov < 50 else ""))
+            + (" -- under half; the run turns red only when it wrote nothing (CC-85), the RED"
+               " threshold on coverage waits on a week of data (D6)" if _cov < 50 else ""))   # CC-137: was "the exit stays green"
     if quota_skipped:
         log.warning(f"S2-F: {quota_skipped} scorings not attempted -- a provider "
                     f"refused for the day (CC-97 breaker)")
