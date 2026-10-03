@@ -173,6 +173,14 @@ def s2f_brief_lines(s2f, now):
                    "%s UTC (%d h ago)" % (str(s2f["newest_scored_at"])[:16].replace("T", " "), hours))
     else:
         out.append("\u26a0\ufe0f Scoring: nothing has ever been scored")
+    cuts = s2f.get("cuts_24h") or []
+    if cuts:
+        # CC-138 (item 2, L2.3): say when a scoring run was cut (lens_provider_events, written
+        # when the run ends), so a starved day does not read as a quiet one.
+        out.append("\u26a0\ufe0f Scoring cut by the provider's daily quota (24 h): runs ending %s UTC" % ", ".join(
+            str(c)[11:16] for c in cuts))
+    elif s2f.get("cuts_error"):
+        out.append("Scoring cuts: status unavailable (%s)" % html.escape(s2f["cuts_error"]))
     if "open" not in s2f:
         err = s2f.get("ledger_error")
         out.append("Verification: status unavailable" + (" (%s)" % html.escape(err) if err else ""))

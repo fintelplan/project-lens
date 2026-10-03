@@ -84,6 +84,12 @@ def fetch_latest(run_id=None):
         s2f["newest_scored_at"] = newest[0]["scored_at"] if newest else None
     except Exception as e:
         s2f.pop("scored_24h", None); s2f["scoring_error"] = str(e)[:80]
+    try:   # CC-138 (item 2, L2.3): the runs the provider's daily quota cut -- a starved day is not a quiet one
+        s2f["cuts_24h"] = [r.get("created_at") for r in (sb.table("lens_provider_events").select("created_at")
+            .eq("source", "lens_s2f_scoring_cron.py").eq("class", "daily_quota")
+            .gte("created_at", cutoff_24h).order("created_at").limit(20).execute().data or [])]
+    except Exception as e:
+        s2f["cuts_error"] = str(e)[:80]
     try:
         from lens_s2f_delivery_rules import open_findings
         s2f["open"] = open_findings(sb.table("lens_s2f_deliveries").select("voice_name,state_actor_lens,kind,reported_ops,sent_at").order("sent_at",desc=True).limit(5000).execute().data or [])

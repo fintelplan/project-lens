@@ -167,3 +167,6 @@ jobs:
 
       - name: CC-137 -- S2-F scores an article whole and asks once more on invalid JSON
         run: python tests/test_cc137_s2f_whole_and_retry.py
+
+      - name: CC-138 -- the Daily Brief says when a scoring run was cut
+        run: python tests/test_cc138_brief_cut.py
