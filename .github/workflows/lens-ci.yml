@@ -161,3 +161,6 @@ jobs:
 
       - name: CC-135 -- no reader ranks, caps or maxes the six-measure confidence_score
         run: python tests/test_cc135_measures.py
+
+      - name: CC-136 -- every S2 number is shown under its own measure's name
+        run: python tests/test_cc136_labels.py

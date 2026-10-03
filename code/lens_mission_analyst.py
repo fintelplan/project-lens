@@ -476,6 +476,7 @@ def build_synthesis_prompt(
         _s1_in += 1
 
     # ── S2 Reports ────────────────────────────────────────────────────────────
+    from lens_s2_measures import measure_key     # CC-136: name each analyst's number
     sections.append("\n=== SYSTEM 2 REPORTS (Psychological + Adversarial Intelligence) ===\n")
     for r in s2_reports:
         analyst  = r.get("analyst", "?")
@@ -488,7 +489,7 @@ def build_synthesis_prompt(
         flagged_str  = " | ".join([f for f in flagged if f][:5])
 
         entry = (
-            f"[{analyst}] type={inj_type} confidence={conf}\n"
+            f"[{analyst}] type={inj_type} {measure_key(analyst)}={conf}\n"
             f"Flagged: {flagged_str}\n"
             f"Evidence: {evidence_str}\n\n"
         )

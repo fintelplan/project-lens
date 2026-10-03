@@ -112,6 +112,7 @@ Executive Summary: {ma.get('executive_summary', 'Not available')}
     for r in s1:
         prompt += f"Lens {r.get('domain_focus','?')} (quality {r.get('quality_score',0)}/10): {r.get('summary','')}\n\n"
 
+    from lens_s2_measures import measure_label   # CC-136: name each analyst's number
     prompt += "\n=== S2-A INJECTION TRACER (narrative contamination patterns) ===\n"
     for row in s2a_rows[:4]:
         e = ev(row.get("evidence"))
@@ -119,7 +120,7 @@ Executive Summary: {ma.get('executive_summary', 'Not available')}
         if isinstance(phrases, str):
             try: phrases = json.loads(phrases)
             except: phrases = [phrases]
-        prompt += f"Injection type: {row.get('injection_type')} | Confidence: {row.get('confidence_score',0):.0%}\n"
+        prompt += f"Injection type: {row.get('injection_type')} | {measure_label(row.get('analyst'))}: {row.get('confidence_score',0):.0%}\n"
         desc = e.get("description","") or e.get("q1","") or e.get("raw","")
         if desc: prompt += f"Analysis: {desc[:400]}\n"
         if phrases: prompt += f"Flagged phrases: {', '.join(str(p) for p in phrases[:5])}\n"
@@ -130,7 +131,7 @@ Executive Summary: {ma.get('executive_summary', 'Not available')}
         e = ev(row.get("evidence"))
         itype = row.get("injection_type","")
         if itype and itype not in ("NO_COORDINATION","NONE",""):
-            prompt += f"Coordination type: {itype} | Confidence: {row.get('confidence_score',0):.0%}\n"
+            prompt += f"Coordination type: {itype} | {measure_label(row.get('analyst'))}: {row.get('confidence_score',0):.0%}\n"
             detail = e.get("description","") or e.get("dominant_narrative","") or e.get("analyst_note","")
             if detail: prompt += f"Detail: {detail[:400]}\n"
             prompt += "\n"

@@ -173,9 +173,10 @@ def build_prompt(s1: list, s2: list) -> str:
         ]
     if s2:
         lines += [f"\n=== S2 INJECTION FINDINGS — last {LOOKBACK_DAYS} days ({len(s2)} reports) ===\n"]
+        from lens_s2_measures import measure_label   # CC-136: name each analyst's number
         for r in s2:
             lines += [
-                f"Type: {r.get('injection_type')} | Score: {r.get('confidence_score')} | Date: {r.get('created_at','')[:10]}",
+                f"Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | {measure_label(r.get('analyst'))}: {r.get('confidence_score')} | Date: {r.get('created_at','')[:10]}",
                 f"Evidence: {str(r.get('evidence') or '')[:200]}",
             ]
     lines.append("\nDetect systematic bias drift across this 30-day window. Output JSON only.")

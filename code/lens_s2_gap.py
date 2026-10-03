@@ -158,6 +158,7 @@ def build_gap_prompt(s1_reports: list, s2d: Optional[dict]) -> str:
         for r in s1_reports
     ])
 
+    from lens_s2_measures import measure_label   # CC-136: name each analyst's number
     if s2d:
         evidence = s2d.get("evidence", {})
         if isinstance(evidence, str):
@@ -167,7 +168,7 @@ def build_gap_prompt(s1_reports: list, s2d: Optional[dict]) -> str:
                 evidence = {"raw": evidence}
         s2d_text = (
             f"Injection type: {s2d.get('injection_type','?')}\n"
-            f"Confidence: {s2d.get('confidence_score','?')}\n"
+            f"{measure_label('S2-D')}: {s2d.get('confidence_score','?')}\n"
             f"Evidence: {json.dumps(evidence)[:800]}"
         )
     else:

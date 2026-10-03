@@ -215,8 +215,9 @@ def build_prompt(s1: list, s2: list, s3: dict) -> str:
             lines.append(f"Food for Thought: {fft[:200]}")
         lines.append("─" * 40)
     lines.append(f"\n--- S2 INJECTION FINDINGS ({len(s2)} findings) ---")
+    from lens_s2_measures import measure_label   # CC-136: name each analyst's number
     for r in s2:
-        lines.append(f"Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | Score: {r.get('confidence_score')}")
+        lines.append(f"Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | {measure_label(r.get('analyst'))}: {r.get('confidence_score')}")
         lines.append(f"Evidence: {str(r.get('evidence') or '')[:200]}")
     if s3:
         lines.append(f"\n--- S3 PATTERN INTELLIGENCE ({len(s3)} positions) ---")

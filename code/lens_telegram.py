@@ -97,7 +97,7 @@ def fetch_latest(run_id=None):
     return {"ma":ma,"s2":s2,"s3":s3,"s1":s1,"s1_missing":s1_missing,"s2f":s2f,"top_entity":top_entity,"trend":trend}
 
 from lens_canary_wave import missing_note   # CC-114
-from lens_s2_measures import top_finding    # CC-135
+from lens_s2_measures import top_finding, measure_label    # CC-135, CC-136
 
 
 def format_daily_brief(data):
@@ -257,7 +257,7 @@ def send_s2_intelligence(run_id=None):
             e     = ev(s2a.get("evidence"))
             desc  = e.get("description","") or e.get("q1","") or e.get("raw","")
             ph    = " · ".join(str(p) for p in phrases(s2a.get("flagged_phrases"))[:4] if p)
-            lines += [f"<b>Injection method:</b> {itype} ({conf:.0%})"]
+            lines += [f"<b>Injection method:</b> {itype} ({conf:.0%} {measure_label('S2-A')})"]
             if desc: lines.append(_clip(str(desc), 250))
             if ph:   lines.append(f"<b>Trigger language:</b> <code>{_clip(ph, 150)}</code>")
             lines.append("")
@@ -283,7 +283,7 @@ def send_s2_intelligence(run_id=None):
             if itype and itype not in ("NO_COORDINATION","NONE","") and conf > 0.3:
                 e = ev(s2b.get("evidence"))
                 detail = e.get("description","") or e.get("raw","")
-                lines += [f"<b>Coordination detected:</b> {itype} ({conf:.0%})"]
+                lines += [f"<b>Coordination detected:</b> {itype} ({conf:.0%} {measure_label('S2-B')})"]
                 if detail: lines.append(_clip(str(detail), 180))
                 lines.append("")
 

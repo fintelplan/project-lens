@@ -222,9 +222,10 @@ def run_s3d(cycle: Optional[str] = None, run_id: Optional[str] = None) -> dict:
             f"\n=== S2 INJECTION REPORTS — last {window_days} days ({len(s2)} reports sampled evenly{window_span(s2, 'created_at')}) ===",
             "Look for EVOLUTION in injection patterns over time.\n",
         ]
+        from lens_s2_measures import measure_label   # CC-136: name each analyst's number
         for r in s2:
             lines += [
-                f"Date: {r.get('created_at','')[:10]} | Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | Score: {r.get('confidence_score')}",
+                f"Date: {r.get('created_at','')[:10]} | Analyst: {r.get('analyst')} | Type: {r.get('injection_type')} | {measure_label(r.get('analyst'))}: {r.get('confidence_score')}",
                 f"Evidence: {str(r.get('evidence') or '')[:200]}",
             ]
     lines.append(f"\nFind {window_days}-day structural patterns. Output JSON only.")

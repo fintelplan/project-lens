@@ -440,6 +440,7 @@ def build_prompt(macros: list, injections: list, lens_reports: list,
         a = inj.get("analyst") or "?"
         s2_by_analyst.setdefault(a, []).append(inj)
 
+    from lens_s2_measures import measure_key     # CC-136: name each analyst's number
     s2_text = "S2 INJECTION FINDINGS (grouped by analyst, exhaustive):\n"
     for analyst in ("S2-A", "S2-B", "S2-C", "S2-D", "S2-E", "S2-GAP"):
         rows = s2_by_analyst.get(analyst, [])
@@ -464,7 +465,7 @@ def build_prompt(macros: list, injections: list, lens_reports: list,
             phrase_str = ""
             if isinstance(ph, list) and ph:
                 phrase_str = " | ".join(str(p) for p in ph[:5] if p)
-            s2_text += f"  [{itype} conf={conf:.2f}] {_truncate(str(desc), 220)}\n"
+            s2_text += f"  [{itype} {measure_key(analyst)}={conf:.2f}] {_truncate(str(desc), 220)}\n"
             if phrase_str:
                 s2_text += f"    phrases: {_truncate(phrase_str, 200)}\n"
 

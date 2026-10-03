@@ -124,6 +124,7 @@ def build_section1(injections: list) -> str:
         lines.append("No S2 injection findings in this window.")
         return "\n".join(lines)
 
+    from lens_s2_measures import measure_label, is_finding   # CC-136
     # Group by injection type
     by_type = {}
     for inj in injections:
@@ -133,7 +134,7 @@ def build_section1(injections: list) -> str:
         by_type[itype].append(inj)
 
     # Top injection type
-    top_type = max(by_type, key=lambda k: len(by_type[k]))
+    top_type = max(by_type, key=lambda k: (is_finding(k), len(by_type[k])))   # CC-136: a finding type before NONE
     lines.append(f"Dominant injection method: {top_type} ({len(by_type[top_type])} findings)")   # CC-135: no max over six measures
     lines.append("")
 
@@ -145,7 +146,7 @@ def build_section1(injections: list) -> str:
             flagged = item.get("flagged_phrases", [])
             conf = item.get("confidence_score", 0)
             analyst = item.get("analyst", "")
-            lines.append(f"  [{analyst}] conf={conf:.2f}")
+            lines.append(f"  [{analyst}] {measure_label(analyst)} {conf:.2f}")
             if evidence:
                 lines.append(f"  Evidence: {evidence}")
             if flagged and isinstance(flagged, list) and flagged:
