@@ -525,13 +525,10 @@ def _redact(text: str) -> str:
     KEEP is not possible here because the text is free-form, so this removes
     every known secret value instead, and the caller truncates.
     """
-    if not text:
-        return text
-    import os as _os
-    for _name, _value in _os.environ.items():
-        if len(_value) >= 12 and any(h in _name.upper() for h in _SECRET_NAME_HINTS):
-            text = text.replace(_value, "***")
-    return text
+    # CC-140: one implementation. This copy lacked "URL" in its hints and had drifted from
+    # lens_provider_refusal._redact; it now delegates to that one (which also masks URL hosts).
+    from lens_provider_refusal import _redact as _one
+    return _one(text)
 
 
 def detect_operations_in_article(

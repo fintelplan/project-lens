@@ -312,6 +312,124 @@ def _log_completion(resp, provider, model):
         log.error(f"TRUNCATED: {provider}/{model} stopped at max_tokens="
                   f"{MAX_TOKENS}. PART 3 and PART 4 are NOT in this report.")
 
+# -- CC-139 (item 11, L2.5; WCAG 1.3.1): markdown -> Word structure --
+# The model writes markdown (Oct 2 report: 63 bullets, 24 rules, 22 table rows, 14 "####"
+# headings, 742 "**"). Word has headings, bold and italic runs, bullets and tables, so the
+# structure becomes those (WCAG 1.3.1: structure is programmatically determined, not drawn
+# with characters). Decorative rules and the model's own "Date:" line are dropped -- the
+# subtitle carries the real date. md_blocks() is pure, so CI tests it without python-docx.
+_MD_RULE = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
+_MD_DATE = re.compile(r"^\**\s*Date\s*:?\s*\**\s*:?\s*\**\s*\d{4}-\d{2}-\d{2}", re.I)
+_MD_HEAD = re.compile(r"^(#{1,6})\s+(.*)$")
+_MD_CELL_RULE = re.compile(r"^:?-{2,}:?$")
+_MD_INLINE = re.compile(r"\*\*(.+?)\*\*|(?<![*\w])\*(?![\s*])(.+?)(?<![\s*])\*(?![*\w])")
+
+
+def _md_plain(s: str) -> str:
+    s = s.strip().lstrip("#").strip()
+    while len(s) > 4 and s.startswith("**") and s.endswith("**"):
+        s = s[2:-2].strip()
+    return s.replace("**", "")
+
+
+def _md_runs(text: str) -> list:
+    """[(text, bold, italic)] -- **bold** and *italic* become runs, not literal asterisks."""
+    out, pos = [], 0
+    for m in _MD_INLINE.finditer(text):
+        if m.start() > pos:
+            out.append((text[pos:m.start()], False, False))
+        if m.group(1) is not None:
+            out.append((m.group(1), True, False))
+        else:
+            out.append((m.group(2), False, True))
+        pos = m.end()
+    if pos < len(text):
+        out.append((text[pos:], False, False))
+    return [(t.replace("**", ""), b, i) for t, b, i in out if t]
+
+
+def md_blocks(text: str) -> list:
+    """Report text -> [("head", level, text) | ("bullet", runs) | ("para", runs) | ("table", rows)]."""
+    blocks, rows = [], []
+
+    def flush():
+        if rows:
+            cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+            body = [r for r in cells if not all(_MD_CELL_RULE.match(c) for c in r if c)]
+            if body:
+                blocks.append(("table", [[_md_runs(c) for c in r] for r in body]))
+            rows.clear()
+
+    for line in (text or "").split("\n"):
+        s = line.strip()
+        if s.startswith("|"):
+            rows.append(s)
+            continue
+        flush()
+        if not s or _MD_RULE.match(s) or _MD_DATE.match(s):
+            continue
+        plain = _md_plain(s)
+        m = _MD_HEAD.match(s)
+        if plain.startswith("PART ") and "\u2014" in plain:      # CC-69's rule, kept
+            blocks.append(("head", 1, plain))
+        elif m:
+            blocks.append(("head", min(len(m.group(1)), 3), _md_plain(m.group(2))))
+        elif plain.isupper() and len(plain) < 60 and ":" not in plain:   # the old caps rule, kept
+            blocks.append(("head", 2, plain))
+        elif s[:2] in ("- ", "* ", "+ "):
+            blocks.append(("bullet", _md_runs(s[2:].strip())))
+        else:
+            blocks.append(("para", _md_runs(s)))
+    flush()
+    return blocks
+
+
+def _render_body(doc, text: str) -> None:
+    from docx.shared import Pt
+
+    def put(p, runs):
+        for t, b, i in runs:
+            r = p.add_run(t)
+            r.bold = b or None
+            r.italic = i or None
+
+    for b in md_blocks(text):
+        if b[0] == "head":
+            doc.add_heading(b[2], level=b[1])
+        elif b[0] == "bullet":
+            put(doc.add_paragraph(style="List Bullet"), b[1])
+        elif b[0] == "para":
+            p = doc.add_paragraph()
+            put(p, b[1])
+            p.paragraph_format.space_after = Pt(6)
+        else:
+            rows = b[1]
+            ncol = max(len(r) for r in rows)
+            t = doc.add_table(rows=len(rows), cols=ncol)
+            try:
+                t.style = "Table Grid"
+            except Exception:
+                pass
+            for i, r in enumerate(rows):
+                for j in range(ncol):
+                    cp = t.cell(i, j).paragraphs[0]
+                    runs = r[j] if j < len(r) else []
+                    put(cp, [(x, True if i == 0 else bb, ii) for x, bb, ii in runs])
+
+
+def _ANSWERED_WRAP(fn):
+    def wrapped(resp, provider, model):
+        ANSWERED["provider"], ANSWERED["model"] = provider, model
+        return fn(resp, provider, model)
+    return wrapped
+
+
+ANSWERED = {}   # CC-139: who answered this run -- the subtitle names it, not a fixed "Mistral-small"
+
+
+_log_completion = _ANSWERED_WRAP(_log_completion)   # CC-139: remember who answered
+
+
 def call_llm(system_prompt: str, user_msg: str) -> str:
     """Call LLM with retry + provider fallback. Returns report text."""
     client, model, provider = get_llm_client()
@@ -432,34 +550,17 @@ def render_docx(report_text: str, date_str: str, references: list,
 
     subtitle = doc.add_paragraph()
     subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    sub_run = subtitle.add_run(f"{date_str}  |  Free Tier  |  Mistral-small")
+    sub_run = subtitle.add_run(f"{date_str}  |  Free Tier  |  {ANSWERED.get('model') or 'model not recorded'}")   # CC-139: was a fixed "Mistral-small"
     sub_run.font.size = Pt(10)
     sub_run.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
 
     doc.add_paragraph()
 
-    # Split report into lines and render
-    lines = report_text.split("\n")
-    for line in lines:
-        line_stripped = line.strip()
-        if not line_stripped:
-            doc.add_paragraph()
-            continue
+    # CC-139 (item 11, L2.5; WCAG 1.3.1): the body's markdown becomes Word structure
+    # (md_blocks / _render_body, defined above call_llm); CC-69's PART rule lives on there.
+    _render_body(doc, report_text)
 
-        # Detect headings. CC-69: the model emits markdown, measured across
-        # 15 probe bodies -- 38 as "### **PART N — NAME**" and 3 as
-        # "**PART N — NAME**". The old test was startswith("PART "),
-        # which matched NONE of the 41: catches=0, misses=41. Strip the
-        # leading hashes and the bold markers, then test. The stripped
-        # text is what goes in the heading, so ** never reaches the docx.
-        heading_text = line_stripped.lstrip("#").strip().strip("*").strip()
-        if heading_text.startswith("PART ") and "—" in heading_text:
-            p = doc.add_heading(heading_text, level=1)
-        elif line_stripped.isupper() and len(line_stripped) < 60 and ":" not in line_stripped:
-            p = doc.add_heading(line_stripped, level=2)
-        else:
-            p = doc.add_paragraph(line_stripped)
-            p.paragraph_format.space_after = Pt(6)
+    # CC-139: the old line loop (CC-69's heading test) moved into md_blocks.
 
     # PART 4 is built here, not by the model (item 2.2, ruled D). The pool is
     # already in the prompt; asking for it back cost roughly 2,000 output

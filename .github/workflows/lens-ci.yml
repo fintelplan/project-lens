@@ -170,3 +170,6 @@ jobs:
 
       - name: CC-138 -- the Daily Brief says when a scoring run was cut
         run: python tests/test_cc138_brief_cut.py
+
+      - name: CC-139/140 -- Regular Report docx has Word structure and a true model; logs mask the database host
+        run: python tests/test_cc139_140.py

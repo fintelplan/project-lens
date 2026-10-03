@@ -35,9 +35,21 @@ _ATEXIT = {"registered": False}
 
 
 def _redact(text: str) -> str:
+    """CC-92/104, CC-140: remove every secret environment value from free text -- and, for a
+    URL value, its host too: an exception names host='...' without the scheme, so the full
+    value never matched and the Supabase host reached a public Actions log (Oct 2 ReadTimeout).
+    Logging guidance (AWS, OWASP): mask connection strings and internal network names.
+    The one implementation -- lens_framing_rubrics._redact delegates here."""
+    if not text:
+        return text
+    from urllib.parse import urlsplit
     for name, value in os.environ.items():
         if value and len(value) >= 12 and any(h in name.upper() for h in _SECRET_NAME_HINTS):
             text = text.replace(value, "***")
+            if "://" in value:
+                host = urlsplit(value).hostname or ""
+                if len(host) >= 12:
+                    text = text.replace(host, "***")
     return text
 
 
